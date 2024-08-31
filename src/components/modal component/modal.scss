@@ -1,0 +1,73 @@
+// Variables
+$modalBgColor: #ffffff; // Background color (replace with your desired color)
+$modalBorderColor: #000000; // Border color (replace with your desired color)
+$modalBorderWidth: 2px; // Border width
+$modalBoxShadow: 0 4px 8px rgba(0, 0, 0, 0.2); // Box shadow
+$modalPadding: 20px; // Padding inside the modal content
+$modalMaxWidth: 400px; // Maximum width of the modal
+$inputBorderColor: #ced4da; // Border color for input fields
+$inputBorderWidth: 1px; // Border width for input fields
+$inputPadding: 8px; // Padding inside input fields
+
+// Mixin for box shadow
+@mixin boxShadow($value) {
+  -webkit-box-shadow: $value;
+  box-shadow: $value;
+}
+
+// Modal styles
+.custom-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: $modalMaxWidth;
+  background-color: $modalBgColor;
+  border: $modalBorderWidth solid $modalBorderColor;
+  @include boxShadow($modalBoxShadow); // Using boxShadow mixin
+  padding: $modalPadding;
+  box-sizing: border-box; // Ensures padding and border are included in the width
+
+  form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    
+
+    label {
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 100px;
+    }
+
+    input {
+      width: 95%;
+      padding: $inputPadding;
+      border: $inputBorderWidth solid $inputBorderColor;
+      border-radius: 4px;
+      transition: border-color 0.3s ease;
+      margin-top: 5px; // Adjust margin as needed
+
+      &:focus {
+        outline: none;
+        border-color: dodgerblue;
+      }
+    }
+
+    button{
+      width: 150px;
+      padding: 10px;
+      border: none;
+      background-color: teal;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      &:hover {
+        background-color: #007bff;
+      }
+    }
+  }
+}

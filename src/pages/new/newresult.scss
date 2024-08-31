@@ -1,0 +1,89 @@
+.new {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Center align horizontally */
+  
+    .newContainer {
+      width: 100%; /* Adjust as needed */
+      max-width: 1400px; /* Example max-width */
+      display: flex;
+      flex-direction: column; /* Stack items vertically */
+  
+      .top,
+      .bottom {
+        box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+        padding: 10px;
+        margin: 20px;
+        display: flex;
+  
+        h1 {
+          color: #7451f8;
+          font-size: 20px;
+        }
+  
+        .right {
+          flex: 1;
+          display: flex;
+          flex-direction: column; /* Stack items vertically */
+  
+          form {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            gap: 30px;
+  
+            .formInput {
+              width: 100%; /* Full width */
+  
+              label {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+  
+                .icon {
+                  cursor: pointer;
+                }
+              }
+  
+              select,
+              input {
+                width: 100%;
+                padding: 5px;
+                border: none;
+                border-bottom: 1px solid gray;
+  
+                &:not(select) {
+                  appearance: none;
+                  background: transparent;
+                  font-size: inherit;
+                }
+              }
+            }
+  
+            .formSubmit {
+              display: flex;
+              justify-content: center; /* Center align horizontally */
+  
+              button {
+                width: 150px;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+  
+                &:hover {
+                  background-color: #4d30b6;
+                }
+  
+                &.printButton {
+                  background-color: teal;
+                  margin-right: 10px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

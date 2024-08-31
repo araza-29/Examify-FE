@@ -1,0 +1,70 @@
+.login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    margin: 100px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
+}
+
+.login h4 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 500;
+    color: rgb(3, 3, 3);
+}
+
+.login .header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.login .dashboardHeading {
+    font-size: 26px;
+    font-weight: 700;
+    color: #7451f8;
+}
+
+.login .formGroup {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.login .formGroup label {
+    display: block;
+    margin-bottom: 5px;
+    color: gray;
+}
+
+.login .formGroup input {
+    width: -webkit-fill-available;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.login .error {
+    color: red;
+    font-size: 14px;
+    margin: 10px;
+}
+
+.login button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #7451f8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login button[type="submit"]:hover {
+    background-color: #6439ff;
+}
+.footer {
+    padding: 20px;
+}
