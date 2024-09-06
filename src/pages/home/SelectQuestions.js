@@ -10,10 +10,11 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     const [QuestionFlag, setQuestionFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(1);
     const [Questions, setQuestions] = useState([]);
+    const [allQuestions, setAllQuestions] = useState([]);
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
-    const [selectedChapters, setSelectedChapters] = useState(0);
-    const [selectedTopic, setSelectedTopics] = useState(0);
+    const [selectedChapters, setSelectedChapters] = useState([]);
+    const [selectedTopic, setSelectedTopics] = useState([]);
     const theme = useTheme();
 
     useEffect(()=> {
@@ -23,8 +24,19 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
 
     useEffect(()=> {
         fetchTopics();
-    },[Chapters])
-
+        if(selectedChapters!=[]) {
+            setQuestions(allQuestions.filter((item)=> {
+                return(item.chapter_id === selectedChapters.id) 
+            }))
+        }
+    },[selectedChapters])
+    useEffect(()=> {
+        if(selectedTopic!=[]) {
+            setQuestions(allQuestions.filter((item)=> {
+                return(item.topic_id === selectedTopic.id) 
+            }))
+        }
+    },[selectedTopic])
     const fetchChapters = () => {
         fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
             method: "POST",
@@ -47,26 +59,28 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         })
     }
     const fetchTopics = () => {
-        fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({chapter_id: selectedChapters})
-        })
-        .then(response => response.json())
-        .then((data)=> {
-            console.log("Topic data", data);
-            if(data.code === 200) {
-                setTopics(data.data);
-            }
-            else {
-                console.log("Topics data not found");
-            }
-        })
-        .catch((error) => {
-            console.error("Error fetching topics:", error);
-        })
+        if(selectedChapters.id){
+            fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({chapter_id: selectedChapters.id})
+            })
+            .then(response => response.json())
+            .then((data)=> {
+                console.log("Topic data", data);
+                if(data.code === 200) {
+                    setTopics(data.data);
+                }
+                else {
+                    console.log("Topics data not found");
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching topics:", error);
+            })
+        }
     }
     const fetchQuestion = () => {
         console.log(subjectId);
@@ -81,15 +95,23 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         .then((data) => {
             console.log('Received data:', data); // Check the structure
             if (data.code === 200) {
-                if (Array.isArray(data.data)) {
-                    const q = data.data.map((d) => {
-                        return { ...d, selected: false };
+                var q = data.data;
+                if(SelectQuestion!=[]) {
+                    q = data.data.map((d) => {
+                        const isSelected = SelectQuestion.some((selected) => selected.id === d.id);
+                        if(isSelected) {
+                            return { ...d, selected: true };
+                        }
+                        else {
+                            return { ...d, selected: false };
+                        }
                     });
-                    console.log('Mapped questions:', q);
-                    setQuestions(q);
-                } else {
-                    console.error('Expected data.data to be an array');
                 }
+                else {
+                    q = data.data;
+                }
+                setAllQuestions(q);
+                setQuestions(q);
             } else {
                 console.error('Unexpected response code:', data.code);
             }
@@ -102,12 +124,12 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         })
     }
     const handleDone = () => {
-        const selected = Questions.filter((question) => question.selected);
+        const selected = allQuestions.filter((question) => question.selected);
         setSelectedQuestion(selected);
         handleOpen();
     }
     const handleCheckBoxChange =(id) => {
-        Questions.map((question)=>{
+        allQuestions.map((question)=>{
            if( question.id === id){ 
             question.selected = !question.selected;
             localStorage.setItem(id+"",question.selected);
@@ -115,7 +137,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         }
         );
         setQuestions(Questions)
-        setSelectedQuestion(Questions.filter((question) => question.selected))
+        setSelectedQuestion(allQuestions.filter((question) => question.selected))
     }
     const showQuestions = () => {debugger;
         return<>
@@ -152,10 +174,10 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                     </Typography>
                 </Box>
                 <Box>
-                    <DropDown data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics}/>
+                    <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics}/>
                 </Box>
                 <Box>
-                    <DropDown data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
+                    <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
                 </Box>
             </Box>
             <Box sx={{ height: '100%', width: '100%', fontSize: '0.875rem', maxHeight: '70vh', overflow: 'scroll' }}>

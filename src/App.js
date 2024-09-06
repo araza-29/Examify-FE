@@ -147,20 +147,20 @@ function App() {
           <Route path="/">
             
             <Route index element={<Home />} />
-            <Route path="quizLogin" element={<TestLogin />} />
+            {/*<Route path="quizLogin" element={<TestLogin />} />*/}
             <Route path="home" element={<Home />} />
 
           
 
-            <Route path="quizHome">  
+          {/* <Route path="quizHome">  
               <Route index element={<TestHome />} />
               <Route path="instruction" element={<Instruction />} />
               <Route path="quizQuestion" element={<TestQuestion />} />
               <Route path="reviewQuestion" element={<ReviewQuestions />} />
-            </Route>
+            </Route>*/}
             
 
-            <Route path="center">
+            {/*<Route path="center">
               <Route index element={<CenterList />} />
               <Route path=":centerId" element={<CenterSingle />} />
               <Route path="update-center/:centerId" element={<CenterUpdate inputs={centerInputs} title="Update Center" />} />
@@ -424,12 +424,11 @@ function App() {
             </Route>
 
 
-            {/* <Route path="user">
+             <Route path="user">
               <Route index element={<UserList />} />
               <Route path=":userId" element={<UserSingle />} />
-            </Route> */}
-
-            {/* <Route path="center">
+            </Route> 
+            <Route path="center">
               <Route index element={<List />} />
               <Route path=":examinationId" element={<Single />} />
               <Route path="update/:examinationId" element={<Update inputs={categoryInputs} title="Update Exam" />}/>
@@ -437,7 +436,7 @@ function App() {
                 path="new"
                 element={<New inputs={categoryInputs} title="Add New Category" />}
               />
-            </Route> */}
+            </Route>
             
             <Route path="quiz">
               <Route index element={<QuizList />} />
@@ -462,7 +461,7 @@ function App() {
             <Route path="profile">
               <Route index element={<Profile />} />
             </Route>
-
+            */}
           </Route>
         </Routes>
         

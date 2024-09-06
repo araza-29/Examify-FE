@@ -247,7 +247,7 @@ const Home = () => {
   };
 
   const sidebarStyle = {
-    width: '200px',
+    width: '50px',
     backgroundColor: '#333',
   };
 
@@ -275,12 +275,12 @@ const Home = () => {
   const [selectedQuestion, setQuestions] = useState([]);
   let [token] = useState(localStorage.getItem("token"));
   const [exsistingInfo, setExsistingInfo] = useState({
-    header: "The Education Link".toUpperCase(),
+    header: "FAST NUCES".toUpperCase(),
     centerName: [],
     class: "Class",
     subject: "Subject Name",
     ExaminationYear: "2023",
-    departmentNames: ["Jinnah","Iqbal"],
+    departmentNames: ["Karachi","Lahore"],
     duration: 4,
     marks: 80,
     date: new Date().toISOString().split('T')[0],
@@ -333,11 +333,32 @@ const Home = () => {
                 <ModalSelectQuestions setQuestions={setQuestions} SelectedQuestions={selectedQuestion}></ModalSelectQuestions>
               </Box>
               <Box sx={{ width: '91.666667%', my: 2 }}>
-                <Typography>
-                  Selected Question : {marksTotal()}/{exsistingInfo.marks}
-                  {selectedQuestion.length !== 0 ? <DraggableQuestions SetQuestions={setQuestions} Questions={selectedQuestion}/> : <Typography>No Questions Selected yet</Typography>}
+                <Typography 
+                  sx={{ 
+                    fontSize: '1.25rem',    // Customize font size
+                    fontWeight: 'bold',     // Make the text bold
+                    color: '#333',          // Text color for main content
+                    mb: 1                   // Add margin-bottom to separate content
+                  }}
+                >
+                  Selected Question: {marksTotal()}/{exsistingInfo.marks}
                 </Typography>
+                
+                {selectedQuestion.length !== 0 ? (
+                  <DraggableQuestions SetQuestions={setQuestions} Questions={selectedQuestion} />
+                ) : (
+                  <Typography 
+                    sx={{
+                      fontSize: '1rem',       // Slightly smaller font for no questions
+                      color: '#999',          // Grey color for subtle text
+                      fontStyle: 'italic'     // Italic style for emphasis
+                    }}
+                  >
+                    No Questions Selected yet
+                  </Typography>
+                )}
               </Box>
+
             </Box>
           </Box>
 
