@@ -11,6 +11,7 @@ import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { ModalSelectQuestions } from "./ModalSelectQuestions";
+import { ModalSelectMCQs } from "./ModalSelectMCQs"
 
 function PaperHeaderEditInfo({OldData, setOldData, setEditOpen}){
   const [editedInfo, setEditedInfo] = useState({...OldData});
@@ -273,6 +274,7 @@ const Home = () => {
   };
   const [AllowEdit, setAllowEdit] = useState(false);
   const [selectedQuestion, setQuestions] = useState([]);
+  const [selectedMCQ, setMCQs] = useState([]);
   let [token] = useState(localStorage.getItem("token"));
   const [exsistingInfo, setExsistingInfo] = useState({
     header: "FAST NUCES".toUpperCase(),
@@ -298,6 +300,13 @@ const Home = () => {
     })
     console.log(sum)
     return sum;
+  }
+  const MCQMarks = () => {
+    var sum = 0;
+    selectedMCQ.forEach((q)=>{
+      sum = sum + 1;
+    })
+    console.log(sum);
   }
   return (
     <div className="home" style={homeStyle}>
@@ -330,8 +339,53 @@ const Home = () => {
                 />
               )}
               <Box sx={{ width: '91.666667%', my: 2 }}>
+                <ModalSelectMCQs setMCQs={setMCQs} SelectedMCQs={selectedMCQ}></ModalSelectMCQs>
+              </Box>
+              <Box sx={{ width: '91.666667%', my: 2 }}>
                 <ModalSelectQuestions setQuestions={setQuestions} SelectedQuestions={selectedQuestion}></ModalSelectQuestions>
               </Box>
+              <Typography sx={{ 
+                    fontSize: '2rem',    // Customize font size
+                    fontWeight: 'bold',     // Make the text bold
+                    color: '#333',          // Text color for main content
+                    mb: 1                   // Add margin-bottom to separate content
+                  }}>
+              Section A
+            </Typography>
+              <Box sx={{ width: '91.666667%', my: 2 }}>
+                <Typography 
+                  sx={{ 
+                    fontSize: '1.25rem',    // Customize font size
+                    fontWeight: 'bold',     // Make the text bold
+                    color: '#333',          // Text color for main content
+                    mb: 1                   // Add margin-bottom to separate content
+                  }}
+                >
+                  Selected Question: {MCQMarks()}/{exsistingInfo.marks}
+                </Typography>
+                
+                {selectedMCQ.length !== 0 ? (
+                  <DraggableQuestions SetQuestions={setMCQs} Questions={selectedMCQ} />
+                ) : (
+                  <Typography 
+                    sx={{
+                      fontSize: '1rem',       // Slightly smaller font for no questions
+                      color: '#999',          // Grey color for subtle text
+                      fontStyle: 'italic'     // Italic style for emphasis
+                    }}
+                  >
+                    No Questions Selected yet
+                  </Typography>
+                )}
+              </Box>
+              <Typography sx={{ 
+                    fontSize: '2rem',    // Customize font size
+                    fontWeight: 'bold',     // Make the text bold
+                    color: '#333',          // Text color for main content
+                    mb: 1                   // Add margin-bottom to separate content
+                  }}>
+              Section B
+            </Typography>
               <Box sx={{ width: '91.666667%', my: 2 }}>
                 <Typography 
                   sx={{ 
@@ -363,8 +417,10 @@ const Home = () => {
           </Box>
 
           {/* Paper Viewer Section */}
+          {console.log(selectedMCQ)}
+          {console.log(selectedQuestion)}
           <Box sx={{ flex: 1, overflow: 'auto', height: '100%' }}>
-            <Paper htmlQuestions = {selectedQuestion} BasicInfo={exsistingInfo} />
+            <Paper htmlQuestions = {selectedQuestion} htmlMCQ = {selectedMCQ} BasicInfo={exsistingInfo} />
           </Box>
         </Box>
       </Box>

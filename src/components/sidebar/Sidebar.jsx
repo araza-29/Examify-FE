@@ -68,15 +68,21 @@ const Sidebar = () => {
           <Link to="/home" style={{ textDecoration: "none" }}>
             <li>
               <DashboardIcon className="icon" />
-              <span>Dashboard</span>
+              <span>Paper Editor</span>
             </li>
           </Link>
          
           <p className="title">LISTS</p>
-          <Link to="/user" style={{ textDecoration: "none" }}>
-            <li style={{ display: isLinkEnabled("/user") ? "block" : "none" }}>
+          <Link to="/questionbank" style={{ textDecoration: "none" }}>
+            <li>
               <PersonOutlineIcon className="icon" />
-              <span>Users</span>
+              <span>Question Bank</span>
+            </li> 
+          </Link>
+          <Link to="/MCQSBank" style={{ textDecoration: "none" }}>
+            <li>
+              <PersonOutlineIcon className="icon" />
+              <span>MCQS Bank</span>
             </li> 
           </Link>
             <Link to="/coo" style={{ textDecoration: "none" }}>

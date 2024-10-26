@@ -1,4 +1,8 @@
 import Home from "./pages/home/Home";
+import QuestionBank from "./pages/home/QuestionBank"
+import MCQSBank from "./pages/home/MCQsBank"
+import CreateQuestion from "./pages/home/QuestionCreater"
+
 import TestHome from "./pages/home/TestHome";
 import Login from "./pages/login/Login";
 import TestLogin from "./pages/login/TestLogin";
@@ -6,7 +10,6 @@ import Profile from "./pages/profile/Profile";
 import Instruction from "./pages/instruction/Instruction";
 import TestQuestion from "./pages/questions/TestQuestion";
 import ReviewQuestions from "./pages/review/ReviewQuestions";
-
 //Center CRUD
 import ClassList from "./pages/list/ClassLIst";
 import CoursechapterList from "./pages/list/CoursechapterList";
@@ -146,18 +149,23 @@ function App() {
         <Routes>
           <Route path="/">
             
-            <Route index element={<Home />} />
+            <Route index element={<QuestionBank />} />
             {/*<Route path="quizLogin" element={<TestLogin />} />*/}
-            <Route path="home" element={<Home />} />
+            <Route path="questionbank" element={<QuestionBank />} />
 
           
 
-          {/* <Route path="quizHome">  
-              <Route index element={<TestHome />} />
-              <Route path="instruction" element={<Instruction />} />
-              <Route path="quizQuestion" element={<TestQuestion />} />
-              <Route path="reviewQuestion" element={<ReviewQuestions />} />
-            </Route>*/}
+            <Route path="home">  
+              <Route index element={<Home />} />
+            </Route>
+
+            <Route path="MCQSBank">  
+              <Route index element={<MCQSBank />} />
+            </Route>
+
+            <Route path="CreateQuestion">  
+              <Route index element={<CreateQuestion />} />
+            </Route>
             
 
             {/*<Route path="center">

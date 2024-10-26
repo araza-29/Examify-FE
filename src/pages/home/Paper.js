@@ -14,9 +14,11 @@ const styles = StyleSheet.create({
         display: 'flex',  
     },
     section: {
-      margin: 10,
-      padding: 10,
-      flexGrow: 1
+        margin: 10,
+        padding: 10,
+        flexGrow: 1,
+        flexDirection: 'column',     // Add this to maintain vertical stacking
+        alignContent: 'flex-start',
     },
     title: {
       fontSize: 15,
@@ -39,7 +41,7 @@ const styles = StyleSheet.create({
       fontFamily: 'Times-Bold'
     }
   });
-const PaperPDF = ({htmlContent, htmlQuestions, BasicInfo}) => {
+const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo}) => {
     function MyComponent({htmlString, index, marks}) {
         function replaceStrongWithBold(element) {
             if(typeof element ==='string') {
@@ -71,6 +73,47 @@ const PaperPDF = ({htmlContent, htmlQuestions, BasicInfo}) => {
             </View>*/}
         </View>
     }
+    function MCQ({htmlString, choices ,index}) {
+        function replaceStrongWithBold(element) {
+            if(typeof element ==='string') {
+                return <Text>{element}</Text>;
+            }
+            if(element.type === 'strong') {
+                return 
+            }
+        }
+        const parsedElements = parse(htmlString);
+        const parsedChoices = choices.map((q)=>{
+            return (parse(q))
+        })
+        return <View>
+            <View style={{ marginBottom: 4 }}>
+                {/* First line with index and parsed elements */}
+                <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+                    <Text style={{ fontFamily: "Times-Bold", marginRight: 3, fontSize: 11 }}>
+                        {index}-
+                    </Text>
+                    <Text style={{ fontSize: 12, fontFamily: "Times-Roman" }}>
+                        {parsedElements}
+                    </Text>
+                </View>
+
+                {/* Second line with choices */}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 15 }}>
+                    {parsedChoices.map((q, idx) => (
+                        <View key={q} style={{ marginRight: 15, marginBottom: 5 }}>
+                            <Text style={{ fontSize: 11 }}>
+                                ({String.fromCharCode(97 + idx)}) {q}
+                            </Text>
+                        </View>
+                    ))}
+                </View>
+            </View>
+            {/*<View style={{display: 'flex',justifyContent: 'center', alignItems:'center', width:'100%', margin: 5}}>
+                {false && <Image style={{width: '200rem'}} src={`${questionImage}`}></Image>}
+            </View>*/}
+        </View>
+    }
     return(
         <Document>
             <Page size="A4" >
@@ -87,6 +130,24 @@ const PaperPDF = ({htmlContent, htmlQuestions, BasicInfo}) => {
                     </View>
                     <Text style={styles.title}>{BasicInfo.subject}</Text>
                     <Text style={styles.paragraph}>Instructions: {BasicInfo.instruction}</Text>
+                    <Text style={styles.title}>Section A </Text>
+                    {
+                    console.log("MCQ",htmlMCQ)
+                    }
+                    {  
+                    console.log("Question",htmlQuestions)
+                    }
+                    {
+                    htmlMCQ.map((q,idx)=>{
+                        const choices = [q.choice1,q.choice2,q.choice3,q.choice4];
+                        return(
+                            <View>
+                                <MCQ index={idx+1} choices={choices} htmlString={q.name} ></MCQ>
+                            </View>
+                        );
+                    })
+                    }
+                    <Text style={styles.title}>Section B </Text>
                     {
                     htmlQuestions.map((q,idx)=>{
                         return(
@@ -101,14 +162,14 @@ const PaperPDF = ({htmlContent, htmlQuestions, BasicInfo}) => {
         </Document>
     )
 }
-const PDFComponent = ({htmlContent, htmlQuestions, BasicInfo}) => {
+const PDFComponent = ({htmlContent, htmlQuestions,htmlMCQ, BasicInfo}) => {
     return (
         <PDFViewer showToolbar={false} style={{ 
             width: '100%', 
             height: '100vh', 
             border: 'none' 
         }}>
-            <PaperPDF BasicInfo={BasicInfo} htmlContent={htmlContent} htmlQuestions={htmlQuestions}/>
+            <PaperPDF BasicInfo={BasicInfo} htmlContent={htmlContent} htmlMCQ = {htmlMCQ} htmlQuestions={htmlQuestions}/>
         </PDFViewer>
     )
 }
