@@ -5,7 +5,7 @@ import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import Paper from "./Paper";
-import DraggableQuestions from "./DraggableQuestions";
+import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
 import { useState } from "react";
 import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, TextField, FormControl, Button, CardActions} from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

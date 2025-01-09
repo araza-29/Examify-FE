@@ -1,5 +1,5 @@
-import {Card,CardActions,CardContent,TextField, Typography,Button,Box} from '@mui/material'
-import DropDown from './DropDown';
+import {Card,CardActions,CardContent,TextField, Typography,Button,Box,Input} from '@mui/material'
+import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
 import { Subject } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ function QuestionCreater() {
         const [Topic, setTopics] = useState([]);
         const [selectedChapters, setSelectedChapters] = useState([]);
         const [selectedTopic, setSelectedTopics] = useState([]);
+        const [image, setImage] = useState(null);
         useEffect(()=>{
             fetchSubject();
         },[userId])
@@ -131,6 +132,9 @@ function QuestionCreater() {
                         onChange = {(event)=>setQuestion({...Question, marks: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
+                    <Box>
+                        <Input type="file" onChange ={(e)=>{setImage(e.target.value)}}></Input>
+                    </Box>
                     <Box>
                         <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
                     </Box>

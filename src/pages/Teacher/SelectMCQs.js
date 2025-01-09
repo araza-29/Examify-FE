@@ -4,7 +4,7 @@ import {Table,Checkbox, Divider, TableBody, TableCell, TableContainer, TableHead
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { useTheme } from '@mui/material/styles';
-import DropDown from './DropDown';
+import DropDown from '../../components/DropDown/DropDown';
 
 export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id}) {
     const [MCQsFlag, setMCQsFlag] = useState(false);

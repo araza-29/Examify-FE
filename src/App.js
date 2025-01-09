@@ -2,6 +2,9 @@ import Home from "./pages/home/Home";
 import QuestionBank from "./pages/home/QuestionBank"
 import MCQSBank from "./pages/home/MCQsBank"
 import CreateQuestion from "./pages/home/QuestionCreater"
+import Teacher from "./pages/Teacher/Teacher"
+import SeniorTeacher from "./pages/SeniorTeacher"
+import Examiner from "./pages/Examiner"
 
 import TestHome from "./pages/home/TestHome";
 import Login from "./pages/login/Login";
@@ -149,14 +152,14 @@ function App() {
         <Routes>
           <Route path="/">
             
-            <Route index element={<QuestionBank />} />
+            <Route index element={<Home />} />
             {/*<Route path="quizLogin" element={<TestLogin />} />*/}
-            <Route path="questionbank" element={<QuestionBank />} />
+            <Route path="dashboard" element={<Home />} />
 
           
 
-            <Route path="home">  
-              <Route index element={<Home />} />
+            <Route path="Teacher">  
+              <Route index element={<Teacher />} />
             </Route>
 
             <Route path="MCQSBank">  
@@ -166,7 +169,6 @@ function App() {
             <Route path="CreateQuestion">  
               <Route index element={<CreateQuestion />} />
             </Route>
-            
 
             {/*<Route path="center">
               <Route index element={<CenterList />} />
