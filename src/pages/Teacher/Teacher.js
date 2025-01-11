@@ -1,12 +1,11 @@
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import "./home.scss";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import Paper from "../Paper/Paper";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, TextField, FormControl, Button, CardActions} from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
@@ -58,7 +57,14 @@ function PaperHeaderEditInfo({OldData, setOldData, setEditOpen}){
           value = {editedInfo.instruction}
           onChange={(value)=>setEditedInfo({...editedInfo, instruction: value.target.value})}
         />
-    
+        <TextField
+          label="Sections"
+          fullWidth
+          variant="outlined"
+          sx={{ mb: 2 }}
+          value = {editedInfo.sections}
+          onChange={(value)=>setEditedInfo({...editedInfo, sections: value.target.value})}
+        />
         <Box display="flex" flexWrap="wrap" justifyContent="space-between">
           <Box flexBasis="48%" mb={2}>
             <Typography variant="subtitle1" gutterBottom>
@@ -283,11 +289,20 @@ const Teacher = () => {
     subject: "Subject Name",
     ExaminationYear: "2023",
     departmentNames: ["Karachi","Lahore"],
+    sections: 3,
     duration: 4,
     marks: 80,
     date: new Date().toISOString().split('T')[0],
     instruction: "No Instruction just attempt the Paper"
   });
+  let sectionLetters = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
+    name: `Section ${String.fromCharCode(65 + index)}`
+  }));
+  useEffect(()=>{
+    sectionLetters = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
+        name: `Section ${String.fromCharCode(65 + index)}`
+      }));
+  },[exsistingInfo.sections])
   // const fetchSections = () => {
   //   fetch("http://localhost:3000/Examination/updateQuestion", {
   //       method: "POST",
@@ -356,15 +371,17 @@ const Teacher = () => {
                 <ModalSelectMCQs setMCQs={setMCQs} SelectedMCQs={selectedMCQ}></ModalSelectMCQs>
               </Box>
               <Box sx={{ width: '91.666667%', my: 2 }}>
-                <ModalSelectQuestions setQuestions={setQuestions} SelectedQuestions={selectedQuestion}></ModalSelectQuestions>
+                <ModalSelectQuestions setQuestions={setQuestions} SelectedQuestions={selectedQuestion} sections={sectionLetters}></ModalSelectQuestions>
               </Box>
+            {sectionLetters.map((letter,index)=>(
+            <>
               <Typography sx={{ 
                     fontSize: '2rem',    // Customize font size
                     fontWeight: 'bold',     // Make the text bold
                     color: '#333',          // Text color for main content
                     mb: 1                   // Add margin-bottom to separate content
                   }}>
-              Section A
+              Section {letter.name}
             </Typography>
               <Box sx={{ width: '91.666667%', my: 2 }}>
                 <Typography 
@@ -392,41 +409,8 @@ const Teacher = () => {
                   </Typography>
                 )}
               </Box>
-              <Typography sx={{ 
-                    fontSize: '2rem',    // Customize font size
-                    fontWeight: 'bold',     // Make the text bold
-                    color: '#333',          // Text color for main content
-                    mb: 1                   // Add margin-bottom to separate content
-                  }}>
-              Section B
-            </Typography>
-              <Box sx={{ width: '91.666667%', my: 2 }}>
-                <Typography 
-                  sx={{ 
-                    fontSize: '1.25rem',    // Customize font size
-                    fontWeight: 'bold',     // Make the text bold
-                    color: '#333',          // Text color for main content
-                    mb: 1                   // Add margin-bottom to separate content
-                  }}
-                >
-                  Selected Question: {marksTotal()}/{exsistingInfo.marks}
-                </Typography>
-                
-                {selectedQuestion.length !== 0 ? (
-                  <DraggableQuestions SetQuestions={setQuestions} Questions={selectedQuestion} />
-                ) : (
-                  <Typography 
-                    sx={{
-                      fontSize: '1rem',       // Slightly smaller font for no questions
-                      color: '#999',          // Grey color for subtle text
-                      fontStyle: 'italic'     // Italic style for emphasis
-                    }}
-                  >
-                    No Questions Selected yet
-                  </Typography>
-                )}
-              </Box>
-
+            </>
+            ))}
             </Box>
           </Box>
 

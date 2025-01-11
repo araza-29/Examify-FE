@@ -125,9 +125,14 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         })
     }
     const handleDone = () => {
+        if (!selectedSection) {
+            // Alert the user or provide feedback
+            alert("Please select a section before proceeding.");
+            return; // Stop execution if no section is selected
+        }
         const selected = allQuestions.filter((question) => question.selected);
         setSelectedQuestion(selected);
-        setSelectedQuestion({...SelectQuestion, section_id: selectedSection.id, section_name: selectedSection.name});
+        setSelectedQuestion({...SelectQuestion, section: selectedSection});
         handleOpen();
     }
     const handleCheckBoxChange =(id) => {
@@ -181,6 +186,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                 <Box>
                     <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
                 </Box>
+                {console.log(selectedSection)}
                 <Box>
                     <DropDown name = {"Sections"} data = {sections} selectedData={selectedSection} setSelectedData={setSelectedSection} />
                 </Box>

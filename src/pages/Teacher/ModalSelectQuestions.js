@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import SelectQuestions from './SelectQuestions'
 
-export function ModalSelectQuestions({setQuestions, SelectedQuestions, id}) {
+export function ModalSelectQuestions({setQuestions, SelectedQuestions, id, sections}) {
     const [flag,setFlag] = useState(false);
     const handleOpen=()=>setFlag((cur) => !cur);
     return (
@@ -15,7 +15,7 @@ export function ModalSelectQuestions({setQuestions, SelectedQuestions, id}) {
         </Button>
         <Dialog maxWidth="xl" PaperProps={{ sx: { backgroundColor: 'transparent', boxShadow: 'none', maxHeight: '100vh', overflowY: 'auto', py: 2, borderRadius: 2 }, className: 'scrollable-container' }} open={flag} handler={handleOpen}>
             <Card sx={{ backgroundColor: 'rgb(240,238,235)', width: '100%' }}>
-                <SelectQuestions handleOpen={handleOpen} SelectQuestion={SelectedQuestions} setSelectedQuestion={setQuestions}></SelectQuestions>
+                <SelectQuestions handleOpen={handleOpen} SelectQuestion={SelectedQuestions} setSelectedQuestion={setQuestions} sections={sections}></SelectQuestions>
             </Card>
         </Dialog>
         </>

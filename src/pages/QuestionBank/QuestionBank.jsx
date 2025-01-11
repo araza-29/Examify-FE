@@ -1,6 +1,5 @@
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import "./home.scss";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
@@ -9,7 +8,7 @@ import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import Questioninfo from "./QuestionsInfo";
-import DropDown from "../home/DropDown";
+import DropDown from "../../components/DropDown/DropDown";
 import { useNavigate } from 'react-router-dom';
 import QuestionCreater from "./QuestionCreater";
 

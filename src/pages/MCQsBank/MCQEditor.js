@@ -1,5 +1,5 @@
 import {Card,CardActions,CardContent,TextField, Typography,Button,Box} from '@mui/material'
-import DropDown from './DropDown';
+import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
  
 function MCQEditor({MCQ, setFlag, setMCQ}) {
