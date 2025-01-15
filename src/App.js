@@ -3,8 +3,9 @@ import QuestionBank from "./pages/QuestionBank/QuestionBank"
 import MCQSBank from "./pages/MCQsBank/MCQsBank"
 import CreateQuestion from "./pages/QuestionBank/QuestionCreater"
 import Teacher from "./pages/Teacher/Teacher"
-//import SeniorTeacher from "./pages/SeniorTeacher/"
-//import Examiner from "./pages/Examiner"
+import PaperMaking from "./pages/Teacher/PaperMaking"
+import SeniorTeacher from "./pages/SeniorTeacher/SeniorTeacher"
+import Examiner from "./pages/Examiner/Examiner"
 
 //import TestHome from "./pages/home/TestHome";
 import Login from "./pages/login/Login";
@@ -166,8 +167,15 @@ function App() {
               <Route index element={<MCQSBank />} />
             </Route>
 
+            <Route path="QuestionBank">  
+              <Route index element={<QuestionBank />} />
+            </Route>
+
             <Route path="CreateQuestion">  
               <Route index element={<CreateQuestion />} />
+            </Route>
+            <Route path="PaperMaking">  
+              <Route index element={<PaperMaking />} />
             </Route>
 
             {/*<Route path="center">

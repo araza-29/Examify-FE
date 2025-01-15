@@ -73,7 +73,7 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo}) => {
             </View>*/}
         </View>
     }
-    function    MCQ({htmlString, choices ,index}) {
+    function MCQ({htmlString, choices ,index}) {
         function replaceStrongWithBold(element) {
             if(typeof element ==='string') {
                 return <Text>{element}</Text>;
@@ -86,8 +86,8 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo}) => {
         const parsedChoices = choices.map((q)=>{
             return (parse(q))
         })
-        const questionsArray = Object.values(htmlQuestions).filter(item => typeof item === "object" && !Array.isArray(item));
-        console.log("questionsArray:", questionsArray);
+        // const questionsArray = Object.values(htmlQuestions).filter(item => typeof item === "object" && !Array.isArray(item));
+        // console.log("questionsArray:", questionsArray);
         return <View>
             <View style={{ marginBottom: 4 }}>
                 {/* First line with index and parsed elements */}
@@ -151,11 +151,16 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo}) => {
                     }
                     <Text style={styles.title}>Section B </Text>
                     {
-                    questionsArray.map((q, idx) => (
+                    Object.keys(htmlQuestions)
+                    .filter((key) => key !== "section") // Exclude the "section" key
+                    .map((key, idx) => {
+                      const q = htmlQuestions[key];
+                      return (
                         <View key={q.id}>
-                        <MyComponent index={idx + 1} marks={q.marks} htmlString={q.name} />
+                          <MyComponent index={idx + 1} marks={q.marks} htmlString={q.name} />
                         </View>
-                    ))
+                      );
+                    })
                     }
                 </View>
             </Page>

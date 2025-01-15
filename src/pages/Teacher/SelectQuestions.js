@@ -125,10 +125,10 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         })
     }
     const handleDone = () => {
-        if (!selectedSection) {
-            // Alert the user or provide feedback
+        console.log("Section",selectedSection)
+        if (!selectedSection || selectedSection.length === 0) {
             alert("Please select a section before proceeding.");
-            return; // Stop execution if no section is selected
+            return; // Stop execution
         }
         const selected = allQuestions.filter((question) => question.selected);
         setSelectedQuestion(selected);
