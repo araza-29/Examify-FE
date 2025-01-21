@@ -6,7 +6,7 @@ import Chart from "../../components/chart/Chart";
 import Paper from "../Paper/Paper";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
 import { useEffect, useState } from "react";
-import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, TextField, FormControl, Button, CardActions} from '@mui/material';
+import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, TextField, FormControl, Button, CardActions, Dialog} from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { ModalSelectQuestions } from "./ModalSelectQuestions";
@@ -282,6 +282,7 @@ const Teacher = () => {
   const [selectedQuestion, setQuestions] = useState([]);
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
+  const [sectionFlag, setSectionFlag] = useState(false);
   let [token] = useState(localStorage.getItem("token"));
   const [exsistingInfo, setExsistingInfo] = useState({
     header: "FAST NUCES".toUpperCase(),
@@ -385,22 +386,95 @@ const Teacher = () => {
                 {letter.name}
                 </Typography>
                 <Box sx = {{display: 'flex', flexDirection: 'row', gap: 10 }}>
-                  <FormControl>
-                    <Select
-                    value={letter.type}
-                    onChange={(e) => {
-                      const updatedSections = [...sectionLetters];
-                      updatedSections[index] = { ...letter, type: e.target.value };
-                      setSectionLetters(updatedSections);
-                    }}
-                    displayEmpty
-                    sx={{ minWidth: 250 }}>
-                      <MenuItem value="Descriptive Questions">Descriptive Questions</MenuItem>
-                      <MenuItem value="Multiple Choice Questions">Multiple Choice Questions</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <FontAwesomeIcon style={{ fontSize: '2rem', marginTop: '10px' }} icon={faTimesCircle}/>
+                  <FontAwesomeIcon style={{ fontSize: '2rem', marginTop: '10px' }} icon={faTimesCircle} onClick={()=>setSectionFlag(true)}/>
                 </Box>
+                <Dialog
+                  open={sectionFlag}
+                  onClose={() => setSectionFlag(false)}
+                  maxWidth="l"
+                  sx={{
+                    '& .MuiDialog-paper': {
+                      borderRadius: '8px',
+                      padding: '16px',
+                      width: '1000px', // Set the desired fixed width
+                      maxWidth: '100%', // Ensures responsiveness
+                    }
+                  }}
+                >
+                  <Card
+                    sx={{
+                      padding: '20px',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                      backgroundColor: '#ffffff',
+                      width: '900px',
+                      height: '300px',
+                      maxWidth: '100%'
+                    }}
+                  >
+                  <Box sx = {{display: 'flex', flexDirection: 'row', gap: 5 }}>
+                    <Box sx = {{display: 'flex'}}>
+                    <Typography sx={{ 
+                      fontSize: '2rem',    // Customize font size
+                      fontWeight: 'bold',     // Make the text bold
+                      color: '#333',          // Text color for main content
+                      mb: 1                   // Add margin-bottom to separate content
+                    }}>
+                      {letter.name}
+                    </Typography>
+                    </Box>
+                    <Box>
+                        <FormControl
+                          sx={{
+                            width: '100%',
+                            marginTop: '8px',
+                            marginBottom: '8px',
+                          }}
+                        >
+                          <Select
+                            value={letter.type}
+                            onChange={(e) => {
+                              const updatedSections = [...sectionLetters];
+                              updatedSections[index] = { ...letter, type: e.target.value };
+                              setSectionLetters(updatedSections);
+                            }}
+                            displayEmpty
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: '6px',
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                  borderColor: '#90caf9',
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                  borderColor: '#2196f3',
+                                },
+                              },
+                              '& .MuiSelect-select': {
+                                padding: '12px 14px',
+                                minHeight: '20px',
+                              },
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                '&:hover': {
+                                  backgroundColor: '#f5f5f5',
+                                },
+                                '&.Mui-selected': {
+                                  backgroundColor: '#e3f2fd',
+                                  '&:hover': {
+                                    backgroundColor: '#bbdefb',
+                                  },
+                                },
+                              },
+                            }}
+                          >
+                            <MenuItem value="Descriptive Questions">Descriptive Questions</MenuItem>
+                            <MenuItem value="Multiple Choice Questions">Multiple Choice Questions</MenuItem>
+                          </Select>
+                        </FormControl>
+                    </Box>
+                  </Box>
+                  </Card>
+                </Dialog>
+
               </Box>
               <Box sx={{ width: '91.666667%', my: 2 }}>
                 <Typography 
