@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { ModalSelectQuestions } from "./ModalSelectQuestions";
 import { ModalSelectMCQs } from "./ModalSelectMCQs"
+import { QuestionMarkSharp } from "@mui/icons-material";
 
 function PaperHeaderEditInfo({OldData, setOldData, setEditOpen}){
   const [editedInfo, setEditedInfo] = useState({...OldData});
@@ -279,11 +280,17 @@ const Teacher = () => {
     textAlign: 'center',
   };
   const [AllowEdit, setAllowEdit] = useState(false);
-  const [selectedQuestion, setQuestions] = useState([]);
+  const [selectedQuestion, setQuestions] = useState({
+    questionArray: [],
+    section: ''
+  });
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
   const [sectionFlag, setSectionFlag] = useState(false);
   let [token] = useState(localStorage.getItem("token"));
+  const [sectionIndex, setSectionIndex] = useState(null);
+  const [type, setType] = useState("");
+  const [desc, setDesc] = useState("");
   const [exsistingInfo, setExsistingInfo] = useState({
     header: "FAST NUCES".toUpperCase(),
     centerName: [],
@@ -300,7 +307,8 @@ const Teacher = () => {
   useEffect(() => {
     const sections = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
       name: `Section ${String.fromCharCode(65 + index)}`,
-      type: ``
+      type: ``,
+      description: ``
     }));
     setSectionLetters(sections);
   }, [exsistingInfo.sections]);
@@ -325,12 +333,15 @@ const Teacher = () => {
   // };
   const marksTotal = () => {
     var sum = 0;
+    console.log("selectedQuestion", selectedQuestion)
+    console.log("selectedQuestion[0]", selectedQuestion[0])
     selectedQuestion.forEach((q) => {
       sum = sum + q.marks
     })
     console.log(sum)
     return sum;
   }
+  console.log(sectionLetters)
   const MCQMarks = () => {
     var sum = 0;
     selectedMCQ.forEach((q)=>{
@@ -385,12 +396,18 @@ const Teacher = () => {
                     }}>
                 {letter.name}
                 </Typography>
-                <Box sx = {{display: 'flex', flexDirection: 'row', gap: 10 }}>
-                  <FontAwesomeIcon style={{ fontSize: '2rem', marginTop: '10px' }} icon={faTimesCircle} onClick={()=>setSectionFlag(true)}/>
+                <Box sx = {{display: 'flex', flexDirection: 'row', gap: 30 }}>
+                  <FontAwesomeIcon style={{ fontSize: '2rem', marginTop: '10px' }} icon={faTimesCircle} onClick={()=>{setSectionFlag(true); setSectionIndex(index)}}/>
                 </Box>
                 <Dialog
-                  open={sectionFlag}
-                  onClose={() => setSectionFlag(false)}
+                  open={sectionFlag && sectionIndex === index}
+                  onEnter={()=>{
+                      setType(letter.type);
+                      setDesc(letter.description);
+                  }}
+                  onClose={(index) => {setSectionFlag(false)
+                    setSectionIndex(null)
+                  }}
                   maxWidth="l"
                   sx={{
                     '& .MuiDialog-paper': {
@@ -431,12 +448,8 @@ const Teacher = () => {
                           }}
                         >
                           <Select
-                            value={letter.type}
-                            onChange={(e) => {
-                              const updatedSections = [...sectionLetters];
-                              updatedSections[index] = { ...letter, type: e.target.value };
-                              setSectionLetters(updatedSections);
-                            }}
+                            value={type}
+                            onChange={(e) => {setType(e.target.value)}}
                             displayEmpty
                             sx={{
                               '& .MuiOutlinedInput-root': {
@@ -466,12 +479,41 @@ const Teacher = () => {
                               },
                             }}
                           >
+                            <MenuItem value="">Section Type</MenuItem>
                             <MenuItem value="Descriptive Questions">Descriptive Questions</MenuItem>
                             <MenuItem value="Multiple Choice Questions">Multiple Choice Questions</MenuItem>
                           </Select>
                         </FormControl>
                     </Box>
+                    <Box>
+                      <TextField value = {desc} onChange={(e)=>{setDesc(e.target.value)}}>Description</TextField>
+                    </Box>
                   </Box>
+                  <CardActions>
+                    <Grid sx={{ pt: 0, display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button sx={{
+                        background: 'linear-gradient(90deg, #2196F3 0%, #21CBF3 100%)',
+                        color: 'white',
+                        '&:hover': {
+                          background: 'linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)',
+                        }
+                      }}
+                      onClick={()=>{
+                        const updatedSections = [...sectionLetters];
+                        updatedSections[index] = { ...letter, description: desc, type: type};
+                        setSectionLetters(updatedSections)
+                        setSectionFlag(false)}}>
+                        Save Changes
+                      </Button>
+                      <Button sx={{
+                        ml: 2,  // Converts 'ml-2' (margin-left)
+                        background: 'linear-gradient(90deg, #2196F3 0%, #21CBF3 100%)',  // Simulates gradient variant
+                      }}
+                      onClick={()=>setSectionFlag(false)}>
+                        Cancel
+                      </Button>
+                    </Grid>
+                  </CardActions>
                   </Card>
                 </Dialog>
 
@@ -485,11 +527,11 @@ const Teacher = () => {
                     mb: 1                   // Add margin-bottom to separate content
                   }}
                 >
-                  Selected Question: {MCQMarks()}/{exsistingInfo.marks}
+                  Selected Question: {marksTotal()}/{exsistingInfo.marks}
                 </Typography>
                 
-                {selectedMCQ.length !== 0 ? (
-                  <DraggableQuestions SetQuestions={setMCQs} Questions={selectedMCQ} />
+                {selectedQuestion.length !== 0 ? (
+                  <DraggableQuestions SetQuestions={setQuestions} Questions={selectedQuestion} />
                 ) : (
                   <Typography 
                     sx={{
@@ -511,7 +553,7 @@ const Teacher = () => {
           {console.log(selectedMCQ)}
           {console.log(selectedQuestion)}
           <Box sx={{ flex: 1, overflow: 'auto', height: '100%' }}>
-            <Paper htmlQuestions = {selectedQuestion} htmlMCQ = {selectedMCQ} BasicInfo={exsistingInfo} />
+            <Paper htmlQuestions = {selectedQuestion} htmlMCQ = {selectedMCQ} BasicInfo={exsistingInfo} section = {sectionLetters}/>
           </Box>
         </Box>
       </Box>

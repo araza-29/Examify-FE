@@ -130,9 +130,11 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             alert("Please select a section before proceeding.");
             return; // Stop execution
         }
+        console.log("Section in selectQuestion",selectedSection);
         const selected = allQuestions.filter((question) => question.selected);
         setSelectedQuestion(selected);
-        setSelectedQuestion({...SelectQuestion, section: selectedSection});
+        setSelectedQuestion({...SelectQuestion, section: selectedSection.name});
+        console.log("Debbuging",SelectQuestion)
         handleOpen();
     }
     const handleCheckBoxChange =(id) => {

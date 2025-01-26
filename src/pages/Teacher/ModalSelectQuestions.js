@@ -6,7 +6,10 @@ import SelectQuestions from './SelectQuestions'
 
 export function ModalSelectQuestions({setQuestions, SelectedQuestions, id, sections}) {
     const [flag,setFlag] = useState(false);
-    const handleOpen=()=>setFlag((cur) => !cur);
+    const handleOpen=()=>{
+        console.log("Debug", SelectedQuestions);
+        setFlag((cur) => !cur)
+    };
     return (
         <>
        <Button onClick={handleOpen} sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: '#3f51b5','&:hover': {backgroundColor: '#303f9f'}}}>
