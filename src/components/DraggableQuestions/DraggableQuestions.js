@@ -7,15 +7,15 @@ import {Box, Typography} from '@mui/material'
 const DraggableQuestions = ({Questions, SetQuestions}) => {
     const handleDragEnd = (result) => {
         if(!result.destination) return;
-        const newList = Array.from(Questions);
+        const newList = Array.from(Questions.questionArray);
         const [reorderedItem] = newList.splice(result.source.index,1);
         newList.splice(result.destination.index, 0, reorderedItem);
-        SetQuestions(newList);
+        SetQuestions({...Questions, questionArray: newList});
     };
 
     const handleDelete = (id) => {
-        const updatedQuestions = Questions.filter(Question => Question.id !== id);
-        SetQuestions(updatedQuestions);
+        const updatedQuestions = Questions.questionArray.filter(Question => Question.id !== id);
+        SetQuestions({...Questions, questionArray: updatedQuestions});
     }
 
     return (
@@ -25,7 +25,7 @@ const DraggableQuestions = ({Questions, SetQuestions}) => {
                     <Box {...provided.droppableProps}
                     ref={provided.innerRef}
                     sx={{backgroundColor: 'white',padding: 4,borderRadius: '4px',boxShadow: 1}}>
-                        {Questions.map((question, index) => (
+                        {Questions.questionArray.map((question, index) => (
                             <Draggable key={question.id} draggableId={question.id.toString()} index={index}>
                                 {(provided) => (
                                     <Box

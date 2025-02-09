@@ -334,8 +334,8 @@ const Teacher = () => {
   const marksTotal = () => {
     var sum = 0;
     console.log("selectedQuestion", selectedQuestion)
-    console.log("selectedQuestion[0]", selectedQuestion[0])
-    selectedQuestion.forEach((q) => {
+    console.log("selectedQuestion[0]", selectedQuestion)
+    selectedQuestion.questionArray.forEach((q) => {
       sum = sum + q.marks
     })
     console.log(sum)
@@ -529,8 +529,13 @@ const Teacher = () => {
                 >
                   Selected Question: {marksTotal()}/{exsistingInfo.marks}
                 </Typography>
-                
-                {selectedQuestion.length !== 0 ? (
+                {
+                console.log("Letter",letter)
+                }
+                {
+                  console.log("Section", selectedQuestion.section)
+                }
+                {selectedQuestion.questionArray.length !== 0 && selectedQuestion.section === letter ? (
                   <DraggableQuestions SetQuestions={setQuestions} Questions={selectedQuestion} />
                 ) : (
                   <Typography 

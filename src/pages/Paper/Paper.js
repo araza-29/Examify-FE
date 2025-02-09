@@ -151,15 +151,12 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo}) => {
                     }
                     <Text style={styles.title}>Section B </Text>
                     {
-                    Object.keys(htmlQuestions)
-                    .filter((key) => key !== "section") // Exclude the "section" key
-                    .map((key, idx) => {
-                      const q = htmlQuestions[key];
-                      return (
-                        <View key={q.id}>
-                          <MyComponent index={idx + 1} marks={q.marks} htmlString={q.name} />
-                        </View>
-                      );
+                    htmlQuestions.questionArray.map((q,idx)=>{
+                        return (
+                            <View key={q.id}>
+                              <MyComponent index={idx + 1} marks={q.marks} htmlString={q.name} />
+                            </View>
+                          );
                     })
                     }
                 </View>

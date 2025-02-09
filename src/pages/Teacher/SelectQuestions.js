@@ -97,9 +97,9 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             console.log('Received data:', data); // Check the structure
             if (data.code === 200) {
                 var q = data.data;
-                if(SelectQuestion!=[]) {
+                if(SelectQuestion.questionArray!=[]) {
                     q = data.data.map((d) => {
-                        const isSelected = SelectQuestion.some((selected) => selected.id === d.id);
+                        const isSelected = SelectQuestion.questionArray.some((selected) => selected.id === d.id);
                         if(isSelected) {
                             return { ...d, selected: true };
                         }
@@ -132,8 +132,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         }
         console.log("Section in selectQuestion",selectedSection);
         const selected = allQuestions.filter((question) => question.selected);
-        setSelectedQuestion(selected);
-        setSelectedQuestion({...SelectQuestion, section: selectedSection.name});
+        setSelectedQuestion({...SelectQuestion, questionArray: selected, section: selectedSection.name});
         console.log("Debbuging",SelectQuestion)
         handleOpen();
     }
@@ -145,8 +144,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
            }
         }
         );
-        setQuestions(Questions)
-        setSelectedQuestion(allQuestions.filter((question) => question.selected))
+        setSelectedQuestion({...SelectQuestion, questionArray: allQuestions.filter((question) => question.selected)})
     }
     const showQuestions = () => {debugger;
         return<>
