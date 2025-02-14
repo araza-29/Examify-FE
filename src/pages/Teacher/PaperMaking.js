@@ -280,10 +280,7 @@ const Teacher = () => {
     textAlign: 'center',
   };
   const [AllowEdit, setAllowEdit] = useState(false);
-  const [selectedQuestion, setQuestions] = useState({
-    questionArray: [],
-    section: ''
-  });
+  const [selectedQuestion, setQuestions] = useState([]);
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
   const [sectionFlag, setSectionFlag] = useState(false);
@@ -331,12 +328,13 @@ const Teacher = () => {
   //   alert("Please Login first then you can access this page...");
   //   window.location.href = '/'; // Replace "/login" with the actual login page path
   // };
-  const marksTotal = () => {
+  const marksTotal = (section) => {
     var sum = 0;
     console.log("selectedQuestion", selectedQuestion)
     console.log("selectedQuestion[0]", selectedQuestion)
-    selectedQuestion.questionArray.forEach((q) => {
-      sum = sum + q.marks
+    selectedQuestion.forEach((q) => {
+      if(q.section == section)
+        sum = sum + q.marks
     })
     console.log(sum)
     return sum;
@@ -527,16 +525,13 @@ const Teacher = () => {
                     mb: 1                   // Add margin-bottom to separate content
                   }}
                 >
-                  Selected Question: {marksTotal()}/{exsistingInfo.marks}
+                  {/* Selected Question: {marksTotal(letter.name)}/{exsistingInfo.marks} */}
                 </Typography>
                 {
-                console.log("Letter",letter)
+                console.log("Letter",selectedQuestion)
                 }
-                {
-                  console.log("Section", selectedQuestion.section)
-                }
-                {selectedQuestion.questionArray.length !== 0 && selectedQuestion.section === letter ? (
-                  <DraggableQuestions SetQuestions={setQuestions} Questions={selectedQuestion} />
+                {selectedQuestion.length !== 0 ? (
+                  <DraggableQuestions section = {letter} SetQuestions={setQuestions} Questions={selectedQuestion} />
                 ) : (
                   <Typography 
                     sx={{

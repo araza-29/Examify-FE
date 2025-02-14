@@ -41,7 +41,9 @@ const styles = StyleSheet.create({
       fontFamily: 'Times-Bold'
     }
   });
-const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo}) => {
+const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo, section}) => {
+    const filteredQuestions = htmlQuestions.filter(q => String(q.section).trim() === String(section.name).trim());
+    console.log(`Filtered Questions for ${section.name}:`, filteredQuestions);
     function MyComponent({htmlString, index, marks}) {
         function replaceStrongWithBold(element) {
             if(typeof element ==='string') {
@@ -132,46 +134,36 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo}) => {
                     </View>
                     <Text style={styles.title}>{BasicInfo.subject}</Text>
                     <Text style={styles.paragraph}>Instructions: {BasicInfo.instruction}</Text>
-                    <Text style={styles.title}>Section A </Text>
                     {
-                    console.log("MCQ",htmlMCQ)
-                    }
-                    {  
-                    console.log("Question",htmlQuestions)
-                    }
-                    {
-                    htmlMCQ.map((q,idx)=>{
-                        const choices = [q.choice1,q.choice2,q.choice3,q.choice4];
-                        return(
-                            <View>
-                                <MCQ index={idx+1} choices={choices} htmlString={q.name} ></MCQ>
-                            </View>
-                        );
-                    })
-                    }
-                    <Text style={styles.title}>Section B </Text>
-                    {
-                    htmlQuestions.questionArray.map((q,idx)=>{
-                        return (
-                            <View key={q.id}>
-                              <MyComponent index={idx + 1} marks={q.marks} htmlString={q.name} />
-                            </View>
-                          );
-                    })
+                        section.map((letter,idx)=>(
+                        <View key={letter.name}>
+                        <Text style={styles.title}>{letter.name}</Text>
+                        {console.log("Paper check",section, htmlQuestions)}
+                        {
+                            htmlQuestions.filter(q => String(q.section).trim() === String(letter.name).trim())
+                            .map((q,Qidx)=>(
+                                <View key={Qidx}>
+                                {console.log(q)}
+                                <MyComponent index={Qidx + 1} marks={q.marks} htmlString={q.name} />
+                                </View>
+                            ))
+                        }
+                        </View>
+                        ))
                     }
                 </View>
             </Page>
         </Document>
     )
 }
-const PDFComponent = ({htmlContent, htmlQuestions,htmlMCQ, BasicInfo}) => {
+const PDFComponent = ({htmlContent, htmlQuestions,htmlMCQ, BasicInfo, section}) => {
     return (
         <PDFViewer showToolbar={false} style={{ 
             width: '100%', 
             height: '100vh', 
             border: 'none' 
         }}>
-            <PaperPDF BasicInfo={BasicInfo} htmlContent={htmlContent} htmlMCQ = {htmlMCQ} htmlQuestions={htmlQuestions}/>
+            <PaperPDF BasicInfo={BasicInfo} htmlContent={htmlContent} htmlMCQ = {htmlMCQ} htmlQuestions={htmlQuestions} section={section}/>
         </PDFViewer>
     )
 }
