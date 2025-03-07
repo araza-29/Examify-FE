@@ -12,6 +12,7 @@ import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faS
 import { ModalSelectQuestions } from "./ModalSelectQuestions";
 import { ModalSelectMCQs } from "./ModalSelectMCQs"
 import { QuestionMarkSharp } from "@mui/icons-material";
+import { LucideTwitter } from "lucide-react";
 
 function PaperHeaderEditInfo({OldData, setOldData, setEditOpen}){
   const [editedInfo, setEditedInfo] = useState({...OldData});
@@ -395,7 +396,7 @@ const Teacher = () => {
                 {letter.name}
                 </Typography>
                 <Box sx = {{display: 'flex', flexDirection: 'row', gap: 30 }}>
-                  <FontAwesomeIcon style={{ fontSize: '2rem', marginTop: '10px' }} icon={faTimesCircle} onClick={()=>{setSectionFlag(true); setSectionIndex(index)}}/>
+                  <FontAwesomeIcon style={{ fontSize: '2rem', marginTop: '10px' }} icon={faTimesCircle} onClick={()=>{setSectionFlag(true); setSectionIndex(index); setType(letter.type); setDesc(letter.description)}}/>
                 </Box>
                 <Dialog
                   open={sectionFlag && sectionIndex === index}
@@ -427,6 +428,7 @@ const Teacher = () => {
                     }}
                   >
                   <Box sx = {{display: 'flex', flexDirection: 'row', gap: 5 }}>
+                    {console.log("l",letter)}
                     <Box sx = {{display: 'flex'}}>
                     <Typography sx={{ 
                       fontSize: '2rem',    // Customize font size
@@ -500,6 +502,7 @@ const Teacher = () => {
                         const updatedSections = [...sectionLetters];
                         updatedSections[index] = { ...letter, description: desc, type: type};
                         setSectionLetters(updatedSections)
+                        setType("")
                         setSectionFlag(false)}}>
                         Save Changes
                       </Button>
@@ -525,12 +528,15 @@ const Teacher = () => {
                     mb: 1                   // Add margin-bottom to separate content
                   }}
                 >
-                  {/* Selected Question: {marksTotal(letter.name)}/{exsistingInfo.marks} */}
+                  Selected Question: {marksTotal(letter.name)}/{exsistingInfo.marks}
                 </Typography>
                 {
                 console.log("Letter",selectedQuestion)
                 }
-                {selectedQuestion.length !== 0 ? (
+                {
+                console.log("SectionLetter",letter.name)
+                }
+                {selectedQuestion.length !== 0? (
                   <DraggableQuestions section = {letter} SetQuestions={setQuestions} Questions={selectedQuestion} />
                 ) : (
                   <Typography 

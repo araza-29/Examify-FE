@@ -10,12 +10,13 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     const [QuestionFlag, setQuestionFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(1);
     const [Questions, setQuestions] = useState([]);
-    const [allQuestions, setAllQuestions] = useState([]);
+    // const [allQuestions, setAllQuestions] = useState([]);
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
     const [selectedChapters, setSelectedChapters] = useState([]);
     const [selectedTopic, setSelectedTopics] = useState([]);
     const [selectedSection, setSelectedSection] = useState([]);
+    const [QuestionSection, setQuestionSections] = useState(sections.filter(letter=>letter.type==="Descriptive Questions"));
     const theme = useTheme();
 
     useEffect(()=> {
@@ -26,14 +27,14 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     useEffect(()=> {
         fetchTopics();
         if(selectedChapters!=[]) {
-            setQuestions(allQuestions.filter((item)=> {
+            setQuestions(Questions.filter((item)=> {
                 return(item.chapter_id === selectedChapters.id) 
             }))
         }
     },[selectedChapters])
     useEffect(()=> {
         if(selectedTopic!=[]) {
-            setQuestions(allQuestions.filter((item)=> {
+            setQuestions(Questions.filter((item)=> {
                 return(item.topic_id === selectedTopic.id) 
             }))
         }
@@ -111,8 +112,10 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                 else {
                     q = data.data;
                 }
-                setAllQuestions(q);
                 setQuestions(q);
+                setQuestions((prevAllQuestions) =>
+                    prevAllQuestions.filter((q) => !q.selected)
+                );
             } else {
                 console.error('Unexpected response code:', data.code);
             }
@@ -125,29 +128,46 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         })
     }
     const handleDone = () => {
-        console.log("Section",selectedSection)
+        console.log("Section:", selectedSection);
+    
         if (!selectedSection || selectedSection.length === 0) {
             alert("Please select a section before proceeding.");
-            return; // Stop execution
+            return;
         }
-        console.log("Section in selectQuestion",selectedSection);
-        const selected = allQuestions.filter((question) => question.selected);
-        SelectQuestion.map((q,index)=>{
-            setSelectedQuestion(SelectQuestions => SelectQuestions.map((q)=>({...q,section: selectedSection.name})));
-        })
-        console.log("Debbuging",SelectQuestion)
-        handleOpen();
-    }
-    const handleCheckBoxChange =(id) => {
-        allQuestions.map((question)=>{
-           if( question.id === id){ 
-            question.selected = !question.selected;
-            localStorage.setItem(id+"",question.selected);
-           }
-        }
+    
+        console.log("Section in selectQuestion:", selectedSection);
+    
+        // Get the selected questions
+        const selected = Questions.filter((question) => question.selected);
+    
+        // Store section information and update selected questions
+        setSelectedQuestion((prevSelectedQuestions) => [
+            ...prevSelectedQuestions,
+            ...selected.map((q) => ({ ...q, section: selectedSection.name }))
+        ]);
+    
+        // Remove selected questions from the available list
+        setQuestions((prevQuestions) =>
+            prevQuestions.filter((q) => !q.selected)
         );
-        setSelectedQuestion(allQuestions.filter((question) => question.selected))
+    
+        console.log("Updated Selected Questions:", selected);
+        handleOpen();
+    };
+    
+    const handleCheckBoxChange = (id) => {
+        setQuestions((prevQuestions) =>
+            prevQuestions.map((question) =>
+                question.id === id ? { ...question, selected: !question.selected } : question
+            )
+        );
+    };
+    
+    
+    const handleClose = () => {
+        handleOpen()
     }
+    
     const showQuestions = () => {debugger;
         return<>
         {Questions.map((question)=>{
@@ -188,9 +208,8 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                 <Box>
                     <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
                 </Box>
-                {console.log(selectedSection)}
                 <Box>
-                    <DropDown name = {"Sections"} data = {sections} selectedData={selectedSection} setSelectedData={setSelectedSection} />
+                    <DropDown name = {"Sections"} data = {QuestionSection} selectedData={selectedSection} setSelectedData={setSelectedSection} />
                 </Box>
             </Box>
             <Box sx={{ height: '100%', width: '100%', fontSize: '0.875rem', maxHeight: '70vh', overflow: 'scroll' }}>
@@ -212,10 +231,17 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                 )}
             </Box>
             <Divider style={{ color: "black" }} sx={{ my: 2 }}/>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}> 
-                <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
-                    Done
-                </Button>
+            <Box sx={{ display: 'flex',flexDirection: "row", justifyContent: 'flex-end', mt: 3, gap: 2}}> 
+                <Box sx={{ display: 'flex',flexDirection: "row"}}> 
+                    <Button size="large" onClick={handleClose} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                        Cancel
+                    </Button>
+                </Box>
+                <Box sx={{ display: 'flex',flexDirection: "row"}}>
+                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                        Done
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );

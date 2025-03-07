@@ -136,19 +136,20 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo, section}) => 
                     <Text style={styles.paragraph}>Instructions: {BasicInfo.instruction}</Text>
                     {
                         section.map((letter,idx)=>(
-                        <View key={letter.name}>
-                        <Text style={styles.title}>{letter.name}</Text>
-                        {console.log("Paper check",section, htmlQuestions)}
-                        {
-                            htmlQuestions.filter(q => String(q.section).trim() === String(letter.name).trim())
-                            .map((q,Qidx)=>(
-                                <View key={Qidx}>
-                                {console.log(q)}
-                                <MyComponent index={Qidx + 1} marks={q.marks} htmlString={q.name} />
-                                </View>
-                            ))
-                        }
-                        </View>
+                            <View key={letter.name}>
+                                <Text style={styles.title}>{letter.name}</Text>
+                                <Text style={styles.subtitle}>{letter.description}</Text>
+                                {console.log("Paper check",section, htmlQuestions)}
+                                {
+                                    htmlQuestions.filter(q => q.section === letter.name)
+                                    .map((q,Qidx)=>(
+                                        <View key={Qidx}>
+                                            {console.log(q)}
+                                            <MyComponent index={Qidx + 1} marks={q.marks} htmlString={q.name} />
+                                        </View>
+                                    ))
+                                }
+                            </View>
                         ))
                     }
                 </View>
@@ -163,6 +164,7 @@ const PDFComponent = ({htmlContent, htmlQuestions,htmlMCQ, BasicInfo, section}) 
             height: '100vh', 
             border: 'none' 
         }}>
+            {console.log("QuestionsPreview", htmlQuestions)}
             <PaperPDF BasicInfo={BasicInfo} htmlContent={htmlContent} htmlMCQ = {htmlMCQ} htmlQuestions={htmlQuestions} section={section}/>
         </PDFViewer>
     )
