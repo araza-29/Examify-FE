@@ -6,15 +6,16 @@ import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 
-export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id}) {
+export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections}) {
     const [MCQsFlag, setMCQsFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(1);
     const [MCQs, setMCQs] = useState([]);
-    const [allMCQs, setAllMCQs] = useState([]);
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
     const [selectedChapters, setSelectedChapters] = useState([]);
     const [selectedTopic, setSelectedTopics] = useState([]);
+    const [selectedSection, setSelectedSection] = useState([]);
+    const [MCQsSection, setMCQsSections] = useState(sections.filter(letter=>letter.type==="Multiple Choice Questions"));
     const theme = useTheme();
 
     const fetchMCQs = () => {
@@ -45,8 +46,10 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
                 else {
                     q = data.data;
                 }
-                setAllMCQs(q);
                 setMCQs(q);
+                setMCQs((prevAllMCQs) =>
+                    prevAllMCQs.filter((q) => !q.selected)
+                );
             } else {
                 console.error('Unexpected response code:', data.code);
             }
@@ -58,68 +61,23 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             console.error("Error fetching MCQs:", error);
         })
     }
-    const fetchSections = () => {
-        console.log(subjectId);
-        fetch("http://localhost:3000/Examination/reviewMCQBySubjectID", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-              },
-            body: JSON.stringify({subject_id: 1})
-        })
-        .then(response => response.json())
-        .then((data) => {
-            console.log('Received data:', data); // Check the structure
-            if (data.code === 200) {
-                var q = data.data;
-                if(SelectMCQs!=[]) {
-                    q = data.data.map((d) => {
-                        const isSelected = SelectMCQs.some((selected) => selected.id === d.id);
-                        if(isSelected) {
-                            return { ...d, selected: true };
-                        }
-                        else {
-                            return { ...d, selected: false };
-                        }
-                    });
-                }
-                else {
-                    q = data.data;
-                }
-                setAllMCQs(q);
-                setMCQs(q);
-            } else {
-                console.error('Unexpected response code:', data.code);
-            }
-        })
-        .catch((error) => {
-            console.error('Error in response:', error);
-        })
-        .catch((error) => {
-            console.error("Error fetching MCQs:", error);
-        })
-    }
+
     useEffect(()=> {
         fetchChapters();
         fetchMCQs();
-        if(selectedChapters!=[]) {
-            setMCQs(allMCQs.filter((item)=> {
-                return(item.chapter_id === selectedChapters.id) 
-            }))
-        }
     },[subjectId])
 
     useEffect(()=> {
         fetchTopics();
         if(selectedChapters!=[]) {
-            setMCQs(allMCQs.filter((item)=> {
+            setMCQs(MCQs.filter((item)=> {
                 return(item.chapter_id === selectedChapters.id) 
             }))
         }
     },[selectedChapters])
     useEffect(()=> {
         if(selectedTopic!=[]) {
-            setMCQs(allMCQs.filter((item)=> {
+            setMCQs(MCQs.filter((item)=> {
                 return(item.topic_id === selectedTopic.id) 
             }))
         }
@@ -170,20 +128,26 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
         }
     }
     const handleDone = () => {
-        const selected = allMCQs.filter((MCQs) => MCQs.selected);
-        setSelectedMCQs(selected);
+        if (!selectedSection || selectedSection.length === 0) {
+            alert("Please select a section before proceeding.");
+            return;
+        }
+        const selected = MCQs.filter((MCQs) => MCQs.selected);
+        setSelectedMCQs((prevSelectedMCQs) => [
+            ...prevSelectedMCQs,
+            ...selected.map((q) => ({ ...q, section: selectedSection.name }))
+        ]);
+        setMCQs((prevMCQs) =>
+            prevMCQs.filter((q) => !q.selected)
+        );
         handleOpen();
     }
     const handleCheckBoxChange =(id) => {
-        allMCQs.map((MCQs)=>{
-           if( MCQs.id === id){ 
-            MCQs.selected = !MCQs.selected;
-            localStorage.setItem(id+"",MCQs.selected);
-           }
-        }
+        setMCQs((prevMCQs) =>
+            prevMCQs.map((mcqs) =>
+                mcqs.id === id ? { ...mcqs, selected: !mcqs.selected } : mcqs
+            )
         );
-        setMCQs(MCQs)
-        setSelectedMCQs(allMCQs.filter((MCQs) => MCQs.selected))
     }
     const showMCQs = () => {debugger;
         return<>
@@ -225,6 +189,9 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
                 <Box>
                     <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
                 </Box>
+                <Box>
+                    <DropDown name = {"Sections"} data = {MCQsSection} selectedData={selectedSection} setSelectedData={setSelectedSection} />
+                </Box>
             </Box>
             <Box sx={{ height: '100%', width: '100%', fontSize: '0.875rem', maxHeight: '70vh', overflow: 'scroll' }}>
                 {MCQsFlag ? (<Box sx={{ width: '80vw', mt: 9, fontSize: '3xl' }}>No MCQs found</Box>):(
@@ -245,10 +212,17 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
                 )}
             </Box>
             <Divider style={{ color: "black" }} sx={{ my: 2 }}/>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}> 
-                <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
-                    Done
-                </Button>
+            <Box sx={{ display: 'flex',flexDirection: "row", justifyContent: 'flex-end', mt: 3, gap: 2}}> 
+                <Box sx={{ display: 'flex',flexDirection: "row"}}> 
+                    <Button size="large" onClick={handleOpen} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                        Cancel
+                    </Button>
+                </Box>
+                <Box sx={{ display: 'flex',flexDirection: "row"}}>
+                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                        Done
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );

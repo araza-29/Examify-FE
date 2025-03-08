@@ -289,6 +289,7 @@ const Teacher = () => {
   const [sectionIndex, setSectionIndex] = useState(null);
   const [type, setType] = useState("");
   const [desc, setDesc] = useState("");
+  const [marks, setMarks] = useState(0);
   const [exsistingInfo, setExsistingInfo] = useState({
     header: "FAST NUCES".toUpperCase(),
     centerName: [],
@@ -306,7 +307,8 @@ const Teacher = () => {
     const sections = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
       name: `Section ${String.fromCharCode(65 + index)}`,
       type: ``,
-      description: ``
+      description: ``,
+      marks: 0
     }));
     setSectionLetters(sections);
   }, [exsistingInfo.sections]);
@@ -329,14 +331,22 @@ const Teacher = () => {
   //   alert("Please Login first then you can access this page...");
   //   window.location.href = '/'; // Replace "/login" with the actual login page path
   // };
-  const marksTotal = (section) => {
+  const marksTotal = (section, type) => {
     var sum = 0;
     console.log("selectedQuestion", selectedQuestion)
     console.log("selectedQuestion[0]", selectedQuestion)
-    selectedQuestion.forEach((q) => {
-      if(q.section == section)
-        sum = sum + q.marks
-    })
+    if(type==="Multiple Choice Questions"){
+      selectedMCQ.forEach((q) => {
+        if(q.section == section)
+          sum = sum + q.marks
+      })
+    }
+    else {
+      selectedQuestion.forEach((q) => {
+        if(q.section == section)
+          sum = sum + q.marks
+      })
+    }
     console.log(sum)
     return sum;
   }
@@ -379,7 +389,7 @@ const Teacher = () => {
                 />
               )}
               <Box sx={{ width: '91.666667%', my: 2 }}>
-                <ModalSelectMCQs setMCQs={setMCQs} SelectedMCQs={selectedMCQ}></ModalSelectMCQs>
+                <ModalSelectMCQs setMCQs={setMCQs} SelectedMCQs={selectedMCQ} sections={sectionLetters}></ModalSelectMCQs>
               </Box>
               <Box sx={{ width: '91.666667%', my: 2 }}>
                 <ModalSelectQuestions setQuestions={setQuestions} SelectedQuestions={selectedQuestion} sections={sectionLetters}></ModalSelectQuestions>
@@ -403,6 +413,7 @@ const Teacher = () => {
                   onEnter={()=>{
                       setType(letter.type);
                       setDesc(letter.description);
+                      setMarks(letter.marks)
                   }}
                   onClose={(index) => {setSectionFlag(false)
                     setSectionIndex(null)
@@ -488,6 +499,9 @@ const Teacher = () => {
                     <Box>
                       <TextField value = {desc} onChange={(e)=>{setDesc(e.target.value)}}>Description</TextField>
                     </Box>
+                    <Box>
+                      <TextField type="number" value = {marks} onChange={(e)=>{setMarks(e.target.value)}}>Marks</TextField>
+                    </Box>
                   </Box>
                   <CardActions>
                     <Grid sx={{ pt: 0, display: 'flex', justifyContent: 'flex-end' }}>
@@ -500,7 +514,7 @@ const Teacher = () => {
                       }}
                       onClick={()=>{
                         const updatedSections = [...sectionLetters];
-                        updatedSections[index] = { ...letter, description: desc, type: type};
+                        updatedSections[index] = { ...letter, description: desc, type: type, marks: marks};
                         setSectionLetters(updatedSections)
                         setType("")
                         setSectionFlag(false)}}>
@@ -528,7 +542,7 @@ const Teacher = () => {
                     mb: 1                   // Add margin-bottom to separate content
                   }}
                 >
-                  Selected Question: {marksTotal(letter.name)}/{exsistingInfo.marks}
+                  Selected Question: {marksTotal(letter.name, letter.type)}/{letter.marks}
                 </Typography>
                 {
                 console.log("Letter",selectedQuestion)
@@ -536,8 +550,21 @@ const Teacher = () => {
                 {
                 console.log("SectionLetter",letter.name)
                 }
-                {selectedQuestion.length !== 0? (
+                {selectedQuestion.length !== 0 && letter.type === "Descriptive Questions"? (
                   <DraggableQuestions section = {letter} SetQuestions={setQuestions} Questions={selectedQuestion} />
+                ) : (
+                  <Typography 
+                    sx={{
+                      fontSize: '1rem',       // Slightly smaller font for no questions
+                      color: '#999',          // Grey color for subtle text
+                      fontStyle: 'italic'     // Italic style for emphasis
+                    }}
+                  >
+                    No Questions Selected yet
+                  </Typography>
+                )}
+                {selectedMCQ.length !== 0 && letter.type === "Multiple Choice Questions"? (
+                  <DraggableQuestions section = {letter} SetQuestions={setMCQs} Questions={selectedMCQ} />
                 ) : (
                   <Typography 
                     sx={{
