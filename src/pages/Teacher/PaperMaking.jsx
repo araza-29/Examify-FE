@@ -331,6 +331,23 @@ const Teacher = () => {
   //   alert("Please Login first then you can access this page...");
   //   window.location.href = '/'; // Replace "/login" with the actual login page path
   // };
+  const handleSubmitButton = () =>{
+
+    const user = 1;
+    fetch("http://localhost:3000/Examination/createPaper", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({subject_id: 1, user_id: user, month: 3})
+        })
+        .then(response => response.json())
+        .then((data) => {
+            if(data.code === 200) {
+                console.log("Paper Created successfully!");
+            }
+        })
+  }
   const marksTotal = (section, type) => {
     var sum = 0;
     console.log("selectedQuestion", selectedQuestion)
@@ -365,14 +382,20 @@ const Teacher = () => {
           {/* Sidebar or Left Section */}
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', overflowX: 'hidden'}}>
             {/* Header Section */}
-            <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center' }}>
-                <FontAwesomeIcon icon={faArrowLeft} />
+            <Box sx={{ display: 'flex', alignItems: 'center', p: 2, justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center' }}>
+                  <FontAwesomeIcon icon={faArrowLeft} />
+                </Button>
+                <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>
+                  Paper Editor
+                </Typography>
+              </Box>
+              <Button variant="contained" onClick={handleSubmitButton} color="primary" sx={{ px: 3, py: 1.5, fontSize: '1rem' }}>
+                Submit Paper
               </Button>
-              <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>
-                Paper Editor
-              </Typography>
             </Box>
+
             {/* Content Section */}
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>
               {AllowEdit === false ? (
