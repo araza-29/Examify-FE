@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 
 export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections}) {
+    console.log("SelectQuestions check in section",sections);
     const [QuestionFlag, setQuestionFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(1);
     const [Questions, setQuestions] = useState([]);

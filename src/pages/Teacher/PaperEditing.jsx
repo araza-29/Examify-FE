@@ -5,6 +5,7 @@ import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import Paper from "../Paper/Paper";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
+import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -404,6 +405,9 @@ const Teacher = () => {
     date: new Date().toISOString().split("T")[0],
     instruction: "No Instruction just attempt the Paper",
   });
+  const location = useLocation();
+  const paper_id = location.state?.paper_id || [];
+  
   useEffect(() => {
     const sections = Array.from(
       { length: exsistingInfo.sections },
