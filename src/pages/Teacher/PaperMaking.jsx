@@ -399,7 +399,7 @@ const Teacher = () => {
     ExaminationYear: "2023",
     departmentNames: ["Karachi", "Lahore"],
     sections: 3,
-    duration: 4,
+    duration: "3 hours",
     marks: 80,
     date: new Date().toISOString().split("T")[0],
     instruction: "No Instruction just attempt the Paper",
@@ -452,7 +452,7 @@ const Teacher = () => {
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ subject_id: 1, user_id: user, month: 3, completed: completed }),
+        body: JSON.stringify({ subject_id: 1, user_id: user, month: 3, completed: completed, instruction: exsistingInfo.instruction, date: exsistingInfo.date, year: exsistingInfo.ExaminationYear, marks: exsistingInfo.marks, duration: exsistingInfo.duration }),
     });
 
     const data = await response.json();
@@ -518,6 +518,29 @@ const Teacher = () => {
           }
         });
     });
+    selectedMCQ.map((q) => {
+      const foundSection = updatedSections.find(
+        (sec) => sec.name === q.section
+      );
+      fetch("http://localhost:3000/Examination/createQuestionMapping", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          paper_id: paper,
+          mcq_id: q.id,
+          section_id: foundSection.id,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.code === 200) {
+            console.log("Question Mapping Created successfully! ", q.id);
+          }
+        });
+    });
+    
     await Promise.all(questionPromises);
     console.log("All Question Mappings Created Successfully!");
   };

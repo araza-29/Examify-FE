@@ -169,7 +169,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         handleOpen()
     }
     
-    const showQuestions = () => {debugger;
+    const showQuestions = () => {
         return<>
         {Questions.map((question)=>{
         return(<TableRow sx={{ borderBottom: '1px solid', borderColor: 'gray.200' }}>

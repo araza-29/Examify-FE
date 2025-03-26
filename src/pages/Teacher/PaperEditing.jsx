@@ -350,6 +350,8 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
   );
 }
 const Teacher = () => {
+  const location = useLocation();
+  const [paper, setPaper] = useState(location.state?.paper || []);
   const homeStyle = {
     display: "flex",
     height: "100vh",
@@ -400,27 +402,118 @@ const Teacher = () => {
     ExaminationYear: "2023",
     departmentNames: ["Karachi", "Lahore"],
     sections: 3,
-    duration: 4,
+    duration: "4 hours",
     marks: 80,
     date: new Date().toISOString().split("T")[0],
     instruction: "No Instruction just attempt the Paper",
   });
-  const location = useLocation();
-  const paper_id = location.state?.paper_id || [];
-  
-  useEffect(() => {
-    const sections = Array.from(
-      { length: exsistingInfo.sections },
-      (_, index) => ({
-        id: 0,
-        name: `Section ${String.fromCharCode(65 + index)}`,
-        type: ``,
-        description: ``,
-        marks: 0,
+
+  useEffect(()=>{
+    console.log("PaperCheck", paper);
+    console.log("PaperIDCheck", paper.id);
+    setExsistingInfo({
+      ...exsistingInfo,
+      subject: paper.subject_name,
+      class: paper.class_name,
+      ExaminationYear: paper.year,
+      duration: paper.duration,
+      marks: paper.marks,
+    })
+    fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        paper_id: paper.id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.code === 200) {
+          console.log("Data.data.section", data);
+          setSectionLetters(data.data);
+          setExsistingInfo((prevInfo) => ({
+            ...prevInfo,
+            sections: data.data.length,
+          }));
+        }
       })
+    fetch("http://localhost:3000/Examination/reviewQuestionsByPaperID", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        paper_id: paper.id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.code === 200) {
+          console.log("Data Questions:", data);
+          const updatedQuestions = data.data.map((question) => {
+            // Find the matching section object
+            const matchedSection = sectionLetters.find(
+              (section) => section.id === question.section_id
+            );
+
+            // Add the `section` field with `name` if match found, otherwise keep it undefined
+            return {
+              ...question,
+              section: matchedSection ? matchedSection.name : null,
+            };
+          });
+
+          setQuestions(updatedQuestions);
+
+          console.log("Updated Questions:", updatedQuestions);
+        }
+      })
+      .catch((error) => console.error("Error fetching questions:", error));
+      fetch("http://localhost:3000/Examination/reviewMCQsByPaperID", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paper_id: paper.id,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.code === 200) {
+            console.log("Data Questions:", data);
+            const updatedQuestions = data.data.map((question) => {
+              // Find the matching section object
+              const matchedSection = sectionLetters.find(
+                (section) => section.id === question.section_id
+              );
+  
+              // Add the `section` field with `name` if match found, otherwise keep it undefined
+              return {
+                ...question,
+                section: matchedSection ? matchedSection.name : null,
+              };
+            });
+  
+            setMCQs(updatedQuestions);
+  
+            console.log("Updated Questions:", updatedQuestions);
+          }
+        })
+        .catch((error) => console.error("Error fetching questions:", error));
+  }, [paper]);
+
+  useEffect(() => {
+    console.log("Updated Sections Length:", exsistingInfo.sections);
+    console.log("Previous Section Letters:", sectionLetters);
+    
+    setSectionLetters(() =>
+      Array.from({ length: exsistingInfo.sections }, (_, index) => ({
+        id: sectionLetters[index]?.id || 0,
+        name: `Section ${String.fromCharCode(65 + index)}`,
+        type: sectionLetters[index]?.type || ``,
+        description: sectionLetters[index]?.description || ``,
+        marks: sectionLetters[index]?.marks || 0,
+      }))
     );
-    setSectionLetters(sections);
   }, [exsistingInfo.sections]);
+  
   // const fetchSections = () => {
   //   fetch("http://localhost:3000/Examination/updateQuestion", {
   //       method: "POST",
@@ -440,80 +533,117 @@ const Teacher = () => {
   //   alert("Please Login first then you can access this page...");
   //   window.location.href = '/'; // Replace "/login" with the actual login page path
   // };
-  const handleSubmitButton = async(action) => {
+  const handleSubmitButton = async (action) => {
     console.log("Section", sectionLetters);
     var completed;
-    if (action==="") {
+    if (action === "") {
       completed = 0;
-    }
-    else if ("Submit"){
+    } else if ("Submit") {
       completed = 1;
     }
     var paper = 0;
     const user = 1;
-    const response = await fetch("http://localhost:3000/Examination/createPaper", {
+    const response = await fetch(
+      "http://localhost:3000/Examination/createPaper",
+      {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ subject_id: 1, user_id: user, month: 3, completed: completed }),
-    });
+        body: JSON.stringify({
+          subject_id: 1,
+          user_id: user,
+          month: 3,
+          completed: completed,
+        }),
+      }
+    );
 
     const data = await response.json();
 
     if (data.code === 200) {
-        console.log("Paper Created successfully!");
-        paper = data.data.id;
+      console.log("Paper Created successfully!");
+      paper = data.data.id;
     }
 
-    console.log("PaperId", paper); 
-     // 2️⃣ Create Sections and Wait for All Responses
-  const sectionPromises = sectionLetters.map((sec) =>
-    fetch("http://localhost:3000/Examination/createSection", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        section: sec.name,
-        paper_id: paper,
-        type: sec.type,
-        description: sec.description,
-        marks: sec.marks,
-      }),
-    })
-      .then((response) => response.json())
-      .catch((error) => {
-        console.error(`❌ Error creating section ${sec.name}:`, error);
-        return null; // Prevent breaking the loop if a request fails
+    console.log("PaperId", paper);
+    // 2️⃣ Create Sections and Wait for All Responses
+    const sectionPromises = sectionLetters.map((sec) =>
+      fetch("http://localhost:3000/Examination/createSection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          section: sec.name,
+          paper_id: paper,
+          type: sec.type,
+          description: sec.description,
+          marks: sec.marks,
+        }),
       })
-  );
+        .then((response) => response.json())
+        .catch((error) => {
+          console.error(`❌ Error creating section ${sec.name}:`, error);
+          return null; // Prevent breaking the loop if a request fails
+        })
+    );
 
-  // 3️⃣ Wait for all section API calls to complete
-  const sectionResponses = await Promise.all(sectionPromises);
+    // 3️⃣ Wait for all section API calls to complete
+    const sectionResponses = await Promise.all(sectionPromises);
 
-  // 4️⃣ Update `sectionLetters` with IDs from API responses
-  const updatedSections = sectionLetters.map((sec, index) => {
-    const response = sectionResponses[index];
+    // 4️⃣ Update `sectionLetters` with IDs from API responses
+    const updatedSections = sectionLetters.map((sec, index) => {
+      const response = sectionResponses[index];
 
-    if (!response || !response.data || !response.data.id) {
-      console.error(`❌ Section creation failed for ${sec.name}, skipping...`);
-      return sec; // Keep the original section if it failed
-    }
+      if (!response || !response.data || !response.data.id) {
+        console.error(
+          `❌ Section creation failed for ${sec.name}, skipping...`
+        );
+        return sec; // Keep the original section if it failed
+      }
 
-    return { ...sec, id: response.data.id };
-  });
+      return { ...sec, id: response.data.id };
+    });
 
-  setSectionLetters(updatedSections);
-  console.log("Updated Sections", updatedSections);
+    setSectionLetters(updatedSections);
+    console.log("Updated Sections", updatedSections);
 
     console.log("Selected Question", selectedQuestion);
     selectedQuestion.map((q) => {
-      const foundSection = updatedSections.find((sec) => sec.name === q.section);
+      const foundSection = updatedSections.find(
+        (sec) => sec.name === q.section
+      );
       fetch("http://localhost:3000/Examination/createQuestionMapping", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ paper_id: paper, question_id: q.id, section_id: foundSection.id }),
+        body: JSON.stringify({
+          paper_id: paper,
+          question_id: q.id,
+          section_id: foundSection.id,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.code === 200) {
+            console.log("Question Mapping Created successfully! ", q.id);
+          }
+        });
+    });
+    selectedMCQ.map((q) => {
+      const foundSection = updatedSections.find(
+        (sec) => sec.name === q.section
+      );
+      fetch("http://localhost:3000/Examination/createQuestionMapping", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          paper_id: paper,
+          mcq_id: q.id,
+          section_id: foundSection.id,
+        }),
       })
         .then((response) => response.json())
         .then((data) => {
@@ -602,7 +732,7 @@ const Teacher = () => {
               </Box>
               <Button
                 variant="contained"
-                onClick={()=>handleSubmitButton("")}
+                onClick={() => handleSubmitButton("")}
                 color="primary"
                 sx={{ px: 3, py: 1.5, fontSize: "1rem" }}
               >
@@ -610,7 +740,7 @@ const Teacher = () => {
               </Button>
               <Button
                 variant="contained"
-                onClick={()=>handleSubmitButton("Submit")}
+                onClick={() => handleSubmitButton("Submit")}
                 color="primary"
                 sx={{ px: 3, py: 1.5, fontSize: "1rem" }}
               >
@@ -654,6 +784,7 @@ const Teacher = () => {
                   sections={sectionLetters}
                 ></ModalSelectQuestions>
               </Box>
+              {console.log("SectionLetters check", sectionLetters)}
               {sectionLetters.map((letter, index) => (
                 <>
                   <Box sx={{ display: "flex", flexDirection: "row", gap: 20 }}>

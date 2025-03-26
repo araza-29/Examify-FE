@@ -1,5 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { 
   Box, 
   Grid, 
@@ -93,10 +94,15 @@ const InfoCard = ({ paper, date, subject, className }) => {
 };
 
 const PaperInfo = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const data = location.state?.paper || [];
   console.log("Data received by paper info", data);
-  
+  const handleClick =(index) =>{
+    console.log("PaperCheck in paperinfo", data)
+    console.log("Paper selected check: ", data[index])
+    navigate("/PaperEditing", { state: { paper: data[index] } });
+  }
   return (
     <Box
       sx={{
@@ -158,7 +164,7 @@ const PaperInfo = () => {
                 }}
               >
                 {data.map((item, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Grid item xs={12} sm={6} md={4} key={index} onClick={() => handleClick(index)} sx={{ cursor: "pointer" }}>
                     <InfoCard
                       paper={item.paper}
                       date={item.date}
