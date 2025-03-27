@@ -4,6 +4,7 @@ import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, TextField, FormControl, Button, CardActions} from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +12,7 @@ import MCQinfo from "./MCQInfo";
 import DropDown from "../../components/DropDown/DropDown"
 
 const Home = () => {
+  const navigate = useNavigate();
   const homeStyle = {
     display: 'flex',
     height: '100vh',
@@ -82,6 +84,9 @@ const Home = () => {
     console.log("Selected MCQs", MCQs);
     console.log("Selected topics", selectedTopic);
   },[selectedTopic])
+  const handleCreate = () => {
+    navigate('/CreateMCQ')
+  }
   const fetchChapters = () => {
     fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
         method: "POST",
@@ -168,6 +173,7 @@ const Home = () => {
               <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>
                 MCQ Bank
               </Typography>
+              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold' }}>Create Question</Button>
             </Box>
             {/* Content Section */}
             <Box

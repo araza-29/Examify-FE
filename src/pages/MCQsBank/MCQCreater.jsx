@@ -1,5 +1,5 @@
 import {Card,CardActions,CardContent,TextField, Typography,Button,Box} from '@mui/material'
-import DropDown from './DropDown';
+import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
 import { Subject } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ function MCQCreater() {
         const [subject,setSubject] = useState([]);
         const[selectedSubject,setSelectedSubject] = useState([]);
         const [Chapters, setChapters] = useState([]);
+        const [textboxes, setTextBoxes] = useState([]);
         const [Topic, setTopics] = useState([]);
         const [selectedChapters, setSelectedChapters] = useState([]);
         const [selectedTopic, setSelectedTopics] = useState([]);
@@ -141,7 +142,7 @@ function MCQCreater() {
                         onChange = {(event)=>setMCQ({...MCQ, marks: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
-                    {textboxes.map(box => (
+                    {choices.map(box => (
                         <TextField
                         variant="outlined"
                         label="Choices"

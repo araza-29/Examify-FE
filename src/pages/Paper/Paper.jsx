@@ -149,6 +149,15 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo, section}) => 
                                         </View>
                                     ))
                                 }
+                                {
+                                    htmlMCQ.filter(q => q.section === letter.name)
+                                    .map((q,Qidx)=>(
+                                        <View key={Qidx}>
+                                            {console.log(q)}
+                                            <MCQ index={Qidx + 1} marks={q.marks} htmlString={q.name} choices = {[q.choice1,q.choice2,q.choice3,q.choice4]}/>
+                                        </View>
+                                    ))
+                                }
                             </View>
                         ))
                     }
@@ -158,6 +167,7 @@ const PaperPDF = ({htmlContent, htmlQuestions, htmlMCQ ,BasicInfo, section}) => 
     )
 }
 const PDFComponent = ({htmlContent, htmlQuestions,htmlMCQ, BasicInfo, section}) => {
+    console.log("MCQS",htmlMCQ)
     return (
         <PDFViewer showToolbar={false} style={{ 
             width: '100%', 

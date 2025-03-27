@@ -4,9 +4,12 @@ import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import Paper from "../Paper/Paper";
+import toast from 'react-hot-toast';
+import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
+import SectionHandler from "../../components/sectionHandler/sectionhandler"
 import { useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Card,
   Typography,
@@ -93,16 +96,6 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
             value={editedInfo.instruction}
             onChange={(value) =>
               setEditedInfo({ ...editedInfo, instruction: value.target.value })
-            }
-          />
-          <TextField
-            label="Sections"
-            fullWidth
-            variant="outlined"
-            sx={{ mb: 2 }}
-            value={editedInfo.sections}
-            onChange={(value) =>
-              setEditedInfo({ ...editedInfo, sections: value.target.value })
             }
           />
           <Box display="flex" flexWrap="wrap" justifyContent="space-between">
@@ -352,6 +345,7 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
 const Teacher = () => {
   const location = useLocation();
   const [paper, setPaper] = useState(location.state?.paper || []);
+  const fetchedOnce = useRef(false);
   const homeStyle = {
     display: "flex",
     height: "100vh",
@@ -409,6 +403,8 @@ const Teacher = () => {
   });
 
   useEffect(()=>{
+    if (fetchedOnce.current) return; // Prevents second call
+      fetchedOnce.current = true;
     console.log("PaperCheck", paper);
     console.log("PaperIDCheck", paper.id);
     setExsistingInfo({
@@ -419,84 +415,48 @@ const Teacher = () => {
       duration: paper.duration,
       marks: paper.marks,
     })
-    fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        paper_id: paper.id,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.code === 200) {
-          console.log("Data.data.section", data);
-          setSectionLetters(data.data);
-          setExsistingInfo((prevInfo) => ({
-            ...prevInfo,
-            sections: data.data.length,
-          }));
-        }
-      })
-    fetch("http://localhost:3000/Examination/reviewQuestionsByPaperID", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        paper_id: paper.id,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.code === 200) {
-          console.log("Data Questions:", data);
-          const updatedQuestions = data.data.map((question) => {
-            // Find the matching section object
-            const matchedSection = sectionLetters.find(
-              (section) => section.id === question.section_id
-            );
-
-            // Add the `section` field with `name` if match found, otherwise keep it undefined
-            return {
-              ...question,
-              section: matchedSection ? matchedSection.name : null,
-            };
-          });
-
-          setQuestions(updatedQuestions);
-
-          console.log("Updated Questions:", updatedQuestions);
-        }
-      })
-      .catch((error) => console.error("Error fetching questions:", error));
-      fetch("http://localhost:3000/Examination/reviewMCQsByPaperID", {
+    Promise.all([
+      fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          paper_id: paper.id,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 200) {
-            console.log("Data Questions:", data);
-            const updatedQuestions = data.data.map((question) => {
-              // Find the matching section object
-              const matchedSection = sectionLetters.find(
-                (section) => section.id === question.section_id
+        body: JSON.stringify({ paper_id: paper.id }),
+      }).then((response) => response.json()),
+    
+      fetch("http://localhost:3000/Examination/reviewQuestionsByPaperID", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paper_id: paper.id }),
+      }).then((response) => response.json()),
+    ])
+      .then(([sectionsResponse, questionsResponse]) => {
+        if (sectionsResponse.code === 200) {
+          console.log("Fetched Sections:", sectionsResponse.data);
+          setSectionLetters(sectionsResponse.data);
+        }
+    
+        if (questionsResponse.code === 200) {
+          console.log("Fetched Questions:", questionsResponse.data);
+          
+          // Ensure sectionLetters is updated before mapping questions
+          setQuestions((prev) => {
+            const updatedQuestions = questionsResponse.data.map((question) => {
+              const matchedSection = sectionsResponse.data.find(
+                (section) => Number(section.id) === Number(question.section_id)
               );
-  
-              // Add the `section` field with `name` if match found, otherwise keep it undefined
+    
               return {
                 ...question,
-                section: matchedSection ? matchedSection.name : null,
+                section: matchedSection ? matchedSection.name : null, // Assign the section name if found
               };
             });
-  
-            setMCQs(updatedQuestions);
-  
+    
             console.log("Updated Questions:", updatedQuestions);
-          }
-        })
-        .catch((error) => console.error("Error fetching questions:", error));
+            return updatedQuestions;
+          });
+        }
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+    
   }, [paper]);
 
   useEffect(() => {
@@ -535,125 +495,88 @@ const Teacher = () => {
   // };
   const handleSubmitButton = async (action) => {
     console.log("Section", sectionLetters);
-    var completed;
-    if (action === "") {
-      completed = 0;
-    } else if ("Submit") {
-      completed = 1;
-    }
-    var paper = 0;
-    const user = 1;
-    const response = await fetch(
-      "http://localhost:3000/Examination/createPaper",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject_id: 1,
-          user_id: user,
-          month: 3,
-          completed: completed,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (data.code === 200) {
-      console.log("Paper Created successfully!");
-      paper = data.data.id;
-    }
-
+    console.log("Exsisting information:", exsistingInfo);
+    var completed = action === "" ? 0 : 1;
+    var sectionsCheck = [];
     console.log("PaperId", paper);
     // 2️⃣ Create Sections and Wait for All Responses
-    const sectionPromises = sectionLetters.map((sec) =>
-      fetch("http://localhost:3000/Examination/createSection", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          section: sec.name,
-          paper_id: paper,
-          type: sec.type,
-          description: sec.description,
-          marks: sec.marks,
-        }),
-      })
-        .then((response) => response.json())
-        .catch((error) => {
-          console.error(`❌ Error creating section ${sec.name}:`, error);
-          return null; // Prevent breaking the loop if a request fails
+    const response = await fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paper_id: paper.id }),
+    });
+    
+    const Check = await response.json();
+    sectionsCheck = Check.data;
+    if(sectionsCheck.length === 0){
+      const sectionPromises = sectionLetters.map((sec) =>
+        fetch("http://localhost:3000/Examination/createSection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            section: sec.name,
+            paper_id: paper.id,
+            type: sec.type,
+            description: sec.description,
+            marks: sec.marks,
+          }),
         })
-    );
+          .then((response) => response.json())
+          .catch((error) => {
+            console.error(`❌ Error creating section ${sec.name}:`, error);
+            return null; // Prevent breaking the loop if a request fails
+          })
+      );
 
-    // 3️⃣ Wait for all section API calls to complete
-    const sectionResponses = await Promise.all(sectionPromises);
+      // 3️⃣ Wait for all section API calls to complete
+      const sectionResponses = await Promise.all(sectionPromises);
 
-    // 4️⃣ Update `sectionLetters` with IDs from API responses
-    const updatedSections = sectionLetters.map((sec, index) => {
-      const response = sectionResponses[index];
+      // 4️⃣ Update `sectionLetters` with IDs from API responses
+      const updatedSections = sectionLetters.map((sec, index) => {
+        const response = sectionResponses[index];
 
-      if (!response || !response.data || !response.data.id) {
-        console.error(
-          `❌ Section creation failed for ${sec.name}, skipping...`
+        if (!response || !response.data || !response.data.id) {
+          console.error(
+            `❌ Section creation failed for ${sec.name}, skipping...`
+          );
+          return sec; // Keep the original section if it failed
+        }
+
+        return { ...sec, id: response.data.id };
+      });
+
+      setSectionLetters(updatedSections);
+      console.log("Updated Sections", updatedSections);
+
+      console.log("Selected Question", selectedQuestion);
+      selectedQuestion.map((q) => {
+        const foundSection = updatedSections.find(
+          (sec) => sec.name === q.section
         );
-        return sec; // Keep the original section if it failed
-      }
-
-      return { ...sec, id: response.data.id };
-    });
-
-    setSectionLetters(updatedSections);
-    console.log("Updated Sections", updatedSections);
-
-    console.log("Selected Question", selectedQuestion);
-    selectedQuestion.map((q) => {
-      const foundSection = updatedSections.find(
-        (sec) => sec.name === q.section
-      );
-      fetch("http://localhost:3000/Examination/createQuestionMapping", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          paper_id: paper,
-          question_id: q.id,
-          section_id: foundSection.id,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 200) {
-            console.log("Question Mapping Created successfully! ", q.id);
-          }
-        });
-    });
-    selectedMCQ.map((q) => {
-      const foundSection = updatedSections.find(
-        (sec) => sec.name === q.section
-      );
-      fetch("http://localhost:3000/Examination/createQuestionMapping", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          paper_id: paper,
-          mcq_id: q.id,
-          section_id: foundSection.id,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 200) {
-            console.log("Question Mapping Created successfully! ", q.id);
-          }
-        });
-    });
-    await Promise.all(questionPromises);
-    console.log("All Question Mappings Created Successfully!");
+        fetch("http://localhost:3000/Examination/createQuestionMapping", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            paper_id: paper,
+            question_id: q.id,
+            section_id: foundSection.id,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.code === 200) {
+              console.log("Question Mapping Created successfully! ", q.id);
+            }
+          });
+      });
+      console.log("All Question Mappings Created Successfully!");
+      toast.success(`Paper ${action}ed!`);
+    }
+    else{
+      toast.error('Paper already exists with current changes!')
+    }
   };
   const marksTotal = (section, type) => {
     var sum = 0;
@@ -732,7 +655,7 @@ const Teacher = () => {
               </Box>
               <Button
                 variant="contained"
-                onClick={() => handleSubmitButton("")}
+                onClick={() => handleSubmitButton("save")}
                 color="primary"
                 sx={{ px: 3, py: 1.5, fontSize: "1rem" }}
               >
@@ -771,6 +694,15 @@ const Teacher = () => {
                 />
               )}
               <Box sx={{ width: "91.666667%", my: 2 }}>
+                <Button onClick={() => {
+                          setSectionFlag(true);
+                        }}
+                        sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: '#3f51b5','&:hover': {backgroundColor: '#303f9f'}}}>
+                      Section
+                      <FontAwesomeIcon style={{ marginLeft: 8, background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)', color: 'white', borderRadius: '50%' }} />
+                  </Button>
+              </Box>
+              <Box sx={{ width: "91.666667%", my: 2 }}>
                 <ModalSelectMCQs
                   setMCQs={setMCQs}
                   SelectedMCQs={selectedMCQ}
@@ -784,16 +716,17 @@ const Teacher = () => {
                   sections={sectionLetters}
                 ></ModalSelectQuestions>
               </Box>
+              <SectionHandler exsistingInfo={exsistingInfo} setExsistingInfo={setExsistingInfo} sections={sectionLetters} setSections={setSectionLetters} sectionFlag={sectionFlag} setSectionFlag={setSectionFlag}/>
               {console.log("SectionLetters check", sectionLetters)}
               {sectionLetters.map((letter, index) => (
                 <>
                   <Box sx={{ display: "flex", flexDirection: "row", gap: 20 }}>
                     <Typography
                       sx={{
-                        fontSize: "2rem", // Customize font size
-                        fontWeight: "bold", // Make the text bold
-                        color: "#333", // Text color for main content
-                        mb: 1, // Add margin-bottom to separate content
+                        fontSize: "2rem", 
+                        fontWeight: "bold",
+                        color: "#333",
+                        mb: 1,
                       }}
                     >
                       {letter.name}
@@ -804,184 +737,9 @@ const Teacher = () => {
                       <FontAwesomeIcon
                         style={{ fontSize: "2rem", marginTop: "10px" }}
                         icon={faTimesCircle}
-                        onClick={() => {
-                          setSectionFlag(true);
-                          setSectionIndex(index);
-                          setType(letter.type);
-                          setDesc(letter.description);
-                        }}
                       />
                     </Box>
-                    <Dialog
-                      open={sectionFlag && sectionIndex === index}
-                      onEnter={() => {
-                        setType(letter.type);
-                        setDesc(letter.description);
-                        setMarks(letter.marks);
-                      }}
-                      onClose={(index) => {
-                        setSectionFlag(false);
-                        setSectionIndex(null);
-                      }}
-                      maxWidth="l"
-                      sx={{
-                        "& .MuiDialog-paper": {
-                          borderRadius: "8px",
-                          padding: "16px",
-                          width: "1000px", // Set the desired fixed width
-                          maxWidth: "100%", // Ensures responsiveness
-                        },
-                      }}
-                    >
-                      <Card
-                        sx={{
-                          padding: "20px",
-                          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                          backgroundColor: "#ffffff",
-                          width: "900px",
-                          height: "300px",
-                          maxWidth: "100%",
-                        }}
-                      >
-                        <Box
-                          sx={{ display: "flex", flexDirection: "row", gap: 5 }}
-                        >
-                          {console.log("l", letter)}
-                          <Box sx={{ display: "flex" }}>
-                            <Typography
-                              sx={{
-                                fontSize: "2rem", // Customize font size
-                                fontWeight: "bold", // Make the text bold
-                                color: "#333", // Text color for main content
-                                mb: 1, // Add margin-bottom to separate content
-                              }}
-                            >
-                              {letter.name}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <FormControl
-                              sx={{
-                                width: "100%",
-                                marginTop: "8px",
-                                marginBottom: "8px",
-                              }}
-                            >
-                              <Select
-                                value={type}
-                                onChange={(e) => {
-                                  setType(e.target.value);
-                                }}
-                                displayEmpty
-                                sx={{
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: "6px",
-                                    "&:hover .MuiOutlinedInput-notchedOutline":
-                                      {
-                                        borderColor: "#90caf9",
-                                      },
-                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                      {
-                                        borderColor: "#2196f3",
-                                      },
-                                  },
-                                  "& .MuiSelect-select": {
-                                    padding: "12px 14px",
-                                    minHeight: "20px",
-                                  },
-                                  "& .MuiMenuItem-root": {
-                                    padding: "12px 16px",
-                                    "&:hover": {
-                                      backgroundColor: "#f5f5f5",
-                                    },
-                                    "&.Mui-selected": {
-                                      backgroundColor: "#e3f2fd",
-                                      "&:hover": {
-                                        backgroundColor: "#bbdefb",
-                                      },
-                                    },
-                                  },
-                                }}
-                              >
-                                <MenuItem value="">Section Type</MenuItem>
-                                <MenuItem value="Descriptive Questions">
-                                  Descriptive Questions
-                                </MenuItem>
-                                <MenuItem value="Multiple Choice Questions">
-                                  Multiple Choice Questions
-                                </MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Box>
-                          <Box>
-                            <TextField
-                              value={desc}
-                              onChange={(e) => {
-                                setDesc(e.target.value);
-                              }}
-                            >
-                              Description
-                            </TextField>
-                          </Box>
-                          <Box>
-                            <TextField
-                              type="number"
-                              value={marks}
-                              onChange={(e) => {
-                                setMarks(e.target.value);
-                              }}
-                            >
-                              Marks
-                            </TextField>
-                          </Box>
-                        </Box>
-                        <CardActions>
-                          <Grid
-                            sx={{
-                              pt: 0,
-                              display: "flex",
-                              justifyContent: "flex-end",
-                            }}
-                          >
-                            <Button
-                              sx={{
-                                background:
-                                  "linear-gradient(90deg, #2196F3 0%, #21CBF3 100%)",
-                                color: "white",
-                                "&:hover": {
-                                  background:
-                                    "linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)",
-                                },
-                              }}
-                              onClick={() => {
-                                const updatedSections = [...sectionLetters];
-                                updatedSections[index] = {
-                                  ...letter,
-                                  description: desc,
-                                  type: type,
-                                  marks: marks,
-                                };
-                                setSectionLetters(updatedSections);
-                                setType("");
-                                setSectionFlag(false);
-                              }}
-                            >
-                              Save Changes
-                            </Button>
-                            <Button
-                              sx={{
-                                ml: 2, // Converts 'ml-2' (margin-left)
-                                background:
-                                  "linear-gradient(90deg, #2196F3 0%, #21CBF3 100%)", // Simulates gradient variant
-                              }}
-                              onClick={() => setSectionFlag(false)}
-                            >
-                              Cancel
-                            </Button>
-                          </Grid>
-                        </CardActions>
-                      </Card>
-                    </Dialog>
+                    
                   </Box>
                   <Box sx={{ width: "91.666667%", my: 2 }}>
                     <Typography

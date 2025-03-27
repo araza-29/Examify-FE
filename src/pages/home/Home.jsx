@@ -33,7 +33,7 @@ const DashboardCard = ({ title, icon: Icon, num }) => (
 const Home = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false)
-  const [roleId, setRole] = useState(1)     // 0: Super Admin 1: Admin, 2: COO, 3: Examination, 4: Teacher
+  const [roleId, setRole] = useState(4)     // 0: Super Admin 1: Admin, 2: COO, 3: Examination, 4: Teacher
   const [papers, setPapers] = useState([])
   const [papersLeft, setPapersLeft] = useState([])
   const [papersRejected, setPapersRejected] = useState([])

@@ -4,6 +4,7 @@ import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import Paper from "../Paper/Paper";
+import { useNavigate } from 'react-router-dom';
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
 import { useEffect, useState } from "react";
 import {
@@ -381,6 +382,7 @@ const Teacher = () => {
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
     textAlign: "center",
   };
+  const navigate = useNavigate();
   const [AllowEdit, setAllowEdit] = useState(false);
   const [selectedQuestion, setQuestions] = useState([]);
   const [selectedMCQ, setMCQs] = useState([]);
@@ -392,12 +394,12 @@ const Teacher = () => {
   const [desc, setDesc] = useState("");
   const [marks, setMarks] = useState(0);
   const [exsistingInfo, setExsistingInfo] = useState({
-    header: "FAST NUCES".toUpperCase(),
+    header: "The Education Link".toUpperCase(),
     centerName: [],
     class: "Class",
-    subject: "Subject Name",
+    subject: "Physics",
     ExaminationYear: "2023",
-    departmentNames: ["Karachi", "Lahore"],
+    departmentNames: ["Jinnah", "Iqbal"],
     sections: 3,
     duration: "3 hours",
     marks: 80,
@@ -518,29 +520,6 @@ const Teacher = () => {
           }
         });
     });
-    selectedMCQ.map((q) => {
-      const foundSection = updatedSections.find(
-        (sec) => sec.name === q.section
-      );
-      fetch("http://localhost:3000/Examination/createQuestionMapping", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          paper_id: paper,
-          mcq_id: q.id,
-          section_id: foundSection.id,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 200) {
-            console.log("Question Mapping Created successfully! ", q.id);
-          }
-        });
-    });
-    
     await Promise.all(questionPromises);
     console.log("All Question Mappings Created Successfully!");
   };
@@ -560,6 +539,9 @@ const Teacher = () => {
     console.log(sum);
     return sum;
   };
+  const backButton = () => {
+    navigate('/')
+  }
   console.log(sectionLetters);
   const MCQMarks = () => {
     var sum = 0;
@@ -602,6 +584,7 @@ const Teacher = () => {
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Button
                   variant="text"
+                  onClick={()=>backButton()}
                   sx={{
                     display: "flex",
                     px: 2,
