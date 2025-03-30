@@ -4,7 +4,9 @@ import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import Paper from "../Paper/Paper";
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import SectionHandler from "../../components/sectionHandler/sectionHandler"
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
 import { useEffect, useState } from "react";
 import {
@@ -385,6 +387,7 @@ const Teacher = () => {
   const navigate = useNavigate();
   const [AllowEdit, setAllowEdit] = useState(false);
   const [selectedQuestion, setQuestions] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
   const [sectionFlag, setSectionFlag] = useState(false);
@@ -394,18 +397,59 @@ const Teacher = () => {
   const [desc, setDesc] = useState("");
   const [marks, setMarks] = useState(0);
   const [exsistingInfo, setExsistingInfo] = useState({
-    header: "The Education Link".toUpperCase(),
-    centerName: [],
-    class: "Class",
-    subject: "Physics",
-    ExaminationYear: "2023",
-    departmentNames: ["Jinnah", "Iqbal"],
-    sections: 3,
-    duration: "3 hours",
-    marks: 80,
-    date: new Date().toISOString().split("T")[0],
-    instruction: "No Instruction just attempt the Paper",
-  });
+      header: 'THE EDUCATION LINK',
+      examination: 'PRELIMINARY',
+      subject: 'COMPUTER-X (JINNAH)',
+      ExaminationYear: '2024-25',
+      duration: '3',
+      time: "6:00PM to 9:00PM",
+      date: '01-12-2024',
+      marks: 60,
+      instruction: 'Attempt any 8 questions from this section. All questions carry equal marks.',
+      // header: "FAST NUCES".toUpperCase(),
+      // centerName: [],
+      // class: "Class",
+      // subject: "Subject Name",
+      // ExaminationYear: "2023",
+      departmentNames: ["Karachi", "Lahore"],
+      // sections: 3,
+      // duration: "4 hours",
+      // marks: 80,
+      // date: new Date().toISOString().split("T")[0],
+      // instruction: "No Instruction just attempt the Paper",
+    });
+  
+    useEffect(() => {
+      const handleBeforeUnload = (event) => {
+          event.preventDefault();
+          event.returnValue = "Are you sure you want to leave?";
+      };
+  
+      window.addEventListener("beforeunload", handleBeforeUnload);
+  
+      return () => {
+          window.removeEventListener("beforeunload", handleBeforeUnload);
+      };
+  }, []);
+  useEffect(() => {
+      setQuestions((prevQuestions) =>
+          prevQuestions.filter(
+              (q) =>
+                  !sectionLetters.some(
+                      (section) => section.name === q.section && section.type === "Multiple Choice Questions"
+                  )
+          )
+      );
+      setMCQs((prevMCQs) =>
+        prevMCQs.filter(
+            (q) =>
+                !sectionLetters.some(
+                    (section) => section.name === q.section && section.type === "Descriptive Questions"
+                )
+        )
+    );
+  }, [sectionLetters]);
+
   useEffect(() => {
     const sections = Array.from(
       { length: exsistingInfo.sections },
@@ -438,90 +482,106 @@ const Teacher = () => {
   //   alert("Please Login first then you can access this page...");
   //   window.location.href = '/'; // Replace "/login" with the actual login page path
   // };
-  const handleSubmitButton = async(action) => {
-    console.log("Section", sectionLetters);
-    var completed;
-    if (action==="") {
-      completed = 0;
-    }
-    else if ("Submit"){
-      completed = 1;
-    }
-    var paper = 0;
-    const user = 1;
-    const response = await fetch("http://localhost:3000/Examination/createPaper", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ subject_id: 1, user_id: user, month: 3, completed: completed, instruction: exsistingInfo.instruction, date: exsistingInfo.date, year: exsistingInfo.ExaminationYear, marks: exsistingInfo.marks, duration: exsistingInfo.duration }),
-    });
-
-    const data = await response.json();
-
-    if (data.code === 200) {
-        console.log("Paper Created successfully!");
-        paper = data.data.id;
-    }
-
-    console.log("PaperId", paper); 
-     // 2️⃣ Create Sections and Wait for All Responses
-  const sectionPromises = sectionLetters.map((sec) =>
-    fetch("http://localhost:3000/Examination/createSection", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        section: sec.name,
-        paper_id: paper,
-        type: sec.type,
-        description: sec.description,
-        marks: sec.marks,
-      }),
-    })
-      .then((response) => response.json())
-      .catch((error) => {
-        console.error(`❌ Error creating section ${sec.name}:`, error);
-        return null; // Prevent breaking the loop if a request fails
+  const handleSubmitButton = async (action) => {
+      setIsDisabled(true);
+      setSectionsCheck([]); // Clears previous data
+  
+      console.log("Section", sectionLetters);
+      console.log("Existing information:", exsistingInfo);
+      console.log("PaperId", paper);
+  
+      // 🔹 Fetch sections from the database
+      if(action==="Submit") {
+        fetch("http://localhost:3000/Examination/updatePaper", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+              paper_id: paper.id,
+              completed: 1
+          }),
       })
-  );
-
-  // 3️⃣ Wait for all section API calls to complete
-  const sectionResponses = await Promise.all(sectionPromises);
-
-  // 4️⃣ Update `sectionLetters` with IDs from API responses
-  const updatedSections = sectionLetters.map((sec, index) => {
-    const response = sectionResponses[index];
-
-    if (!response || !response.data || !response.data.id) {
-      console.error(`❌ Section creation failed for ${sec.name}, skipping...`);
-      return sec; // Keep the original section if it failed
-    }
-
-    return { ...sec, id: response.data.id };
-  });
-
-  setSectionLetters(updatedSections);
-  console.log("Updated Sections", updatedSections);
-
-    console.log("Selected Question", selectedQuestion);
-    selectedQuestion.map((q) => {
-      const foundSection = updatedSections.find((sec) => sec.name === q.section);
-      fetch("http://localhost:3000/Examination/createQuestionMapping", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ paper_id: paper, question_id: q.id, section_id: foundSection.id }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 200) {
-            console.log("Question Mapping Created successfully! ", q.id);
-          }
+          .then((response) => response.json())
+          .catch((error) => {
+              console.error(`❌ Error creating section ${sec.name}:`, error);
+              return null;
+          })
+      }
+  
+          const sectionPromises = sectionLetters.map((sec) =>
+              fetch("http://localhost:3000/Examination/createSection", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                      section: sec.name,
+                      paper_id: paper.id,
+                      type: sec.type,
+                      description: sec.description,
+                      marks: sec.marks,
+                  }),
+              })
+                  .then((response) => response.json())
+                  .catch((error) => {
+                      console.error(`❌ Error creating section ${sec.name}:`, error);
+                      return null;
+                  })
+          );
+  
+          const sectionResponses = await Promise.all(sectionPromises);
+  
+          const updatedSections = sectionLetters.map((sec, index) => {
+              const response = sectionResponses[index];
+  
+              if (!response || !response.data || !response.data.id) {
+                  console.error(`❌ Section creation failed for ${sec.name}, skipping...`);
+                  return sec;
+              }
+  
+              return { ...sec, id: response.data.id };
+          });
+  
+          setSectionLetters(updatedSections);
+          console.log("Updated Sections", updatedSections);
+  
+          console.log("Selected Question", selectedQuestion);
+          selectedQuestion.map((q) => {
+              const foundSection = updatedSections.find((sec) => sec.name === q.section);
+              fetch("http://localhost:3000/Examination/createQuestionMapping", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                      paper_id: paper.id, // ✅ Use `paper.id` instead of `paper`
+                      question_id: q.id,
+                      section_id: foundSection?.id, // ✅ Handle possible `undefined`
+                  }),
+              })
+                  .then((response) => response.json())
+                  .then((data) => {
+                      if (data.code === 200) {
+                          console.log("✅ Question Mapping Created successfully!", q.id);
+                      }
+                  });
+          });
+          selectedMCQ.map((q) => {
+            const foundSection = updatedSections.find((sec) => sec.name === q.section);
+            fetch("http://localhost:3000/Examination/createQuestionMapping", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    paper_id: paper.id, // ✅ Use `paper.id` instead of `paper`
+                    mcqs_id: q.id,
+                    section_id: foundSection?.id, // ✅ Handle possible `undefined`
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.code === 200) {
+                        console.log("✅ Question Mapping Created successfully!", q.id);
+                    }
+                });
         });
-    });
-    await Promise.all(questionPromises);
-    console.log("All Question Mappings Created Successfully!");
+          console.log("✅ All Question Mappings Created Successfully!");
+          toast.success(`Paper ${action}ed!`);
+      setIsDisabled(false); // ✅ Re-enable button at the end
   };
   const marksTotal = (section, type) => {
     var sum = 0;
@@ -529,7 +589,7 @@ const Teacher = () => {
     console.log("selectedQuestion[0]", selectedQuestion);
     if (type === "Multiple Choice Questions") {
       selectedMCQ.forEach((q) => {
-        if (q.section == section) sum = sum + q.marks;
+        if (q.section == section) sum = sum + 1;
       });
     } else {
       selectedQuestion.forEach((q) => {
@@ -643,6 +703,15 @@ const Teacher = () => {
                 />
               )}
               <Box sx={{ width: "91.666667%", my: 2 }}>
+                <Button onClick={() => {
+                          setSectionFlag(true);
+                        }}
+                        sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: '#3f51b5','&:hover': {backgroundColor: '#303f9f'}}}>
+                      Section
+                      <FontAwesomeIcon style={{ marginLeft: 8, background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)', color: 'white', borderRadius: '50%' }} />
+                  </Button>
+              </Box>
+              <Box sx={{ width: "91.666667%", my: 2 }}>
                 <ModalSelectMCQs
                   setMCQs={setMCQs}
                   SelectedMCQs={selectedMCQ}
@@ -656,6 +725,8 @@ const Teacher = () => {
                   sections={sectionLetters}
                 ></ModalSelectQuestions>
               </Box>
+               <SectionHandler exsistingInfo={exsistingInfo} setExsistingInfo={setExsistingInfo} sections={sectionLetters} setSections={setSectionLetters} sectionFlag={sectionFlag} setSectionFlag={setSectionFlag}/>
+                {console.log("SectionLetters check", sectionLetters)}
               {sectionLetters.map((letter, index) => (
                 <>
                   <Box sx={{ display: "flex", flexDirection: "row", gap: 20 }}>

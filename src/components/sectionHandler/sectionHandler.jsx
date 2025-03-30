@@ -12,15 +12,54 @@ import {
   CardActions,
   Dialog,
 } from "@mui/material";
-
-export default function SectionHandler ({exsistingInfo, setExsistingInfo, sections, setSections, sectionFlag, setSectionFlag}) {
+import toast from 'react-hot-toast';
+import { gridColumnsTotalWidthSelector } from "@mui/x-data-grid";
+export default function SectionHandler ({exsistingInfo, setExsistingInfo, sections, setSections, sectionFlag, setSectionFlag, setIsSaved, isSaved}) {
     const [editedInfo, setEditedInfo] = useState(exsistingInfo)
     const [editedSections, setEditedSections] = useState(sections)
     console.log("SectionHandler", sectionFlag);
     console.log("SectionsHandler", sections);
+
+    const handleSubmit = () => {
+        const hasEmptySections = editedSections.some(sec => {
+            if (sec.description === "" || sec.marks === 0 || sec.type === "") {
+                toast.error(`${sec.name} isn't assigned values`);
+                return true; // stops further iteration
+            }
+            return false;
+        });
+        if(hasEmptySections) {
+            return;
+        }
+        const MCQS = editedSections.filter((sec,idx )=>{ return sec.type==="Multiple Choice Questions"}).length;
+        if(MCQS > 1) {
+            toast.error(`Only one section can be of MCQ `);
+            return;
+        }
+        const Questions = editedSections.filter((sec,idx )=>{ return sec.type==="Descriptive Questions"}).length;
+        if(Questions === exsistingInfo.sections) {
+            toast.error(`All of the sections can't be Descriptive`);
+            return;
+        }
+        const totalMarks = editedSections.reduce((sum, sec) => sum + Number(sec.marks), 0);
+        console.log("Total Makrs", totalMarks);
+        if(totalMarks!==exsistingInfo.marks) {
+            toast.error(`Total marks of the sections not equal to the marks of subject`);
+            return;
+        }
+        console.log("EditedSections",editedSections)
+        setSections(editedSections);
+        setExsistingInfo(editedInfo)
+        console.log("bEFORE SETTING", isSaved)
+        setIsSaved(false)
+        console.log("After SETTING", isSaved)
+        setSectionFlag(false);
+    }
     useEffect(() => {
-        setEditedSections(sections);
-      }, [sections]);
+        if (sectionFlag && sections.length > 0) {
+          setEditedSections(sections);
+        }
+      }, [sectionFlag]);
 return(
     <Dialog
     open={sectionFlag}
@@ -169,11 +208,7 @@ return(
                 "linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)",
             },
             }}
-            onClick={() => {
-            setSections(editedSections);
-            setExsistingInfo(editedInfo)
-            setSectionFlag(false);
-            }}
+            onClick={handleSubmit}
         >
             Save Changes
         </Button>

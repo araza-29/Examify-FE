@@ -5,8 +5,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
+import toast from 'react-hot-toast';
 
-export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections}) {
+export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections, setIsSaved}) {
     console.log("SelectQuestions check in section",sections);
     const [QuestionFlag, setQuestionFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(1);
@@ -132,15 +133,22 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         console.log("Section:", selectedSection);
     
         if (!selectedSection || selectedSection.length === 0) {
-            alert("Please select a section before proceeding.");
+            toast.error("Please select a section before proceeding.")
             return;
         }
-    
+        if(selectedSection.marks === 0) {
+            toast.error("Please assign marks to sections before selecting questions for it")
+            return;
+        }
         console.log("Section in selectQuestion:", selectedSection);
     
         // Get the selected questions
         const selected = Questions.filter((question) => question.selected);
-    
+        const totalMarks = selected.reduce((sum, q) => sum + (q.marks || 0), 0);
+        if(selectedSection.marks<totalMarks) {
+            toast.error("You total questions marks exceed assigned section marks")
+            return;
+        }
         // Store section information and update selected questions
         setSelectedQuestion((prevSelectedQuestions) => [
             ...prevSelectedQuestions,
@@ -153,6 +161,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         );
     
         console.log("Updated Selected Questions:", selected);
+        setIsSaved(false)
         handleOpen();
     };
     

@@ -5,8 +5,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
+import toast from 'react-hot-toast';
 
-export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections}) {
+export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections, setIsSaved}) {
     const [MCQsFlag, setMCQsFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(1);
     const [MCQs, setMCQs] = useState([]);
@@ -129,10 +130,19 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
     }
     const handleDone = () => {
         if (!selectedSection || selectedSection.length === 0) {
-            alert("Please select a section before proceeding.");
+            toast.error("Please select a section before proceeding.")
             return;
         }
-        const selected = MCQs.filter((MCQs) => MCQs.selected);
+        if(selectedSection.marks === 0) {
+            toast.error("Please assign marks to sections before selecting mcqs for it")
+            return;
+        }
+        const selected = MCQs.filter((question) => question.selected);
+        const totalMarks = selected.reduce((sum, q) => sum + (1 || 0), 0);
+        if(selectedSection.marks<totalMarks) {
+            toast.error("You total mcqs marks exceed assigned section marks")
+            return;
+        }
         setSelectedMCQs((prevSelectedMCQs) => [
             ...prevSelectedMCQs,
             ...selected.map((q) => ({ ...q, section: selectedSection.name }))
@@ -140,6 +150,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
         setMCQs((prevMCQs) =>
             prevMCQs.filter((q) => !q.selected)
         );
+        setIsSaved(false)
         handleOpen();
     }
     const handleCheckBoxChange =(id) => {

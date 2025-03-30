@@ -7,7 +7,7 @@ import Paper from "../Paper/Paper";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
-import SectionHandler from "../../components/sectionHandler/sectionhandler"
+import SectionHandler from "../../components/sectionHandler/sectionHandler"
 import { useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import {
@@ -380,31 +380,53 @@ const Teacher = () => {
   };
   const [AllowEdit, setAllowEdit] = useState(false);
   const [selectedQuestion, setQuestions] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
+  const [isSaved, setIsSaved] = useState(true);
   const [sectionFlag, setSectionFlag] = useState(false);
+  const [sectionsCheck, setSectionsCheck] = useState([]);
   let [token] = useState(localStorage.getItem("token"));
-  const [sectionIndex, setSectionIndex] = useState(null);
-  const [type, setType] = useState("");
-  const [desc, setDesc] = useState("");
-  const [marks, setMarks] = useState(0);
   const [exsistingInfo, setExsistingInfo] = useState({
-    header: "FAST NUCES".toUpperCase(),
-    centerName: [],
-    class: "Class",
-    subject: "Subject Name",
-    ExaminationYear: "2023",
+    header: 'THE EDUCATION LINK',
+    examination: 'PRELIMINARY',
+    subject: 'COMPUTER-X (JINNAH)',
+    ExaminationYear: '2024-25',
+    duration: '3',
+    time: "6:00PM to 9:00PM",
+    date: '01-12-2024',
+    marks: 60,
+    instruction: 'Attempt any 8 questions from this section. All questions carry equal marks.',
+    // header: "FAST NUCES".toUpperCase(),
+    // centerName: [],
+    // class: "Class",
+    // subject: "Subject Name",
+    // ExaminationYear: "2023",
     departmentNames: ["Karachi", "Lahore"],
-    sections: 3,
-    duration: "4 hours",
-    marks: 80,
-    date: new Date().toISOString().split("T")[0],
-    instruction: "No Instruction just attempt the Paper",
+    // sections: 3,
+    // duration: "4 hours",
+    // marks: 80,
+    // date: new Date().toISOString().split("T")[0],
+    // instruction: "No Instruction just attempt the Paper",
   });
+
+  useEffect(() => {
+      const handleBeforeUnload = (event) => {
+        console.log("IsSaved", isSaved);  
+        if(!isSaved) {
+          event.preventDefault();
+          event.returnValue = "Are you sure?";
+        }
+      };
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      return () => {
+          window.removeEventListener("beforeunload", handleBeforeUnload);
+      };
+}, [isSaved]);
 
   useEffect(()=>{
     if (fetchedOnce.current) return; // Prevents second call
-      fetchedOnce.current = true;
+    fetchedOnce.current = true;
     console.log("PaperCheck", paper);
     console.log("PaperIDCheck", paper.id);
     setExsistingInfo({
@@ -427,9 +449,15 @@ const Teacher = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paper_id: paper.id }),
       }).then((response) => response.json()),
+
+      fetch("http://localhost:3000/Examination/reviewMCQsByPaperID", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paper_id: paper.id }),
+      }).then((response) => response.json()),
     ])
-      .then(([sectionsResponse, questionsResponse]) => {
-        if (sectionsResponse.code === 200) {
+      .then(([sectionsResponse, questionsResponse, mcqsResponse]) => {
+        if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
           console.log("Fetched Sections:", sectionsResponse.data);
           setSectionLetters(sectionsResponse.data);
         }
@@ -454,25 +482,71 @@ const Teacher = () => {
             return updatedQuestions;
           });
         }
+        if (mcqsResponse.code === 200) {
+          console.log("Fetched Questions:", mcqsResponse.data);
+          
+          // Ensure sectionLetters is updated before mapping questions
+          setMCQs((prev) => {
+            const updatedMCQ = mcqsResponse.data.map((mcq) => {
+              const matchedSection = sectionsResponse.data.find(
+                (section) => Number(section.id) === Number(mcq.section_id)
+              );
+    
+              return {
+                ...mcq,
+                section: matchedSection ? matchedSection.name : null, // Assign the section name if found
+              };
+            });
+    
+            console.log("Updated Questions:", updatedMCQ);
+            return updatedMCQ;
+          });
+        }
       })
       .catch((error) => console.error("Error fetching data:", error));
     
   }, [paper]);
 
   useEffect(() => {
-    console.log("Updated Sections Length:", exsistingInfo.sections);
-    console.log("Previous Section Letters:", sectionLetters);
-    
-    setSectionLetters(() =>
-      Array.from({ length: exsistingInfo.sections }, (_, index) => ({
-        id: sectionLetters[index]?.id || 0,
-        name: `Section ${String.fromCharCode(65 + index)}`,
-        type: sectionLetters[index]?.type || ``,
-        description: sectionLetters[index]?.description || ``,
-        marks: sectionLetters[index]?.marks || 0,
-      }))
+    setQuestions((prevQuestions) =>
+        prevQuestions.filter(
+            (q) =>
+                !sectionLetters.some(
+                    (section) => section.name === q.section && section.type === "Multiple Choice Questions"
+                )
+        )
     );
-  }, [exsistingInfo.sections]);
+    setMCQs((prevMCQs) =>
+      prevMCQs.filter(
+          (q) =>
+              !sectionLetters.some(
+                  (section) => section.name === q.section && section.type === "Descriptive Questions"
+              )
+      )
+  );
+}, [sectionLetters]); // Runs whenever `sectionLetters` update
+
+
+useEffect(() => {
+  console.log("Updated Sections Length:", exsistingInfo.sections);
+
+  setSectionLetters((prevSectionLetters) => {
+      const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
+          id: prevSectionLetters[index]?.id ?? index,  // Maintain ID or assign index
+          name: `Section ${String.fromCharCode(65 + index)}`, // A, B, C...
+          type: prevSectionLetters[index]?.type || "",
+          description: prevSectionLetters[index]?.description || "",
+          marks: prevSectionLetters[index]?.marks || 0,
+      }));
+
+      // Sort sections alphabetically by name
+      return newSections
+  });
+}, [exsistingInfo.sections]);
+
+ // ✅ Removed sectionLetters from dependencies
+  // ✅ Add sectionLetters dependency
+
   
   // const fetchSections = () => {
   //   fetch("http://localhost:3000/Examination/updateQuestion", {
@@ -494,97 +568,126 @@ const Teacher = () => {
   //   window.location.href = '/'; // Replace "/login" with the actual login page path
   // };
   const handleSubmitButton = async (action) => {
+    setIsDisabled(true);
+    setSectionsCheck([]); // Clears previous data
+
     console.log("Section", sectionLetters);
-    console.log("Exsisting information:", exsistingInfo);
-    var completed = action === "" ? 0 : 1;
-    var sectionsCheck = [];
+    console.log("Existing information:", exsistingInfo);
     console.log("PaperId", paper);
-    // 2️⃣ Create Sections and Wait for All Responses
-    const response = await fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paper_id: paper.id }),
-    });
-    
-    const Check = await response.json();
-    sectionsCheck = Check.data;
-    if(sectionsCheck.length === 0){
-      const sectionPromises = sectionLetters.map((sec) =>
-        fetch("http://localhost:3000/Examination/createSection", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            section: sec.name,
+
+    // 🔹 Fetch sections from the database
+    if(action==="Submit") {
+      var totalMarks = selectedQuestion.reduce((sum, question) => {
+        return sum + Number(question.marks);
+      }, 0);
+      totalMarks += selectedMCQ.reduce((sum, question) => {
+        return sum + 1;
+      }, 0);
+      if(totalMarks !== exsistingInfo.marks) {
+        toast.error(`Paper can't be submitted because the paper isn't of assigned marks!`);
+        setIsDisabled(false);
+        return;
+      }
+      fetch("http://localhost:3000/Examination/updatePaper", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
             paper_id: paper.id,
-            type: sec.type,
-            description: sec.description,
-            marks: sec.marks,
-          }),
-        })
-          .then((response) => response.json())
-          .catch((error) => {
+            completed: 1
+        }),
+    })
+        .then((response) => response.json())
+        .catch((error) => {
             console.error(`❌ Error creating section ${sec.name}:`, error);
-            return null; // Prevent breaking the loop if a request fails
-          })
-      );
-
-      // 3️⃣ Wait for all section API calls to complete
-      const sectionResponses = await Promise.all(sectionPromises);
-
-      // 4️⃣ Update `sectionLetters` with IDs from API responses
-      const updatedSections = sectionLetters.map((sec, index) => {
-        const response = sectionResponses[index];
-
-        if (!response || !response.data || !response.data.id) {
-          console.error(
-            `❌ Section creation failed for ${sec.name}, skipping...`
-          );
-          return sec; // Keep the original section if it failed
-        }
-
-        return { ...sec, id: response.data.id };
-      });
-
-      setSectionLetters(updatedSections);
-      console.log("Updated Sections", updatedSections);
-
-      console.log("Selected Question", selectedQuestion);
-      selectedQuestion.map((q) => {
-        const foundSection = updatedSections.find(
-          (sec) => sec.name === q.section
-        );
-        fetch("http://localhost:3000/Examination/createQuestionMapping", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            paper_id: paper,
-            question_id: q.id,
-            section_id: foundSection.id,
-          }),
+            return null;
         })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.code === 200) {
-              console.log("Question Mapping Created successfully! ", q.id);
+    }
+
+        const sectionPromises = sectionLetters.map((sec) =>
+            fetch("http://localhost:3000/Examination/createSection", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    section: sec.name,
+                    paper_id: paper.id,
+                    type: sec.type,
+                    description: sec.description,
+                    marks: sec.marks,
+                }),
+            })
+                .then((response) => response.json())
+                .catch((error) => {
+                    console.error(`❌ Error creating section ${sec.name}:`, error);
+                    return null;
+                })
+        );
+
+        const sectionResponses = await Promise.all(sectionPromises);
+
+        const updatedSections = sectionLetters.map((sec, index) => {
+            const response = sectionResponses[index];
+
+            if (!response || !response.data || !response.data.id) {
+                console.error(`❌ Section creation failed for ${sec.name}, skipping...`);
+                return sec;
             }
-          });
+
+            return { ...sec, id: response.data.id };
+        });
+
+        setSectionLetters(updatedSections);
+        console.log("Updated Sections", updatedSections);
+
+        console.log("Selected Question", selectedQuestion);
+        selectedQuestion.map((q) => {
+            const foundSection = updatedSections.find((sec) => sec.name === q.section);
+            fetch("http://localhost:3000/Examination/createQuestionMapping", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    paper_id: paper.id, // ✅ Use `paper.id` instead of `paper`
+                    question_id: q.id,
+                    section_id: foundSection?.id, // ✅ Handle possible `undefined`
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.code === 200) {
+                        console.log("✅ Question Mapping Created successfully!", q.id);
+                    }
+                });
+        });
+        selectedMCQ.map((q) => {
+          const foundSection = updatedSections.find((sec) => sec.name === q.section);
+          fetch("http://localhost:3000/Examination/createQuestionMapping", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                  paper_id: paper.id, // ✅ Use `paper.id` instead of `paper`
+                  mcqs_id: q.id,
+                  section_id: foundSection?.id, // ✅ Handle possible `undefined`
+              }),
+          })
+              .then((response) => response.json())
+              .then((data) => {
+                  if (data.code === 200) {
+                      console.log("✅ Question Mapping Created successfully!", q.id);
+                  }
+              });
       });
-      console.log("All Question Mappings Created Successfully!");
-      toast.success(`Paper ${action}ed!`);
-    }
-    else{
-      toast.error('Paper already exists with current changes!')
-    }
-  };
+        console.log("✅ All Question Mappings Created Successfully!");
+        toast.success(`Paper ${action}ed!`);
+    setIsSaved(true);
+    setIsDisabled(false); // ✅ Re-enable button at the end
+};
+
   const marksTotal = (section, type) => {
     var sum = 0;
     console.log("selectedQuestion", selectedQuestion);
     console.log("selectedQuestion[0]", selectedQuestion);
     if (type === "Multiple Choice Questions") {
       selectedMCQ.forEach((q) => {
-        if (q.section == section) sum = sum + q.marks;
+        if (q.section == section) sum = sum + 1;
       });
     } else {
       selectedQuestion.forEach((q) => {
@@ -656,6 +759,7 @@ const Teacher = () => {
               <Button
                 variant="contained"
                 onClick={() => handleSubmitButton("save")}
+                disabled={isDisabled}
                 color="primary"
                 sx={{ px: 3, py: 1.5, fontSize: "1rem" }}
               >
@@ -664,6 +768,7 @@ const Teacher = () => {
               <Button
                 variant="contained"
                 onClick={() => handleSubmitButton("Submit")}
+                disabled={isDisabled}
                 color="primary"
                 sx={{ px: 3, py: 1.5, fontSize: "1rem" }}
               >
@@ -707,6 +812,7 @@ const Teacher = () => {
                   setMCQs={setMCQs}
                   SelectedMCQs={selectedMCQ}
                   sections={sectionLetters}
+                  setIsSaved={setIsSaved}
                 ></ModalSelectMCQs>
               </Box>
               <Box sx={{ width: "91.666667%", my: 2 }}>
@@ -714,10 +820,11 @@ const Teacher = () => {
                   setQuestions={setQuestions}
                   SelectedQuestions={selectedQuestion}
                   sections={sectionLetters}
+                  setIsSaved={setIsSaved}
                 ></ModalSelectQuestions>
               </Box>
-              <SectionHandler exsistingInfo={exsistingInfo} setExsistingInfo={setExsistingInfo} sections={sectionLetters} setSections={setSectionLetters} sectionFlag={sectionFlag} setSectionFlag={setSectionFlag}/>
-              {console.log("SectionLetters check", sectionLetters)}
+              <SectionHandler exsistingInfo={exsistingInfo} setExsistingInfo={setExsistingInfo} sections={sectionLetters} setSections={setSectionLetters} sectionFlag={sectionFlag} setSectionFlag={setSectionFlag} setIsSaved={setIsSaved} isSaved={isSaved}/>
+              {console.log("SectionLetters check", isSaved)}
               {sectionLetters.map((letter, index) => (
                 <>
                   <Box sx={{ display: "flex", flexDirection: "row", gap: 20 }}>
@@ -755,42 +862,53 @@ const Teacher = () => {
                     </Typography>
                     {console.log("Letter", selectedQuestion)}
                     {console.log("SectionLetter", letter.name)}
-                    {selectedQuestion.length !== 0 &&
-                    letter.type === "Descriptive Questions" ? (
-                      <DraggableQuestions
-                        section={letter}
-                        SetQuestions={setQuestions}
-                        Questions={selectedQuestion}
-                      />
-                    ) : (
-                      <Typography
-                        sx={{
-                          fontSize: "1rem", // Slightly smaller font for no questions
-                          color: "#999", // Grey color for subtle text
-                          fontStyle: "italic", // Italic style for emphasis
-                        }}
-                      >
-                        No Questions Selected yet
-                      </Typography>
-                    )}
-                    {selectedMCQ.length !== 0 &&
-                    letter.type === "Multiple Choice Questions" ? (
-                      <DraggableQuestions
-                        section={letter}
-                        SetQuestions={setMCQs}
-                        Questions={selectedMCQ}
-                      />
-                    ) : (
-                      <Typography
-                        sx={{
-                          fontSize: "1rem", // Slightly smaller font for no questions
-                          color: "#999", // Grey color for subtle text
-                          fontStyle: "italic", // Italic style for emphasis
-                        }}
-                      >
-                        No Questions Selected yet
-                      </Typography>
-                    )}
+                    {letter.type === "Descriptive Questions" ? (
+                        selectedQuestion.length !== 0 ? (
+                          <DraggableQuestions
+                            section={letter}
+                            SetQuestions={setQuestions}
+                            Questions={selectedQuestion}
+                          />
+                        ) : (
+                          <Typography
+                            sx={{
+                              fontSize: "1rem",
+                              color: "#999",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            No Questions Selected yet
+                          </Typography>
+                        )
+                      ) : letter.type === "Multiple Choice Questions" ? (
+                        selectedMCQ.length !== 0 ? (
+                          <DraggableQuestions
+                            section={letter}
+                            SetQuestions={setMCQs}
+                            Questions={selectedMCQ}
+                          />
+                        ) : (
+                          <Typography
+                            sx={{
+                              fontSize: "1rem",
+                              color: "#999",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            No Questions Selected yet
+                          </Typography>
+                        )
+                      ) : (
+                        <Typography
+                          sx={{
+                            fontSize: "1rem",
+                            color: "#999",
+                            fontStyle: "italic",
+                          }}
+                        >
+                          No Questions Selected yet
+                        </Typography>
+                      )}
                   </Box>
                 </>
               ))}
