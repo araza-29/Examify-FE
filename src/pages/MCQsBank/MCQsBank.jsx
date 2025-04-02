@@ -53,6 +53,7 @@ const Home = () => {
     window.location.href = '/'; // Replace "/login" with the actual login page path
   };
   const [MCQFlag, setMCQFlag] = useState(false);
+  const [flag, setFlag] = useState(false);
   const [userId, setUserId] = useState(Number(localStorage.getItem("userId"))||1);
   const [MCQs, setMCQs] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -211,32 +212,30 @@ const Home = () => {
               <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50}}>Create MCQ</Button>
             </Box>
             {/* Content Section */}
-            <Box
-              sx={{
-                display: 'flex',          // Enables flexbox
-                flexDirection: 'row',      // Aligns children horizontally
-                gap: '8px',                // Reduce space between the boxes
-                justifyContent: 'flex-start', // Aligns boxes to the start of the container
-                alignItems: 'center',      // Vertically aligns items in the center
-              }}
-            >
-              <Box>
-                <DropDown name="Subjects" data={subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
+            {!flag?(
+              <Box
+                sx={{
+                  display: 'flex',          // Enables flexbox
+                  flexDirection: 'row',      // Aligns children horizontally
+                  gap: '8px',                // Reduce space between the boxes
+                  justifyContent: 'flex-start', // Aligns boxes to the start of the container
+                  alignItems: 'center',      // Vertically aligns items in the center
+                }}
+              >
+                <Box>
+                  <DropDown name="Subjects" data={subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
+                </Box>
+                <Box>
+                  <DropDown name="Chapters" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
+                </Box>
+                <Box>
+                  <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
+                </Box>
               </Box>
-              <Box>
-                <DropDown name="Chapters" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
-              </Box>
-              <Box>
-                <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
-              </Box>
-            </Box>
+              ):(<></>)}
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>
-
              { console.log("1Selected MCQs", MCQs)}
-
-
-
-              <MCQinfo MCQData={MCQs}/>
+              <MCQinfo MCQData={MCQs} flag={flag} setFlag={setFlag} setMCQData={setMCQs}/>
             </Box>
           </Box>
         </Box>

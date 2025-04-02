@@ -3,10 +3,11 @@ import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
 import toast from 'react-hot-toast';
  
-function MCQEditor({MCQ, setFlag, setMCQ}) {
+function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
     console.log("MCQInfo",MCQ);
-    const [userId, setUserId] = useState(1);
+    const [userId, setUserId] = useState(5);
     const [subject,setSubject] = useState([]);
+    const [editedMCQ, setEditedMCQ] = useState(MCQ)
     const[selectedSubject,setSelectedSubject] = useState({id: MCQ.subject_id,name: MCQ.subject_name});
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
@@ -27,15 +28,15 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
       useEffect(()=> {
         fetchTopics();
       },[selectedChapters])
-      const addChoices = () => {
-        if(choices.length<4){
-            const newId = choices.length + 1;
-            setChoices([...choices, { id: newId, value: '' }]);
-        }
-        else {
-            toast.error("Already 4 choices exists!")
-        }
-    };
+    //   const addChoices = () => {
+    //     if(choices.length<4){
+    //         const newId = choices.length + 1;
+    //         setChoices([...choices, { id: newId, value: '' }]);
+    //     }
+    //     else {
+    //         toast.error("Already 4 choices exists!")
+    //     }
+    // };
     const handleChange = (id, newValue) => {
         setChoices(choices.map(box => 
         box.id === id ? { ...box, value: newValue } : box
@@ -49,7 +50,7 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({mcq_id: MCQ.id, name: MCQ.name, topic_id: selectedTopic.id, marks: MCQ.marks, subject_id: selectedSubject.id, selected: false, choice1: choices[0].value, choice2: choices[1].value, choice3: choices[2].value, choice4: choices[3].value})
+            body: JSON.stringify({mcq_id: editedMCQ.id, name: editedMCQ.name, topic_id: selectedTopic.id, marks: editedMCQ.marks, subject_id: selectedSubject.id, selected: false, choice1: choices[0].value, choice2: choices[1].value, choice3: choices[2].value, choice4: choices[3].value})
         })
         .then(response => response.json())
         .then((data) => {
@@ -58,7 +59,7 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
                 toast.success("MCQ updated sucessfully! ")
             }
         })
-        setMCQ({...MCQ,topic_id: selectedTopic.id,topic_name: selectedTopic.name,chapter_id: selectedChapters.id, chapter_name:selectedChapters.name, subject_id: selectedSubject.id, subject_name: selectedSubject.name ,choice1: choices[0].value, choice2: choices[1].value, choice3: choices[2].value, choice4: choices[3].value})
+        setMCQ({...editedMCQ,topic_id: selectedTopic.id,topic_name: selectedTopic.name,chapter_id: selectedChapters.id, chapter_name:selectedChapters.name, subject_id: selectedSubject.id, subject_name: selectedSubject.name ,choice1: choices[0].value, choice2: choices[1].value, choice3: choices[2].value, choice4: choices[3].value})
         setFlag(false);
     }
     const onCancel = () => {
@@ -137,7 +138,7 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
       }
         return(
         <>
-            <Card sx={{ maxWidth: 500, m: 'auto', mt: 4, boxShadow: 3 }}>
+            <Card sx={{ width: "100%", m: 'auto', mt: 4, boxShadow: 3 }}>
                 <CardContent>
                     <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 'bold' }}>
                         Create MCQ
@@ -145,17 +146,17 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
                     <TextField
                         variant="outlined"
                         label="Write your MCQ here"
-                        value={MCQ.name}
-                        onChange={(event)=>setMCQ({...MCQ, name: event.target.value})}
+                        value={editedMCQ.name}
+                        onChange={(event)=>setEditedMCQ({...editedMCQ, name: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
-                    <TextField
+                    {/* <TextField
                         variant="outlined"
                         label="Marks"
-                        value={MCQ.marks}
-                        onChange={(event)=>setMCQ({...MCQ, marks: event.target.value})}
+                        value={editedMCQ.marks}
+                        onChange={(event)=>setEditedMCQ({...editedMCQ, marks: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
-                    />
+                    /> */}
                     {choices.map(box => (
                         <TextField
                         variant="outlined"
@@ -168,8 +169,8 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
                     <TextField
                         variant="outlined"
                         label="Answer"
-                        value={MCQ.answer}
-                        onChange = {(event)=>setMCQ({...MCQ, answer: event.target.value})}
+                        value={editedMCQ.answer}
+                        onChange = {(event)=>setEditedtMCQ({...editedMCQ, answer: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
                     <Box>

@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 function MCQCreater() {
         const navigate = useNavigate();
         const [MCQ, setMCQ] = useState([]);
-        const [userId, setUserId] = useState(1);
+        const [userId, setUserId] = useState(5);
         const [subject,setSubject] = useState([]);
         const[selectedSubject,setSelectedSubject] = useState([]);
         const [Chapters, setChapters] = useState([]);
@@ -130,7 +130,7 @@ function MCQCreater() {
           }
         return(
         <>
-            <Card sx={{ maxWidth: 500, m: 'auto', mt: 4, boxShadow: 3 }}>
+            <Card sx={{ width: "80%", m: 'auto', mt: 4, boxShadow: 3 }}>
                 <CardContent>
                     <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 'bold' }}>
                         Create MCQs
@@ -166,13 +166,13 @@ function MCQCreater() {
                         sx={{ width: '100%', mb: 2 }}
                     />
                     <Box>
-                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
+                        <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} sx={{ width: '300px' }}/>
                     </Box>
                     <Box>
                         <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} sx={{ width: '300px' }}/>
                     </Box>
                     <Box>
-                        <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} sx={{ width: '300px' }}/>
+                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
                     </Box>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>

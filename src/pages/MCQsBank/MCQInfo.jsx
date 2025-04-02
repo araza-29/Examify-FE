@@ -1,6 +1,6 @@
 import {List,ListItem,ListItemButton,ListItemIcon,ListItemText, Divider,Typography} from '@mui/material';
 import MCQEditor from './MCQEditor';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 const css = {
     width: '100%',
     maxWidth: '1000px', // Limits max width
@@ -11,8 +11,7 @@ const css = {
     marginLeft: '16px', // Adds left spacing
     padding: '8px', // Optional padding for better spacing
 };
-export default function MCQinfo({MCQData}) {
-    const [flag, setFlag] = useState(false);
+export default function MCQinfo({MCQData, flag, setFlag, setMCQData}) {
     const [MCQInfo, setMCQInfo] = useState([]);
     const toggleMCQEditor = (MCQ) => {
         console.log("Heyo from MCQ editor");
@@ -20,9 +19,20 @@ export default function MCQinfo({MCQData}) {
         setMCQInfo(MCQ);
         setFlag(true);
     }
+    const handleSaveMCQ = (editedMCQ) => {
+        console.log("Heyo from handle saver")
+        setMCQData(prevMCQData => 
+            prevMCQData.map(mcq => mcq.id === editedMCQ.id ? editedMCQ : mcq)
+        );
+    };
+
+    useEffect(()=>{
+        handleSaveMCQ(MCQInfo)
+    },[MCQInfo])
+
     console.log("MCQ after parameter", MCQData);
     return(<>
-            {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo}/> :
+            {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo} onSaveMCQ={handleSaveMCQ}/> :
             <>
                 {MCQData.map((MCQ) => {
                     return <>

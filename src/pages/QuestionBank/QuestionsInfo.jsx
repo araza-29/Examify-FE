@@ -1,6 +1,6 @@
 import {List,ListItem,ListItemButton,ListItemIcon,ListItemText, Divider,Typography} from '@mui/material';
 import QuestionEditor from './QuestionEditor';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 
 const css = {
     width: '100%',
@@ -13,7 +13,7 @@ const css = {
     padding: '8px', // Optional padding for better spacing
 };
 
-export default function Questioninfo({QuestionsData, flag, setFlag}) {
+export default function Questioninfo({QuestionsData, flag, setFlag, setQuestionData}) {
     const [QuestionInfo, setQuestionInfo] = useState([]);
     const toggleQuestionEditor = (Question) => {
         console.log("Heyo from question editor");
@@ -21,6 +21,17 @@ export default function Questioninfo({QuestionsData, flag, setFlag}) {
         setQuestionInfo(Question);
         setFlag(true);
     }
+    const handleSaveQuestion = (editedQuestion) => {
+        console.log("Heyo from handle saver")
+        setQuestionData(prevMCQData => 
+            prevMCQData.map(mcq => mcq.id === editedQuestion.id ? editedQuestion : mcq)
+        );
+    };
+
+    useEffect(()=>{
+        handleSaveQuestion(QuestionInfo)
+    },[QuestionInfo])
+
     console.log("Questions after parameter", QuestionsData);
     return(<>
             {flag === true ? <QuestionEditor Questions={QuestionInfo} setFlag={setFlag} setQuestion={setQuestionInfo}/> :

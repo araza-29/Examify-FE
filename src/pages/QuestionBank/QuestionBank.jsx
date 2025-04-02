@@ -243,7 +243,7 @@ const Home = () => {
 
 
 
-              <Questioninfo QuestionsData={Questions} flag={flag} setFlag={setFlag}/>
+              <Questioninfo QuestionsData={Questions} flag={flag} setFlag={setFlag} setQuestionData={setQuestions}/>
             </Box>
           </Box>
         </Box>
