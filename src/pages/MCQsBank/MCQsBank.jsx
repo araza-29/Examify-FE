@@ -53,21 +53,32 @@ const Home = () => {
     window.location.href = '/'; // Replace "/login" with the actual login page path
   };
   const [MCQFlag, setMCQFlag] = useState(false);
-  const [subjectId, setSubjectId] = useState(1);
+  const [userId, setUserId] = useState(Number(localStorage.getItem("userId"))||1);
   const [MCQs, setMCQs] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [Chapters, setChapters] = useState([]);
   const [allMCQs, setAllMCQs] = useState([]);
   const [Topic, setTopics] = useState([]);
-  const [selectedChapters, setSelectedChapters] = useState([]);
-  const [selectedTopic, setSelectedTopics] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedChapters, setSelectedChapters] = useState(null);
+  const [selectedTopic, setSelectedTopics] = useState(null);
   useEffect(()=> {
-    fetchChapters();
+    fetchSubjects();
     fetchMCQ();
-  },[subjectId])
+  },[userId])
+  useEffect(()=> {
+    console.log("Subject", selectedSubject)
+    if(selectedSubject !== null) {
+      fetchChapters();
+      setMCQs(allMCQs.filter((item)=> {
+        return(item.subject_id === selectedSubject.id) 
+    }))
+    }
+  },[selectedSubject])
 
   useEffect(()=> {
-    fetchTopics();
-    if(selectedChapters!=[]) {
+    if(selectedChapters !== null) {
+        fetchTopics();
         setMCQs(allMCQs.filter((item)=> {
             return(item.chapter_id === selectedChapters.id) 
         }))
@@ -75,8 +86,9 @@ const Home = () => {
     console.log("Selected MCQs", MCQs);
     console.log("Selectedchapters", selectedChapters);
   },[selectedChapters])
+
   useEffect(()=> {
-    if(selectedTopic!=[]) {
+    if(selectedTopic !== null) {
         setMCQs(allMCQs.filter((item)=> {
             return(item.topic_id === selectedTopic.id) 
         }))
@@ -84,16 +96,40 @@ const Home = () => {
     console.log("Selected MCQs", MCQs);
     console.log("Selected topics", selectedTopic);
   },[selectedTopic])
+  
   const handleCreate = () => {
     navigate('/CreateMCQ')
   }
+  const fetchSubjects = () => {
+    console.log("UserID", userId)
+    fetch("http://localhost:3000/Examination/reviewSubjectsByUserID",{
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({user_id: userId})
+    })
+    .then(response => response.json())
+    .then((data) => {
+        console.log("Subjects data", data);
+        if(data.code === 200) {
+            setSubjects(data.data);
+        }
+        else {
+            console.log("Chapter data not found");
+        }
+    }).catch((error) => {
+        console.error("Error fetching chapters:", error);
+    })
+  }
   const fetchChapters = () => {
+    console.log("subjectId", selectedSubject)
     fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({subject_id: 1})
+        body: JSON.stringify({subject_id: selectedSubject.id})
     })
     .then(response => response.json())
     .then((data) => {
@@ -133,13 +169,12 @@ const Home = () => {
     }
   }
   const fetchMCQ = () => {
-    console.log(subjectId);
-    fetch("http://localhost:3000/Examination/reviewMCQBySubjectID", {
+    fetch("http://localhost:3000/Examination/reviewMCQ", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
           },
-        body: JSON.stringify({subject_id: 1})
+        body: JSON.stringify({})
     })
     .then(response => response.json())
     .then((data) => {
@@ -173,7 +208,7 @@ const Home = () => {
               <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>
                 MCQ Bank
               </Typography>
-              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold' }}>Create Question</Button>
+              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50}}>Create MCQ</Button>
             </Box>
             {/* Content Section */}
             <Box
@@ -186,13 +221,13 @@ const Home = () => {
               }}
             >
               <Box>
-                <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
+                <DropDown name="Subjects" data={subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
               </Box>
               <Box>
                 <DropDown name="Chapters" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
               </Box>
               <Box>
-                <DropDown name="Subjects" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
+                <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
               </Box>
             </Box>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>

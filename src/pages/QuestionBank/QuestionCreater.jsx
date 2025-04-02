@@ -1,12 +1,13 @@
-import {Card,CardActions,CardContent,TextField, Typography,Button,Box,Input} from '@mui/material'
+import {Card,CardActions,CardContent,TextField, Typography,Button,Box,Input, FormControl, Select, InputLabel, MenuItem} from '@mui/material'
 import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
 import { Subject } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 function QuestionCreater() {
         const navigate = useNavigate();
         const [Question, setQuestion] = useState([]);
-        const [userId, setUserId] = useState(1);
+        const [userId, setUserId] = useState(5);
         const [subject,setSubject] = useState([]);
         const[selectedSubject,setSelectedSubject] = useState([]);
         const [Chapters, setChapters] = useState([]);
@@ -31,14 +32,32 @@ function QuestionCreater() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({name: Question.name, topic_id: selectedTopic.id, marks: Question.marks, subject_id: selectedSubject.id, selected: false})
+                body: JSON.stringify({name: Question.name, topic_id: selectedTopic.id, marks: Question.marks, subject_id: selectedSubject.id, selected: false, type: Question.type})
             })
             .then(response => response.json())
             .then((data) => {
                 if(data.code === 200) {
-                    console.log("Question Uploaded successfully!");
+                    console.log("Question Uploaded successfully!", data);
+                    var questionId = data.data.id;
+                    fetch("http://localhost:3000/Examination/createAnswer", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({question_id: questionId, answer: Question.answer})
+                    })
+                    .then(response => response.json())
+                    .then((data) => {
+                        if(data.code === 200) {
+                            console.log("Answer Uploaded successfully!");
+                            toast.success("Question created sucessfully!")
+                        }
+                    })
                 }
             })
+            navigate('/questionbank')
+        }
+        const onCancel = () => {
             navigate('/questionbank')
         }
         const fetchSubject = () => {
@@ -113,7 +132,7 @@ function QuestionCreater() {
           }
         return(
         <>
-            <Card sx={{ maxWidth: 500, m: 'auto', mt: 4, boxShadow: 3 }}>
+            <Card sx={{ width: '80%', m: 'auto', mt: 4, boxShadow: 3 }}>
                 <CardContent>
                     <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 'bold' }}>
                         Create Questions
@@ -132,22 +151,65 @@ function QuestionCreater() {
                         onChange = {(event)=>setQuestion({...Question, marks: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
-                    <Box>
-                        <Input type="file" onChange ={(e)=>{setImage(e.target.value)}}></Input>
+                    <FormControl sx={{width: '100%', mb: 2 }}>
+                        <InputLabel sx={{ color: 'primary.main' }}>Question Type</InputLabel>
+                        <Select
+                            value={Question?.type || ""}
+                            name="searchTopic"
+                            onChange={(event) => setQuestion({...Question, type: event.target.value})}
+                            sx={{ 
+                                backgroundColor: 'background.paper', 
+                                borderRadius: 1 
+                            }}
+                        >
+                            <MenuItem key={1} value="long">long</MenuItem>
+                            <MenuItem key={2} value="short">Short</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <TextField
+                        variant="outlined"
+                        label="Answer"
+                        value={Question.answer}
+                        onChange={(event)=>setQuestion({...Question, answer: event.target.value})}
+                        sx={{ width: '100%', mb: 2 }}
+                    />
+                    <Box sx={{ width: "90%",margin: "auto", display: "flex", alignItems: "center", gap: 2, p: 2, border: "1px dashed #ccc", borderRadius: 2 }}>
+                        <Button
+                            variant="contained"
+                            component="label"
+                            sx={{ textTransform: "none" }}
+                        >
+                            Upload File
+                            <input
+                                type="file"
+                                hidden
+                                onChange={(e) => setImage(e.target.files[0])}
+                            />
+                        </Button>
+                        <TextField
+                            variant="outlined"
+                            fullWidth
+                            value={image ? image.name : ""}
+                            placeholder="No file selected"
+                            InputProps={{ readOnly: true }}
+                        />
                     </Box>
                     <Box>
-                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
+                        <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} sx={{ width: '300px' }}/>
                     </Box>
                     <Box>
                         <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} sx={{ width: '300px' }}/>
                     </Box>
                     <Box>
-                        <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} sx={{ width: '300px' }}/>
+                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
                     </Box>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>
                     <Button variant="contained" color="primary" onClick = {onSave} sx={{ fontWeight: 'bold' }}>
                         Save
+                    </Button>
+                    <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
+                        Cancel
                     </Button>
                 </CardActions>
             </Card>

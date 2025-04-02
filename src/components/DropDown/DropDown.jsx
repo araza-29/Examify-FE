@@ -7,7 +7,7 @@ const SearchableDropDown = ({data, selectedData, setSelectedData, name }) => {
             <FormControl sx={{ minWidth: 300, margin: 2 }}>
                 <InputLabel sx={{ color: 'primary.main' }}>{name}</InputLabel>
                 <Select
-                    value={selectedData.name}
+                    value={selectedData?.name || ""}
                     name="searchTopic"
                     onChange={(e) => data.filter((item)=>{
                         if(item.name === e.target.value) {

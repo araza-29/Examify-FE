@@ -54,61 +54,89 @@ const Home = () => {
     window.location.href = '/'; // Replace "/login" with the actual login page path
   };
   const [QuestionFlag, setQuestionFlag] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState([]);
-  const [Subject, setSubject] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [Subjects, setSubjects] = useState([]);
   const [Questions, setQuestions] = useState([]);
   const [Chapters, setChapters] = useState([]);
   const [allQuestions, setAllQuestions] = useState([]);
   const [Topic, setTopics] = useState([]);
-  const [selectedChapters, setSelectedChapters] = useState([]);
-  const [selectedTopic, setSelectedTopics] = useState([]);
-  const [userID, setUserID] = useState(1);
-  useEffect(()=>{
-    fetchQuestion();
-    const sub = Object.values(
-      Questions.reduce((acc, q) => ({
-        ...acc,
-        [q.subject_id]: { id: q.subject_id, name: q.subject_name }
-      }), {})
-    );
-    setSubject(sub);
-  },[userID])
+  const [selectedChapters, setSelectedChapters] = useState(null);
+  const [selectedTopic, setSelectedTopics] = useState(null);
+  const [userID, setUserID] = useState(5);
+  const [flag, setFlag] = useState(false);
+
   useEffect(()=> {
-    fetchChapters();
+      fetchSubjects();
+      fetchQuestion();
+    },[userID])
+
+  useEffect(()=> {
+    console.log("Subject", selectedSubject)
+    if(selectedSubject !== null) {
+      fetchChapters();
+      setQuestions(allQuestions.filter((item)=> {
+        return(item.subject_id === selectedSubject.id) 
+    }))
+    }
   },[selectedSubject])
 
   useEffect(()=> {
-    fetchTopics();
-    if(selectedChapters!=[]) {
-        setQuestions(allQuestions.filter((item)=> {
+      if(selectedChapters !== null) {
+          fetchTopics();
+          setQuestions(Questions.filter((item)=> {
             return(item.chapter_id === selectedChapters.id) 
         }))
-    }
-    console.log("Selected QUestions", Questions);
-    console.log("Selectedchapters", selectedChapters);
-  },[selectedChapters])
+      }
+      console.log("Selectedchapters", selectedChapters);
+    },[selectedChapters])
+
   useEffect(()=> {
-    if(selectedTopic!=[]) {
-        setQuestions(allQuestions.filter((item)=> {
+    if(selectedTopic !== null) {
+        setQuestions(Questions.filter((item)=> {
             return(item.topic_id === selectedTopic.id) 
         }))
     }
-    console.log("Selected QUestions", Questions);
     console.log("Selected topics", selectedTopic);
   },[selectedTopic])
+
+  const fetchSubjects = () => {
+    console.log("UserID", userID)
+    fetch("http://localhost:3000/Examination/reviewSubjectsByUserID",{
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({user_id: userID})
+    })
+    .then(response => response.json())
+    .then((data) => {
+        console.log("Subjects data", data);
+        if(data.code === 200) {
+            setSubjects(data.data);
+            setSelectedSubject(null);
+        }
+        else {
+            console.log("Chapter data not found");
+        }
+    }).catch((error) => {
+        console.error("Error fetching chapters:", error);
+    })
+  }
+
   const fetchChapters = () => {
     fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({subject_id: 1})
+        body: JSON.stringify({subject_id: selectedSubject.id})
     })
     .then(response => response.json())
     .then((data) => {
         console.log("Chapter data", data);
         if(data.code === 200) {
             setChapters(data.data);
+            setSelectedChapters(null);
         }
         else {
             console.log("Chapter data not found");
@@ -131,6 +159,7 @@ const Home = () => {
             console.log("Topic data", data);
             if(data.code === 200) {
                 setTopics(data.data);
+                setSelectedTopics(null);
             }
             else {
                 console.log("Topics data not found");
@@ -147,7 +176,7 @@ const Home = () => {
         headers: {
             'Content-Type': 'application/json'
           },
-        body: JSON.stringify({user_id: 1})
+        body: JSON.stringify({user_id: userID})
     })
     .then(response => response.json())
     .then((data) => {
@@ -184,9 +213,10 @@ const Home = () => {
               <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>
                 Question Bank
               </Typography>
-              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold' }}>Create Question</Button>
+              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50}}>Create Question</Button>
             </Box>
             {/* Content Section */}
+            {!flag?(
             <Box
               sx={{
                 display: 'flex',          // Enables flexbox
@@ -197,22 +227,23 @@ const Home = () => {
               }}
             >
               <Box>
-                <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
+                <DropDown name="Subjects" data={Subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
               </Box>
               <Box>
                 <DropDown name="Chapters" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
               </Box>
               <Box>
-                <DropDown name="Subjects" data={Subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
+                <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
               </Box>
             </Box>
+            ):(<></>)}
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>
 
              { console.log("1Selected QUestions", Questions)}
 
 
 
-              <Questioninfo QuestionsData={Questions}/>
+              <Questioninfo QuestionsData={Questions} flag={flag} setFlag={setFlag}/>
             </Box>
           </Box>
         </Box>

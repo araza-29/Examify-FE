@@ -4,17 +4,16 @@ import {useState} from 'react';
 
 const css = {
     width: '100%',
-    height: '20vh',  // Full viewport height
-    maxWidth: '1000px', // You can adjust max width
+    maxWidth: '1000px', // Limits max width
     bgcolor: 'background.paper',
-    overflowY: 'auto', // Allows scrolling if content overflows
     borderRadius: 2,
     boxShadow: 3, // Adds a subtle shadow
-    marginBottom: '16px', // Adds a gap between lists
-    marginLeft: '16px' // Adds a gap on the left
-}
-export default function Questioninfo({QuestionsData}) {
-    const [flag, setFlag] = useState(false);
+    marginBottom: '16px', // Adds spacing below
+    marginLeft: '16px', // Adds left spacing
+    padding: '8px', // Optional padding for better spacing
+};
+
+export default function Questioninfo({QuestionsData, flag, setFlag}) {
     const [QuestionInfo, setQuestionInfo] = useState([]);
     const toggleQuestionEditor = (Question) => {
         console.log("Heyo from question editor");

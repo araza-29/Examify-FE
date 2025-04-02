@@ -1,18 +1,16 @@
 import {List,ListItem,ListItemButton,ListItemIcon,ListItemText, Divider,Typography} from '@mui/material';
 import MCQEditor from './MCQEditor';
 import {useState} from 'react';
-
 const css = {
     width: '100%',
-    height: '20vh',  // Full viewport height
-    maxWidth: '1000px', // You can adjust max width
+    maxWidth: '1000px', // Limits max width
     bgcolor: 'background.paper',
-    overflowY: 'auto', // Allows scrolling if content overflows
     borderRadius: 2,
     boxShadow: 3, // Adds a subtle shadow
-    marginBottom: '16px', // Adds a gap between lists
-    marginLeft: '16px' // Adds a gap on the left
-}
+    marginBottom: '16px', // Adds spacing below
+    marginLeft: '16px', // Adds left spacing
+    padding: '8px', // Optional padding for better spacing
+};
 export default function MCQinfo({MCQData}) {
     const [flag, setFlag] = useState(false);
     const [MCQInfo, setMCQInfo] = useState([]);
@@ -51,7 +49,7 @@ export default function MCQinfo({MCQData}) {
                                         fontSize: '1.4rem', // Slightly larger for emphasis
                                     }}
                                 >
-                                    {MCQ.mcq}
+                                    {MCQ.name}
                                 </Typography>
 
                                 <Typography

@@ -1,6 +1,7 @@
 import {Card,CardActions,CardContent,TextField, Typography,Button,Box} from '@mui/material'
 import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
+import toast from 'react-hot-toast';
  
 function MCQEditor({MCQ, setFlag, setMCQ}) {
     console.log("MCQInfo",MCQ);
@@ -11,7 +12,12 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
     const [Topic, setTopics] = useState([]);
     const [selectedChapters, setSelectedChapters] = useState({id: MCQ.chapter_id,name: MCQ.chapter_name});
     const [selectedTopic, setSelectedTopics] = useState({id: MCQ.topic_id,name: MCQ.topic_name});
-    const [choices, setChoices] = useState([{ id: 1, value: '' }]);
+    const [choices, setChoices] = useState([
+        { id: 1, value: MCQ?.choice1 || "" },
+        { id: 2, value: MCQ?.choice2 || "" },
+        { id: 3, value: MCQ?.choice3 || "" },
+        { id: 4, value: MCQ?.choice4 || "" }
+      ]);
     useEffect(()=>{
         fetchSubject();
     },[userId])
@@ -22,8 +28,13 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
         fetchTopics();
       },[selectedChapters])
       const addChoices = () => {
-        const newId = choices.length + 1;
-        setChoices([...choices, { id: newId, value: '' }]);
+        if(choices.length<4){
+            const newId = choices.length + 1;
+            setChoices([...choices, { id: newId, value: '' }]);
+        }
+        else {
+            toast.error("Already 4 choices exists!")
+        }
     };
     const handleChange = (id, newValue) => {
         setChoices(choices.map(box => 
@@ -38,17 +49,22 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({id: MCQ.id, name: MCQ.name, topic_id: selectedTopic.id, marks: MCQ.marks, subject_id: selectedSubject.id, selected: false})
+            body: JSON.stringify({mcq_id: MCQ.id, name: MCQ.name, topic_id: selectedTopic.id, marks: MCQ.marks, subject_id: selectedSubject.id, selected: false, choice1: choices[0].value, choice2: choices[1].value, choice3: choices[2].value, choice4: choices[3].value})
         })
         .then(response => response.json())
         .then((data) => {
             if(data.code === 200) {
                 console.log("MCQ Uploaded successfully!");
+                toast.success("MCQ updated sucessfully! ")
             }
         })
-        setMCQ({...MCQ,topic_id: selectedTopic.id,topic_name: selectedTopic.name,chapter_id: selectedChapters.id, chapter_name:selectedChapters.name, subject_id: selectedSubject.id, subject_name: selectedSubject.name})
+        setMCQ({...MCQ,topic_id: selectedTopic.id,topic_name: selectedTopic.name,chapter_id: selectedChapters.id, chapter_name:selectedChapters.name, subject_id: selectedSubject.id, subject_name: selectedSubject.name ,choice1: choices[0].value, choice2: choices[1].value, choice3: choices[2].value, choice4: choices[3].value})
         setFlag(false);
     }
+    const onCancel = () => {
+        setFlag(false)
+    }
+    
     const fetchSubject = () => {
         if(userId){
         fetch("http://localhost:3000/Examination/reviewSubjectsByUserID",{
@@ -149,12 +165,13 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
                         sx={{ width: '100%', mb: 2 }}
                     />
                     ))}
-                    <Button 
-                        onClick={addChoices}
-                        className="bg-blue-500 hover:bg-blue-600"
-                    >
-                        Add Textbox
-                    </Button>
+                    <TextField
+                        variant="outlined"
+                        label="Answer"
+                        value={MCQ.answer}
+                        onChange = {(event)=>setMCQ({...MCQ, answer: event.target.value})}
+                        sx={{ width: '100%', mb: 2 }}
+                    />
                     <Box>
                         <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
                     </Box>
@@ -168,6 +185,9 @@ function MCQEditor({MCQ, setFlag, setMCQ}) {
                 <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>
                     <Button variant="contained" onClick = {onSave} color="primary" sx={{ fontWeight: 'bold' }}>
                         Save
+                    </Button>
+                    <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
+                        Cancel
                     </Button>
                 </CardActions>
             </Card>

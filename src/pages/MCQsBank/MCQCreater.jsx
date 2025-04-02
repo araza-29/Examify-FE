@@ -2,7 +2,9 @@ import {Card,CardActions,CardContent,TextField, Typography,Button,Box} from '@mu
 import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
 import { Subject } from '@mui/icons-material';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+
 function MCQCreater() {
         const navigate = useNavigate();
         const [MCQ, setMCQ] = useState([]);
@@ -14,11 +16,12 @@ function MCQCreater() {
         const [Topic, setTopics] = useState([]);
         const [selectedChapters, setSelectedChapters] = useState([]);
         const [selectedTopic, setSelectedTopics] = useState([]);
-        const [choices, setChoices] = useState([{ id: 1, value: '' }]);
-        const addChoices = () => {
-            const newId = choices.length + 1;
-            setChoices([...choices, { id: newId, value: '' }]);
-        };
+        const [choices, setChoices] = useState([
+            { id: 1, value: MCQ?.choice1 || "" },
+            { id: 2, value: MCQ?.choice2 || "" },
+            { id: 3, value: MCQ?.choice3 || "" },
+            { id: 4, value: MCQ?.choice4 || "" }
+          ]);
         const handleChange = (id, newValue) => {
             setChoices(choices.map(box => 
             box.id === id ? { ...box, value: newValue } : box
@@ -41,15 +44,19 @@ function MCQCreater() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({mcq: MCQ.name, topic_id: selectedTopic.id})
+                body: JSON.stringify({mcq_id: MCQ.id, name: MCQ.name, topic_id: selectedTopic.id, marks: MCQ.marks, subject_id: selectedSubject.id, selected: false, choice1: choices[0]?.value || null, choice2: choices[1]?.value || null, choice3: choices[2]?.value || null, choice4: choices[3]?.value || null, answer: MCQ.answer})
             })
             .then(response => response.json())
             .then((data) => {
                 if(data.code === 200) {
                     console.log("MCQ Uploaded successfully!");
+                    toast.success("MCQ created!")
                 }
             })
-            navigate('/MCQbank')
+            navigate('/MCQSbank')
+        }
+        const onCancel = () => {
+            navigate('/MCQSbank')
         }
         const fetchSubject = () => {
             if(userId){
@@ -151,12 +158,13 @@ function MCQCreater() {
                         sx={{ width: '100%', mb: 2 }}
                     />
                     ))}
-                    <Button 
-                        onClick={addChoices}
-                        className="bg-blue-500 hover:bg-blue-600"
-                    >
-                        Add Textbox
-                    </Button>
+                    <TextField
+                        variant="outlined"
+                        label="Answer"
+                        value={MCQ.answer}
+                        onChange = {(event)=>setMCQ({...MCQ, answer: event.target.value})}
+                        sx={{ width: '100%', mb: 2 }}
+                    />
                     <Box>
                         <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
                     </Box>
@@ -170,6 +178,9 @@ function MCQCreater() {
                 <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>
                     <Button variant="contained" color="primary" onClick = {onSave} sx={{ fontWeight: 'bold' }}>
                         Save
+                    </Button>
+                    <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
+                        Cancel
                     </Button>
                 </CardActions>
             </Card>
