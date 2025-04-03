@@ -1,21 +1,21 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  Box, 
-  Grid, 
-  Typography, 
-  Paper, 
-  Container,
-  Chip,
-  Divider
+  Box, Grid, Typography, Paper, Container, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip
 } from "@mui/material";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 import Sidebar from "../../components/sidebar/Sidebar";
 
-const InfoCard = ({ paper, date, subject, className }) => {
+const statusColors = {
+  Approved: "#4CAF50", // Green
+  Submitted: "#FFC107", // Yellow
+  Locked: "#F44336" // Red
+};
+
+const InfoCard = ({ paper, date, subject, className, status }) => {
   return (
     <Paper
       elevation={1}
@@ -49,44 +49,33 @@ const InfoCard = ({ paper, date, subject, className }) => {
       </Typography>
       
       <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-        <CalendarTodayOutlinedIcon 
-          fontSize="small" 
-          sx={{ mr: 1, color: "#1976d2" }} 
-        />
-        <Typography variant="body2" color="text.secondary">
-          {date}
-        </Typography>
+        <CalendarTodayOutlinedIcon fontSize="small" sx={{ mr: 1, color: "#1976d2" }} />
+        <Typography variant="body2" color="text.secondary">{date}</Typography>
       </Box>
       
       <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-        <MenuBookOutlinedIcon 
-          fontSize="small" 
-          sx={{ mr: 1, color: "#1976d2" }} 
-        />
+        <MenuBookOutlinedIcon fontSize="small" sx={{ mr: 1, color: "#1976d2" }} />
         <Chip 
           label={subject} 
           size="small" 
-          sx={{ 
-            backgroundColor: "#e3f2fd", 
-            color: "#1976d2",
-            fontWeight: 500
-          }} 
+          sx={{ backgroundColor: "#e3f2fd", color: "#1976d2", fontWeight: 500 }} 
         />
       </Box>
       
-      <Box sx={{ display: "flex", alignItems: "center" }}>
-        <SchoolOutlinedIcon 
-          fontSize="small" 
-          sx={{ mr: 1, color: "#1976d2" }} 
-        />
+      <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+        <SchoolOutlinedIcon fontSize="small" sx={{ mr: 1, color: "#1976d2" }} />
         <Chip 
           label={className} 
           size="small" 
-          sx={{ 
-            backgroundColor: "#e3f2fd", 
-            color: "#1976d2",
-            fontWeight: 500
-          }} 
+          sx={{ backgroundColor: "#e3f2fd", color: "#1976d2", fontWeight: 500 }} 
+        />
+      </Box>
+      
+      <Box sx={{ display: "flex", alignItems: "center", mt: "auto" }}>
+        <Chip 
+          label={status} 
+          size="small" 
+          sx={{ backgroundColor: statusColors[status] || "#bdbdbd", color: "#fff", fontWeight: 500 }} 
         />
       </Box>
     </Paper>
@@ -95,86 +84,106 @@ const InfoCard = ({ paper, date, subject, className }) => {
 
 const PaperInfo = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const data = location.state?.paper || [];
-  console.log("Data received by paper info", data);
-  const handleClick =(index) =>{
-    console.log("PaperCheck in paperinfo", data)
-    console.log("Paper selected check: ", data[index])
-    navigate("/PaperEditing", { state: { paper: data[index] } });
+  const [papers, setPapers] = useState([]);
+  useEffect(()=>{
+    fetch("http://localhost:3000/Examination/reviewAllPaperByUserID", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: 5
+      }),
+    })
+      .then((response) => response.json())
+      .then((data)=>{
+        console.log("Papers Fetched", data)
+        setPapers(data.data);
+      })
+  },[])
+
+  const handleCreate = () => {
+    navigate("/PaperMaking");
   }
+
+  // useEffect(() => {
+  //   console.log("Papers:", papers);
+  //   console.log("Is papers an array?", Array.isArray(papers));
+  //   if(papers){
+  //     const papersArray = papers && typeof papers === "object" ? Object.values(papers) : [];
+  //     console.log("Converted Papers Array:", papersArray);
+  //     const accepted = papersArray.filter(p => p.locked === 1);
+  //     const left = papersArray.filter(p => p.completed !== 1);
+  //     const rejected = papersArray.filter(p => p.reviewed === 2 && p.locked === 2);
+    
+  //     setPapersAccepted(accepted);
+  //     setPapersLeft(left);
+  //     setPapersRejected(rejected);
+    
+  //     setDashboardCards([
+  //       { title: "Papers left", icon: FileText, num: left.length },
+  //       { title: "Papers rejected", icon: RefreshCw, num: rejected.length },
+  //       { title: "Papers accepted", icon: CheckCircle, num: accepted.length },
+  //     ]);
+  //   }
+  // }, [papers]);
+
+  const handleClick = (index) => {
+    navigate("/PaperEditing", { state: { paper: papers[index] } });
+  };
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        height: "100vh",
-        width: "100vw",
-        backgroundColor: "#f0f2f5",
-      }}
-    >
+    <Box sx={{ display: "flex", height: "100vh", width: "100vw", backgroundColor: "#f0f2f5" }}>
       <Sidebar />
-      <Box
-        component="main"
-        sx={{
-          flex: 1,
-          padding: "20px",
-          flexGrow: 1,
-          overflowY: "auto",
-          backgroundColor: "#f5f9ff",
-          paddingX: 3,
-          paddingY: 3,
-        }}
-      >
+      <Box component="main" sx={{ flex: 1, padding: "20px", overflowY: "auto", backgroundColor: "#f5f9ff" }}>
         <Container maxWidth="lg" sx={{ py: 2 }}>
-          <Typography 
-            variant="h4" 
-            component="h1" 
-            fontWeight="700" 
-            sx={{ mb: 1, color: "#1565c0" }}
-          >
-            Paper Information
-          </Typography>
-          
-          <Typography 
-            variant="body1" 
-            color="text.secondary" 
-            sx={{ mb: 4 }}
-          >
+          <Box sx={{display:"flex"}}>
+            <Typography variant="h4" component="h1" fontWeight="700" sx={{ mb: 1, color: "#1565c0" }}>
+              Paper Information
+            </Typography>
+            <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50}}>Create Paper</Button>
+          </Box>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
             View detailed information about your papers below
           </Typography>
           
           <Divider sx={{ mb: 4, borderColor: "#bbdefb" }} />
           
-          {data.length === 0 ? (
+          {papers.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 6 }}>
               <Typography variant="h6" color="text.secondary">
                 No paper information available
               </Typography>
             </Box>
           ) : (
-            <Box sx={{ px: 2 }}>
-              <Grid 
-                container 
-                spacing={6}
-                sx={{
-                  '& > .MuiGrid-item': {
-                    paddingTop: '32px',
-                    paddingBottom: '32px'
-                  }
-                }}
-              >
-                {data.map((item, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index} onClick={() => handleClick(index)} sx={{ cursor: "pointer" }}>
-                    <InfoCard
-                      paper={item.paper}
-                      date={item.date}
-                      subject={item.subject_name}
-                      className={item.class_name}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell><strong>Paper</strong></TableCell>
+                    <TableCell><strong>Date</strong></TableCell>
+                    <TableCell><strong>Subject</strong></TableCell>
+                    <TableCell><strong>Class</strong></TableCell>
+                    <TableCell><strong>Status</strong></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {papers.map((item, index) => (
+                    <TableRow key={index} onClick={() => handleClick(index)} sx={{ cursor: "pointer" }}>
+                      <TableCell>{item.paper}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                      <TableCell>{item.subject_name}</TableCell>
+                      <TableCell>{item.class_name}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={"completed"} 
+                          size="small" 
+                          sx={{ backgroundColor: statusColors[item.status] || "#bdbdbd", color: "#fff", fontWeight: 500 }} 
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Container>
       </Box>

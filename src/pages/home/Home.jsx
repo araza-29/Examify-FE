@@ -39,9 +39,9 @@ const Home = () => {
   const [papersRejected, setPapersRejected] = useState([])
   const [papersAccepted, setPapersAccepted] = useState([])
   const [dashboardCards, setDashboardCards] = useState([
-    { title: "Papers left", icon: FileText, num: 0 },
-    { title: "Papers rejected", icon: RefreshCw, num: 0 },
-    { title: "Papers accepted", icon: CheckCircle, num: 0 },
+    { title: "Papers", icon: FileText },
+    { title: "Question Bank", icon: RefreshCw},
+    { title: "MCQs Bank", icon: CheckCircle },
   ]);
 
   const handleCardClick = (title) => {
@@ -50,51 +50,14 @@ const Home = () => {
     console.log("Papers rejected:", papersRejected);
     console.log("Papers accepted:", papersAccepted);
   
-    if (title === "Papers left") {
-      navigate("/Papers", { state: { paper: papersLeft } });
-    } else if (title === "Papers rejected") {
-      navigate("/Papers", { state: { paper: papersRejected } });
-    } else if (title === "Papers accepted") {
-      navigate("/Papers", { state: { paper: papersAccepted } });
+    if (title === "Papers") {
+      navigate("/Papers");
+    } else if (title === "MCQs Bank") {
+      navigate("/MCQSBank");
+    } else if (title === "Question Bank") {
+      navigate("/QuestionBank");
     }
   };
-
-  useEffect(()=>{
-    fetch("http://localhost:3000/Examination/reviewAllPaperByUserID", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: 1
-      }),
-    })
-      .then((response) => response.json())
-      .then((data)=>{
-        console.log("Papers Fetched", data)
-        setPapers(data.data);
-      })
-  },[])
-
-  useEffect(() => {
-    console.log("Papers:", papers);
-    console.log("Is papers an array?", Array.isArray(papers));
-    if(papers){
-      const papersArray = papers && typeof papers === "object" ? Object.values(papers) : [];
-      console.log("Converted Papers Array:", papersArray);
-      const accepted = papersArray.filter(p => p.locked === 1);
-      const left = papersArray.filter(p => p.completed !== 1);
-      const rejected = papersArray.filter(p => p.reviewed === 2 && p.locked === 2);
-    
-      setPapersAccepted(accepted);
-      setPapersLeft(left);
-      setPapersRejected(rejected);
-    
-      setDashboardCards([
-        { title: "Papers left", icon: FileText, num: left.length },
-        { title: "Papers rejected", icon: RefreshCw, num: rejected.length },
-        { title: "Papers accepted", icon: CheckCircle, num: accepted.length },
-      ]);
-    }
-  }, [papers]);
 
   return (
     <Box

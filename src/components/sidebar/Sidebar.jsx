@@ -85,6 +85,7 @@ const Sidebar = () => {
               <span>MCQS Bank</span>
             </li> 
           </Link>
+          {/*
             <Link to="/coo" style={{ textDecoration: "none" }}>
               <li style={{ display: isLinkEnabled("/coo") ? "block" : "none" }}>
                 <PersonOutlineIcon className="icon" />
@@ -207,8 +208,8 @@ const Sidebar = () => {
             <Link to="/" style={{ textDecoration: "none" }}>
               <ExitToAppIcon className="icon" />
               <span>Logout</span>
-            </Link>
-          </li>
+            </Link> */}
+          {/* </li> */}
         </ul>
       </div>
       <div className="bottom">

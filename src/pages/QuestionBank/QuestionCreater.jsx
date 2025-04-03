@@ -16,14 +16,18 @@ function QuestionCreater() {
         const [selectedTopic, setSelectedTopics] = useState([]);
         const [image, setImage] = useState(null);
         useEffect(()=>{
+            setSelectedSubject(null);
             fetchSubject();
         },[userId])
         useEffect(()=> {
+            setSelectedChapters(null);
             fetchChapters();
           },[selectedSubject])
           useEffect(()=> {
+            setSelectedTopics(null);
             fetchTopics();
           },[selectedChapters])
+
         const onSave = () => {
             console.log("SelectedTopic", selectedTopic);
             console.log("SelectedTopic", selectedSubject);

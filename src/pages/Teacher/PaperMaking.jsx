@@ -391,10 +391,12 @@ const Teacher = () => {
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
   const [sectionFlag, setSectionFlag] = useState(false);
+  const [isCreated, setIsCreated] = useState(false);
   let [token] = useState(localStorage.getItem("token"));
   const [sectionIndex, setSectionIndex] = useState(null);
   const [type, setType] = useState("");
   const [desc, setDesc] = useState("");
+  const [isSaved, setIsSaved] = useState(true);
   const [marks, setMarks] = useState(0);
   const [exsistingInfo, setExsistingInfo] = useState({
       header: 'THE EDUCATION LINK',
@@ -404,6 +406,7 @@ const Teacher = () => {
       duration: '3',
       time: "6:00PM to 9:00PM",
       date: '01-12-2024',
+      sections: 3,
       marks: 60,
       instruction: 'Attempt any 8 questions from this section. All questions carry equal marks.',
       // header: "FAST NUCES".toUpperCase(),
@@ -420,17 +423,19 @@ const Teacher = () => {
     });
   
     useEffect(() => {
-      const handleBeforeUnload = (event) => {
-          event.preventDefault();
-          event.returnValue = "Are you sure you want to leave?";
-      };
-  
-      window.addEventListener("beforeunload", handleBeforeUnload);
-  
-      return () => {
-          window.removeEventListener("beforeunload", handleBeforeUnload);
-      };
-  }, []);
+          const handleBeforeUnload = (event) => {
+            console.log("IsSaved", isSaved);  
+            if(!isSaved) {
+              event.preventDefault();
+              event.returnValue = "Are you sure?";
+            }
+          };
+          window.addEventListener("beforeunload", handleBeforeUnload);
+          return () => {
+              window.removeEventListener("beforeunload", handleBeforeUnload);
+          };
+    }, [isSaved]);
+
   useEffect(() => {
       setQuestions((prevQuestions) =>
           prevQuestions.filter(
@@ -488,23 +493,39 @@ const Teacher = () => {
   
       console.log("Section", sectionLetters);
       console.log("Existing information:", exsistingInfo);
-      console.log("PaperId", paper);
   
       // 🔹 Fetch sections from the database
       if(action==="Submit") {
-        fetch("http://localhost:3000/Examination/updatePaper", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-              paper_id: paper.id,
-              completed: 1
-          }),
-      })
-          .then((response) => response.json())
-          .catch((error) => {
-              console.error(`❌ Error creating section ${sec.name}:`, error);
-              return null;
+        if(isCreated === true){
+            fetch("http://localhost:3000/Examination/updatePaper", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                  paper_id: paper.id,
+                  completed: 1
+              }),
           })
+              .then((response) => response.json())
+              .catch((error) => {
+                  console.error(`❌ Error creating section ${sec.name}:`, error);
+                  return null;
+              })
+        }
+        else { 
+          fetch("http://localhost:3000/Examination/createPaperr", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                paper_id: paper.id,
+                completed: 1
+            }),
+        })
+            .then((response) => response.json())
+            .catch((error) => {
+                console.error(`❌ Error creating section ${sec.name}:`, error);
+                return null;
+            })
+        }
       }
   
           const sectionPromises = sectionLetters.map((sec) =>
@@ -581,6 +602,7 @@ const Teacher = () => {
         });
           console.log("✅ All Question Mappings Created Successfully!");
           toast.success(`Paper ${action}ed!`);
+          setIsSaved(true);
       setIsDisabled(false); // ✅ Re-enable button at the end
   };
   const marksTotal = (section, type) => {
@@ -659,7 +681,7 @@ const Teacher = () => {
                   variant="h3"
                   sx={{ fontFamily: "Mar", opacity: 0.75, ml: 2 }}
                 >
-                  Paper Editor
+                  Paper Maker
                 </Typography>
               </Box>
               <Button
@@ -716,6 +738,7 @@ const Teacher = () => {
                   setMCQs={setMCQs}
                   SelectedMCQs={selectedMCQ}
                   sections={sectionLetters}
+                  setIsSaved={setIsSaved}
                 ></ModalSelectMCQs>
               </Box>
               <Box sx={{ width: "91.666667%", my: 2 }}>
@@ -723,6 +746,7 @@ const Teacher = () => {
                   setQuestions={setQuestions}
                   SelectedQuestions={selectedQuestion}
                   sections={sectionLetters}
+                  setIsSaved={setIsSaved}
                 ></ModalSelectQuestions>
               </Box>
                <SectionHandler exsistingInfo={exsistingInfo} setExsistingInfo={setExsistingInfo} sections={sectionLetters} setSections={setSectionLetters} sectionFlag={sectionFlag} setSectionFlag={setSectionFlag}/>

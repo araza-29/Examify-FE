@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
 import SectionHandler from "../../components/sectionHandler/sectionHandler"
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import {
   Card,
@@ -378,6 +378,7 @@ const Teacher = () => {
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
     textAlign: "center",
   };
+  const navigate = useNavigate();
   const [AllowEdit, setAllowEdit] = useState(false);
   const [selectedQuestion, setQuestions] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
@@ -392,6 +393,7 @@ const Teacher = () => {
     examination: 'PRELIMINARY',
     subject: 'COMPUTER-X (JINNAH)',
     ExaminationYear: '2024-25',
+    sections: 3,
     duration: '3',
     time: "6:00PM to 9:00PM",
     date: '01-12-2024',
@@ -680,7 +682,14 @@ useEffect(() => {
     setIsSaved(true);
     setIsDisabled(false); // ✅ Re-enable button at the end
 };
-
+  const handleBack = () => {
+    if(isSaved){
+      navigate("/Papers")
+    }
+    else {
+      toast.error("Paper not saved!")
+    }
+  }
   const marksTotal = (section, type) => {
     var sum = 0;
     console.log("selectedQuestion", selectedQuestion);
@@ -746,6 +755,7 @@ useEffect(() => {
                     fontSize: "1.25rem",
                     alignItems: "center",
                   }}
+                  onClick={() => handleBack()}
                 >
                   <FontAwesomeIcon icon={faArrowLeft} />
                 </Button>

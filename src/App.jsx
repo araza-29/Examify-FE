@@ -5,6 +5,7 @@ import MCQSBank from "./pages/MCQsBank/MCQsBank";
 import CreateQuestion from "./pages/QuestionBank/QuestionCreater";
 import PaperMaking from "./pages/Teacher/PaperMaking";
 import PaperInfo from "./pages/home/paperInfo"
+import Login from "./pages/login/Login"
 import MCQCreater from "./pages/MCQsBank/MCQCreater"
 import PaperEditing from "./pages/Teacher/PaperEditing"
 import { Toaster } from 'react-hot-toast';
@@ -32,6 +33,7 @@ function App() {
             <Route path="/PaperMaking" element={<PaperMaking />} />
             <Route path="/PaperEditing" element={<PaperEditing />} />
             <Route path="/Papers" element={<PaperInfo />} />
+            <Route path="/Login" element={<Login />} />
           </Routes>
         </BrowserRouter>
       </SlugProvider>

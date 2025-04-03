@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 
 export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections, setIsSaved}) {
     const [MCQsFlag, setMCQsFlag] = useState(false);
-    const [subjectId, setSubjectId] = useState(1);
+    const [subjectId, setSubjectId] = useState(3);
     const [MCQs, setMCQs] = useState([]);
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
@@ -26,7 +26,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             headers: {
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify({subject_id: 1})
+            body: JSON.stringify({subject_id: 3})
         })
         .then(response => response.json())
         .then((data) => {
@@ -89,7 +89,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({subject_id: 1})
+            body: JSON.stringify({subject_id: 3})
         })
         .then(response => response.json())
         .then((data) => {

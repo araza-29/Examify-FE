@@ -54,7 +54,7 @@ const Home = () => {
   };
   const [MCQFlag, setMCQFlag] = useState(false);
   const [flag, setFlag] = useState(false);
-  const [userId, setUserId] = useState(Number(localStorage.getItem("userId"))||1);
+  const [userId, setUserId] = useState(Number(localStorage.getItem("userId"))||5);
   const [MCQs, setMCQs] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [Chapters, setChapters] = useState([]);
@@ -203,7 +203,7 @@ const Home = () => {
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', overflowX: 'hidden'}}>
             {/* Header Section */}
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center' }}>
+              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center' }} onClick={() => navigate(-1)}>
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
               <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>

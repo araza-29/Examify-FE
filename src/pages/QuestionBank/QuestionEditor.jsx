@@ -31,12 +31,15 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
         })
     },[])
     useEffect(()=>{
+        setSelectedSubject(null);
         fetchSubject();
     },[userId])
     useEffect(()=> {
+        setSelectedChapters(null);
         fetchChapters();
       },[selectedSubject])
       useEffect(()=> {
+        setSelectedTopics(null);
         fetchTopics();
       },[selectedChapters])
     const onSave = () => {
