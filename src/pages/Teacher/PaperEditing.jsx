@@ -908,17 +908,7 @@ useEffect(() => {
                             No Questions Selected yet
                           </Typography>
                         )
-                      ) : (
-                        <Typography
-                          sx={{
-                            fontSize: "1rem",
-                            color: "#999",
-                            fontStyle: "italic",
-                          }}
-                        >
-                          No Questions Selected yet
-                        </Typography>
-                      )}
+                      ):(<></>)}
                   </Box>
                 </>
               ))}

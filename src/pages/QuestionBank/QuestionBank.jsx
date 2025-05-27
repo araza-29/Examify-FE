@@ -55,20 +55,32 @@ const Home = () => {
   };
   const [QuestionFlag, setQuestionFlag] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedClasses, setSelectedClasses] = useState([]);
   const [Subjects, setSubjects] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [Questions, setQuestions] = useState([]);
   const [Chapters, setChapters] = useState([]);
   const [allQuestions, setAllQuestions] = useState([]);
   const [Topic, setTopics] = useState([]);
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
-  const [userID, setUserID] = useState(5);
+  const [userID, setUserID] = useState(2);
   const [flag, setFlag] = useState(false);
 
   useEffect(()=> {
-      fetchSubjects();
+      fetchClasses();
       fetchQuestion();
     },[userID])
+
+  useEffect(()=> {
+    console.log("Class", selectedClasses)
+    if(selectedClasses !== null) {
+      fetchSubjects();
+      setQuestions(allQuestions.filter((item)=> {
+        return(item.class_id === selectedClasses.id) 
+    }))
+    }
+  },[selectedSubject])
 
   useEffect(()=> {
     console.log("Subject", selectedSubject)
@@ -226,6 +238,9 @@ const Home = () => {
                 alignItems: 'center',      // Vertically aligns items in the center
               }}
             >
+              <Box>
+                <DropDown name="Class" data={classes} selectedData={selectedClasses} setSelectedData={setSelectedClasses} />
+              </Box>
               <Box>
                 <DropDown name="Subjects" data={Subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
               </Box>
