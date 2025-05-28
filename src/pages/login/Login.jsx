@@ -53,7 +53,7 @@ const Login = () => {
           // Redirect based on role
           localStorage.setItem("userId", data.data.id)
           toast.success("Login Successful!")
-          navigate("/");
+          navigate("/Home");
         } else {
           toast.error("Login failed!")
           setError('Login failed. Please check your credentials.');
@@ -87,9 +87,9 @@ const Login = () => {
                 onChange={(e) => setRole(e.target.value)}
                 label="Select Role"
               >
-                <MenuItem value="1">Administrator</MenuItem>
-                <MenuItem value="3">Teacher</MenuItem>
-                <MenuItem value="2">Examination</MenuItem>
+                <MenuItem value="2">Administrator</MenuItem>
+                <MenuItem value="1">Teacher</MenuItem>
+                <MenuItem value="3">Examination</MenuItem>
               </Select>
             </FormControl>
           </div>

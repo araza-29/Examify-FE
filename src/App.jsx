@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/home/Home";
 import QuestionBank from "./pages/QuestionBank/QuestionBank";
 import MCQSBank from "./pages/MCQsBank/MCQsBank";
@@ -25,7 +25,8 @@ function App() {
 />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Navigate to="/Login" replace />}></Route>
+            <Route path="/Home" element={<Home />} />
             <Route path="/MCQSBank" element={<MCQSBank />} />
             <Route path="/QuestionBank" element={<QuestionBank />} />
             <Route path="/CreateQuestion" element={<CreateQuestion />} />

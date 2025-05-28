@@ -24,7 +24,7 @@ const DashboardCard = ({ title, icon: Icon, num }) => (
       },
     }}
   >
-    {Icon && <Icon size={40} style={{ color: "#007bff", marginBottom: "10px" }} />}
+    {Icon && <Icon size={40} style={{ color: "#7451f8", marginBottom: "10px" }} />}
     <Typography variant="h6">{title}</Typography>
     <Typography>{num}</Typography>
   </Box>
@@ -64,8 +64,7 @@ const Home = () => {
       sx={{
         display: "flex",
         height: "100vh",
-        width: "100vw",
-        backgroundColor: "#f0f2f5",
+        width: "100vw"
       }}
     >
       {/* Sidebar */}
