@@ -131,21 +131,21 @@ const PaperInfo = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", width: "100vw", backgroundColor: "#f0f2f5" }}>
+    <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
       <Sidebar />
-      <Box component="main" sx={{ flex: 1, padding: "20px", overflowY: "auto", backgroundColor: "#f5f9ff" }}>
+      <Box component="main" sx={{ flex: 1, padding: "20px", overflowY: "auto" }}>
         <Container maxWidth="lg" sx={{ py: 2 }}>
           <Box sx={{display:"flex"}}>
-            <Typography variant="h4" component="h1" fontWeight="700" sx={{ mb: 1, color: "#1565c0" }}>
+            <Typography variant="h4" component="h1" fontWeight="700" sx={{ mb: 1, color: "#7451f8" }}>
               Paper Information
             </Typography>
-            <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50}}>Create Paper</Button>
+            <Button variant="contained" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8"}}>Create Paper</Button>
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
             View detailed information about your papers below
           </Typography>
           
-          <Divider sx={{ mb: 4, borderColor: "#bbdefb" }} />
+          <Divider sx={{ mb: 4, borderColor: "#7451f8" }} />
           
           {papers.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 6 }}>

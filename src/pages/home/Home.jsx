@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import { Box, Grid, Typography } from "@mui/material";
 import Sidebar from "../../components/sidebar/Sidebar";
+import Navbar from "../../components/navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import { FileText, RefreshCw, Lock, CheckCircle } from "lucide-react";
 import PaperInfo from './paperInfo'
@@ -67,6 +68,7 @@ const Home = () => {
         width: "100vw"
       }}
     >
+
       {/* Sidebar */}
       <Sidebar />
 
@@ -78,6 +80,7 @@ const Home = () => {
         }}
       >{open? (<PaperInfo/>):(
             <>
+            <Navbar/>
                 {roleId === 1 ? (
                     <Typography variant="h4" sx={{ marginBottom: "20px" }}>
                       Admin Dashboard

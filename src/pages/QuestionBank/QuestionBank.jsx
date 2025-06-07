@@ -18,17 +18,14 @@ const Home = () => {
     display: 'flex',
     height: '100vh',
     width: '100vw',
-    backgroundColor: '#f0f2f5',
   };
 
   const sidebarStyle = {
     width: '50px',
-    backgroundColor: '#333',
   };
 
   const navbarStyle = {
     width: '200px',
-    backgroundColor: '#333',
   };
 
   const cardContainerStyle = {
@@ -64,23 +61,13 @@ const Home = () => {
   const [Topic, setTopics] = useState([]);
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
-  const [userID, setUserID] = useState(2);
+  const [userID, setUserID] = useState(1);
   const [flag, setFlag] = useState(false);
 
   useEffect(()=> {
-      fetchClasses();
+      fetchSubjects();
       fetchQuestion();
     },[userID])
-
-  useEffect(()=> {
-    console.log("Class", selectedClasses)
-    if(selectedClasses !== null) {
-      fetchSubjects();
-      setQuestions(allQuestions.filter((item)=> {
-        return(item.class_id === selectedClasses.id) 
-    }))
-    }
-  },[selectedSubject])
 
   useEffect(()=> {
     console.log("Subject", selectedSubject)
@@ -219,13 +206,13 @@ const Home = () => {
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', overflowX: 'hidden'}}>
             {/* Header Section */}
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center' }} onClick={() => navigate(-1)}>
+              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center', color: "#7451f8" }} onClick={() => navigate(-1)}>
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
-              <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>
+              <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2, color: "#7451f8" }}>
                 Question Bank
               </Typography>
-              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50}}>Create Question</Button>
+              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8"}}>Create Question</Button>
             </Box>
             {/* Content Section */}
             {!flag?(

@@ -5,7 +5,7 @@ const SearchableDropDown = ({data, selectedData, setSelectedData, name }) => {
     return ( 
         <div>
             <FormControl sx={{ minWidth: 300, margin: 2 }}>
-                <InputLabel sx={{ color: 'primary.main' }}>{name}</InputLabel>
+                <InputLabel sx={{ color: "#7451f8" }}>{name}</InputLabel>
                 <Select
                     value={selectedData?.name || ""}
                     name="searchTopic"
@@ -15,7 +15,7 @@ const SearchableDropDown = ({data, selectedData, setSelectedData, name }) => {
                         }
                     })}
                     sx={{ 
-                        backgroundColor: 'background.paper', 
+                        color: "#7451f8", 
                         borderRadius: 1 
                     }}
                 >
