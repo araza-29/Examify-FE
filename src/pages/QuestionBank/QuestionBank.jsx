@@ -61,7 +61,7 @@ const Home = () => {
   const [Topic, setTopics] = useState([]);
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
-  const [userID, setUserID] = useState(1);
+  const [userID, setUserID] = useState(5);
   const [flag, setFlag] = useState(false);
 
   useEffect(()=> {
@@ -226,16 +226,16 @@ const Home = () => {
               }}
             >
               <Box>
-                <DropDown name="Class" data={classes} selectedData={selectedClasses} setSelectedData={setSelectedClasses} />
+                <DropDown name="Class" data={classes} selectedData={selectedClasses} setSelectedData={setSelectedClasses} width={250} />
               </Box>
               <Box>
-                <DropDown name="Subjects" data={Subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
+                <DropDown name="Subjects" data={Subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} width={250}/>
               </Box>
               <Box>
-                <DropDown name="Chapters" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
+                <DropDown name="Chapters" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={250}/>
               </Box>
               <Box>
-                <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
+                <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={250} />
               </Box>
             </Box>
             ):(<></>)}

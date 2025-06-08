@@ -1,6 +1,7 @@
 import {List,ListItem,ListItemButton,ListItemIcon,ListItemText, Divider,Typography} from '@mui/material';
 import QuestionEditor from './QuestionEditor';
 import {useState, useEffect} from 'react';
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 
 const css = {
     width: '100%',
@@ -12,6 +13,7 @@ const css = {
     marginLeft: '16px', // Adds left spacing
     padding: '8px', // Optional padding for better spacing
 };
+
 
 export default function Questioninfo({QuestionsData, flag, setFlag, setQuestionData}) {
     const [QuestionInfo, setQuestionInfo] = useState([]);
@@ -36,7 +38,7 @@ export default function Questioninfo({QuestionsData, flag, setFlag, setQuestionD
     return(<>
             {flag === true ? <QuestionEditor Questions={QuestionInfo} setFlag={setFlag} setQuestion={setQuestionInfo}/> :
             <>
-                {QuestionsData.map((Question) => {
+                {/* {QuestionsData.map((Question) => {
                     return <>
                     <List sx = {css} >
                     <ListItem key={Question.id} disablePadding>
@@ -118,7 +120,17 @@ export default function Questioninfo({QuestionsData, flag, setFlag, setQuestionD
                     </>
                     }
                     )
-                }
+                } */}
+                <DataGrid
+                className="datagrid"
+                rows={QuestionsData}
+                columns={questionColumns}
+                pageSize={9}
+                rowsPerPageOptions={[9]}
+                components={{
+                    Toolbar: GridToolbar,
+                }}
+                />
             </>
             }
     </>)

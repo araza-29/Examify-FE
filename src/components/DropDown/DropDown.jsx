@@ -1,10 +1,10 @@
 import {useEffects, useRef, useState} from "react";
 import {Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
-const SearchableDropDown = ({data, selectedData, setSelectedData, name }) => {
+const SearchableDropDown = ({data, selectedData, setSelectedData, name, width }) => {
     return ( 
         <div>
-            <FormControl sx={{ minWidth: 300, margin: 2 }}>
+            <FormControl sx={{ minWidth: width, margin: 2 }}>
                 <InputLabel sx={{ color: "#7451f8" }}>{name}</InputLabel>
                 <Select
                     value={selectedData?.name || ""}
