@@ -30,6 +30,58 @@ export default function Questioninfo({QuestionsData, flag, setFlag, setQuestionD
         );
     };
 
+    const questionColumns = [
+    { field: "id", headerName: "ID", width: 70 },
+    // {
+    //   field: "center_id",
+    //   headerName: "Center Id",
+    //   width: 230,
+    // },
+    {
+        field: "name",
+        headerName: "Question",
+        width: 230,
+    },
+    {
+        field: "marks",
+        headerName: "Marks",
+        width: 230,
+    },
+    {
+        field: "topic_name",
+        headerName: "Topic",
+        width: 230,
+        
+    },
+    {
+        field: "chapter_name",
+        headerName: "Chapter",
+        width: 230,
+    },
+    {
+        field: "subject_name",
+        headerName: "Subject",
+        width: 230,
+    },
+    {
+        field: "class_name",
+        headerName: "Class",
+        width: 230,
+    },
+    // {
+    //   field: "status",
+    //   headerName: "Status",
+    //   width: 160,
+    //   renderCell: (params) => {
+    //     return (
+    //       <div className={`cellWithStatus ${params.row.status}`}>
+    //         {params.row.status}
+    //       </div>
+    //     );
+    //   },
+    // },
+    ];
+
     useEffect(()=>{
         handleSaveQuestion(QuestionInfo)
     },[QuestionInfo])
@@ -121,6 +173,7 @@ export default function Questioninfo({QuestionsData, flag, setFlag, setQuestionD
                     }
                     )
                 } */}
+                {console.log("Questions check", QuestionsData)}
                 <DataGrid
                 className="datagrid"
                 rows={QuestionsData}
