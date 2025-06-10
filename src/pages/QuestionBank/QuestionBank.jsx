@@ -167,12 +167,12 @@ const Home = () => {
 
   const fetchSubjects = () => {
     console.log("UserID", userID);
-    fetch("http://localhost:3000/Examination/reviewSubjectsByUserID", {
+    fetch("http://localhost:3000/Examination/reviewSubjectsByClassID", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ user_id: userID }),
+      body: JSON.stringify({ class_id: selectedClasses.id }),
     })
       .then((response) => response.json())
       .then((data) => {
