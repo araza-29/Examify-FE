@@ -328,7 +328,7 @@ const Home = () => {
       headerName: "Class",
       filterable: true,
       type: 'singleSelect', // important
-      valueOptions: classes.map(option => option.value),
+      valueOptions: classes.map(option => option.name),
       filterOperators: getGridSingleSelectOperators(),
       width: 230,
     },
