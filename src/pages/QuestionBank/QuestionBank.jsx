@@ -46,7 +46,7 @@ const Home = () => {
   };
 
   const sidebarStyle = {
-    width: "50px",
+    width: "20px",
   };
 
   const navbarStyle = {
@@ -97,7 +97,7 @@ const Home = () => {
   useEffect(() => {
     console.log("Class", selectedClasses);
     if (selectedClasses !== null) {
-      fetchSubjects();
+      // fetchSubjects();
       setQuestions(
         allQuestions.filter((item) => {
           return item.class_id === selectedClasses.id;
@@ -165,76 +165,76 @@ const Home = () => {
       });
   };
 
-  const fetchSubjects = () => {
-    console.log("UserID", userID);
-    fetch("http://localhost:3000/Examination/reviewSubjectsByClassID", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ class_id: selectedClasses.id }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Subjects data", data);
-        if (data.code === 200) {
-          setSubjects(data.data);
-          setSelectedSubject(null);
-        } else {
-          console.log("Chapter data not found");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching chapters:", error);
-      });
-  };
+  // const fetchSubjects = () => {
+  //   console.log("UserID", userID);
+  //   fetch("http://localhost:3000/Examination/reviewSubjectsByClassID", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ class_id: selectedClasses.id }),
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log("Subjects data", data);
+  //       if (data.code === 200) {
+  //         setSubjects(data.data);
+  //         setSelectedSubject(null);
+  //       } else {
+  //         console.log("Chapter data not found");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching chapters:", error);
+  //     });
+  // };
 
-  const fetchChapters = () => {
-    fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ subject_id: selectedSubject.id }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Chapter data", data);
-        if (data.code === 200) {
-          setChapters(data.data);
-          setSelectedChapters(null);
-        } else {
-          console.log("Chapter data not found");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching chapters:", error);
-      });
-  };
-  const fetchTopics = () => {
-    if (selectedChapters.id) {
-      fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ chapter_id: selectedChapters.id }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Topic data", data);
-          if (data.code === 200) {
-            setTopics(data.data);
-            setSelectedTopics(null);
-          } else {
-            console.log("Topics data not found");
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching topics:", error);
-        });
-    }
-  };
+  // const fetchChapters = () => {
+  //   fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ subject_id: selectedSubject.id }),
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log("Chapter data", data);
+  //       if (data.code === 200) {
+  //         setChapters(data.data);
+  //         setSelectedChapters(null);
+  //       } else {
+  //         console.log("Chapter data not found");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching chapters:", error);
+  //     });
+  // };
+  // const fetchTopics = () => {
+  //   if (selectedChapters.id) {
+  //     fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ chapter_id: selectedChapters.id }),
+  //     })
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         console.log("Topic data", data);
+  //         if (data.code === 200) {
+  //           setTopics(data.data);
+  //           setSelectedTopics(null);
+  //         } else {
+  //           console.log("Topics data not found");
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error fetching topics:", error);
+  //       });
+  //   }
+  // };
   const fetchQuestion = () => {
     fetch(
       "http://localhost:3000/Examination/reviewEveryDetailsQuestionsByUserID",
@@ -332,6 +332,29 @@ const Home = () => {
       filterOperators: getGridSingleSelectOperators(),
       width: 230,
     },
+    {
+    field: "action",
+      headerName: "Action",
+      width: 200,
+      renderCell: (params) => {
+        return (
+          <div className="cellAction">
+            {/* <Link
+              to={`/srecord/${params.row.id}`}
+              style={{ textDecoration: "none" }}
+            > */}
+              <div className="viewButton">View</div>
+            {/* </Link> */}
+            <div
+              className="deleteButton"
+              onClick={() => handleDelete(params.row.id)}
+            >
+              Delete
+            </div>
+          </div>
+        );
+      },
+    },
     // {
     //   field: "status",
     //   headerName: "Status",
@@ -366,10 +389,10 @@ const Home = () => {
           }}
         >
           {/* Sidebar or Left Section */}
-          <Sidebar style={{ sidebarStyle }} />
+          <Sidebar />
           <Box
             sx={{
-              flex: 1,
+              flex: 6,
               display: "flex",
               flexDirection: "column",
               height: "100%",
@@ -377,6 +400,7 @@ const Home = () => {
               overflowX: "hidden",
             }}
           >
+            <Navbar/>
             {/* Header Section */}
             <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
               <Button

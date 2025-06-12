@@ -8,6 +8,7 @@ import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 import Sidebar from "../../components/sidebar/Sidebar";
+import { DataGrid, GridToolbar, getGridSingleSelectOperators } from "@mui/x-data-grid";
 
 const statusColors = {
   Approved: "#4CAF50", // Green
@@ -16,6 +17,7 @@ const statusColors = {
 };
 
 const InfoCard = ({ paper, date, subject, className, status }) => {
+  
   return (
     <Paper
       elevation={1}
@@ -129,7 +131,63 @@ const PaperInfo = () => {
   const handleClick = (index) => {
     navigate("/PaperEditing", { state: { paper: papers[index] } });
   };
-
+ const paperColumns = [
+    { field: "id", headerName: "ID", width: 70 },
+    // {
+    //   field: "center_id",
+    //   headerName: "Center Id",
+    //   width: 230,
+    // },
+    {
+      field: "paper",
+      headerName: "Paper",
+      width: 230,
+    },
+    {
+      field: "date",
+      headerName: "Date",
+      width: 230,
+    },
+    {
+      field: "subject_name",
+      headerName: "Subject",
+      // filterable: true,
+      // type: 'singleSelect', // important
+      // // valueOptions: Subjects.map(option => option.name),
+      // filterOperators: getGridSingleSelectOperators(),
+      width: 230,
+    },
+    {
+      field: "class_name",
+      headerName: "Class",
+      // filterable: true,
+      // type: 'singleSelect', // important
+      // // valueOptions: classes.map(option => option.name),
+      // filterOperators: getGridSingleSelectOperators(),
+      width: 230,
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      // filterable: true,
+      // type: 'singleSelect', // important
+      // // valueOptions: classes.map(option => option.name),
+      // filterOperators: getGridSingleSelectOperators(),
+      width: 230,
+    },
+    // {
+    //   field: "status",
+    //   headerName: "Status",
+    //   width: 160,
+    //   renderCell: (params) => {
+    //     return (
+    //       <div className={`cellWithStatus ${params.row.status}`}>
+    //         {params.row.status}
+    //       </div>
+    //     );
+    //   },
+    // },
+  ];
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
       <Sidebar />
@@ -154,36 +212,48 @@ const PaperInfo = () => {
               </Typography>
             </Box>
           ) : (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell><strong>Paper</strong></TableCell>
-                    <TableCell><strong>Date</strong></TableCell>
-                    <TableCell><strong>Subject</strong></TableCell>
-                    <TableCell><strong>Class</strong></TableCell>
-                    <TableCell><strong>Status</strong></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {papers.map((item, index) => (
-                    <TableRow key={index} onClick={() => handleClick(index)} sx={{ cursor: "pointer" }}>
-                      <TableCell>{item.paper}</TableCell>
-                      <TableCell>{item.date}</TableCell>
-                      <TableCell>{item.subject_name}</TableCell>
-                      <TableCell>{item.class_name}</TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={"completed"} 
-                          size="small" 
-                          sx={{ backgroundColor: statusColors[item.status] || "#bdbdbd", color: "#fff", fontWeight: 500 }} 
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <Box sx={{height: 550}}>
+              <DataGrid
+                className="datagrid"
+                rows={papers}
+                columns={paperColumns}
+                pageSize={9}
+                rowsPerPageOptions={[9]}
+                components={{
+                  Toolbar: GridToolbar,
+                }}
+              />
+            </Box>
+            // <TableContainer component={Paper}>
+            //   <Table>
+            //     <TableHead>
+            //       <TableRow>
+            //         <TableCell><strong>Paper</strong></TableCell>
+            //         <TableCell><strong>Date</strong></TableCell>
+            //         <TableCell><strong>Subject</strong></TableCell>
+            //         <TableCell><strong>Class</strong></TableCell>
+            //         <TableCell><strong>Status</strong></TableCell>
+            //       </TableRow>
+            //     </TableHead>
+            //     <TableBody>
+            //       {papers.map((item, index) => (
+            //         <TableRow key={index} onClick={() => handleClick(index)} sx={{ cursor: "pointer" }}>
+            //           <TableCell>{item.paper}</TableCell>
+            //           <TableCell>{item.date}</TableCell>
+            //           <TableCell>{item.subject_name}</TableCell>
+            //           <TableCell>{item.class_name}</TableCell>
+            //           <TableCell>
+            //             <Chip 
+            //               label={"completed"} 
+            //               size="small" 
+            //               sx={{ backgroundColor: statusColors[item.status] || "#bdbdbd", color: "#fff", fontWeight: 500 }} 
+            //             />
+            //           </TableCell>
+            //         </TableRow>
+            //       ))}
+            //     </TableBody>
+            //   </Table>
+            // </TableContainer>
           )}
         </Container>
       </Box>
