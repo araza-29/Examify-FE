@@ -75,12 +75,12 @@ const Home = () => {
       {/* Main Content */}
       <Box
         sx={{
-          flex: 1,
-          padding: "20px",
+          flex: 6
         }}
       >{open? (<PaperInfo/>):(
             <>
             <Navbar/>
+            <Box sx={{padding: 5}}>
                 {roleId === 1 ? (
                     <Typography variant="h4" sx={{ marginBottom: "20px" }}>
                       Admin Dashboard
@@ -103,6 +103,7 @@ const Home = () => {
                     </Grid>
                 ))}
                 </Grid>
+              </Box>
             </>
         )
         }

@@ -1,5 +1,6 @@
 import React from "react";
 import { useState, useEffect} from "react";
+import Navbar from "../../components/navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import { 
   Box, Grid, Typography, Paper, Container, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip
@@ -9,7 +10,10 @@ import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { DataGrid, GridToolbar, getGridSingleSelectOperators } from "@mui/x-data-grid";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowLeft,
+} from "@fortawesome/free-solid-svg-icons";
 const statusColors = {
   Approved: "#4CAF50", // Green
   Submitted: "#FFC107", // Yellow
@@ -191,19 +195,29 @@ const PaperInfo = () => {
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
       <Sidebar />
-      <Box component="main" sx={{ flex: 1, padding: "20px", overflowY: "auto" }}>
-        <Container maxWidth="lg" sx={{ py: 2 }}>
+      <Box component="main" sx={{ flex: 6, overflowY: "auto"}}>
+        <Navbar/>
+        <Box sx={{padding: 3}}>
           <Box sx={{display:"flex"}}>
-            <Typography variant="h4" component="h1" fontWeight="700" sx={{ mb: 1, color: "#7451f8" }}>
-              Paper Information
+            <Button
+              variant="text"
+              sx={{
+                display: "flex",
+                px: 2,
+                py: 2,
+                fontSize: "1.25rem",
+                alignItems: "center",
+                color: "#7451f8",
+              }}
+              onClick={() => navigate(-1)}
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+            </Button>
+            <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2, color: "#7451f8", }}>
+              Papers
             </Typography>
             <Button variant="contained" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8"}}>Create Paper</Button>
           </Box>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            View detailed information about your papers below
-          </Typography>
-          
-          <Divider sx={{ mb: 4, borderColor: "#7451f8" }} />
           
           {papers.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 6 }}>
@@ -212,7 +226,7 @@ const PaperInfo = () => {
               </Typography>
             </Box>
           ) : (
-            <Box sx={{height: 550}}>
+            <Box sx={{height: 600,width:1200, paddingTop: 2}}>
               <DataGrid
                 className="datagrid"
                 rows={papers}
@@ -255,7 +269,7 @@ const PaperInfo = () => {
             //   </Table>
             // </TableContainer>
           )}
-        </Container>
+          </Box>
       </Box>
     </Box>
   );

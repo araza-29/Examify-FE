@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import MCQinfo from "./MCQInfo";
 import DropDown from "../../components/DropDown/DropDown"
+import { DataGrid, GridToolbar, getGridSingleSelectOperators } from "@mui/x-data-grid";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -17,12 +18,10 @@ const Home = () => {
     display: 'flex',
     height: '100vh',
     width: '100vw',
-    backgroundColor: '#f0f2f5',
   };
 
   const sidebarStyle = {
     width: '50px',
-    backgroundColor: '#333',
   };
 
   const navbarStyle = {
@@ -54,7 +53,7 @@ const Home = () => {
   };
   const [MCQFlag, setMCQFlag] = useState(false);
   const [flag, setFlag] = useState(false);
-  const [userId, setUserId] = useState(Number(localStorage.getItem("userId"))||5);
+  const [userId, setUserId] = useState(5);
   const [MCQs, setMCQs] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [Chapters, setChapters] = useState([]);
@@ -63,40 +62,129 @@ const Home = () => {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
+  const Columns = [
+        { field: "id", headerName: "ID", width: 70 },
+        // {
+        //   field: "center_id",
+        //   headerName: "Center Id",
+        //   width: 230,
+        // },
+        {
+          field: "name",
+          headerName: "Question",
+          width: 230,
+        },
+        {
+          field: "marks",
+          headerName: "Marks",
+          width: 230,
+        },
+        {
+          field: "topic_name",
+          headerName: "Topic",
+          width: 230,
+          // filterable: true,
+          // type: 'singleSelect', // important
+          // valueOptions: topic.map(option => option.name),
+          filterOperators: getGridSingleSelectOperators(),
+        },
+        {
+          field: "chapter_name",
+          headerName: "Chapter",
+          width: 230,
+          // filterable: true,
+          // type: 'singleSelect', // important
+          // valueOptions: Chapters.map(option => option.name),
+          // filterOperators: getGridSingleSelectOperators(),
+        },
+        {
+          field: "subject_name",
+          headerName: "Subject",
+          // filterable: true,
+          // type: 'singleSelect', // important
+          // valueOptions: Subjects.map(option => option.name),
+          // filterOperators: getGridSingleSelectOperators(),
+          width: 230,
+        },
+        {
+          field: "class_name",
+          headerName: "Class",
+          // filterable: true,
+          // type: 'singleSelect', // important
+          // valueOptions: classes.map(option => option.name),
+          // filterOperators: getGridSingleSelectOperators(),
+          width: 230,
+        },
+        {
+        field: "action",
+          headerName: "Action",
+          width: 200,
+          renderCell: (params) => {
+            return (
+              <div className="cellAction">
+                {/* <Link
+                  to={`/srecord/${params.row.id}`}
+                  style={{ textDecoration: "none" }}
+                > */}
+                  <div className="viewButton">View</div>
+                {/* </Link> */}
+                <div
+                  className="deleteButton"
+                  onClick={() => handleDelete(params.row.id)}
+                >
+                  Delete
+                </div>
+              </div>
+            );
+          },
+        },
+        // {
+        //   field: "status",
+        //   headerName: "Status",
+        //   width: 160,
+        //   renderCell: (params) => {
+        //     return (
+        //       <div className={`cellWithStatus ${params.row.status}`}>
+        //         {params.row.status}
+        //       </div>
+        //     );
+        //   },
+        // },
+      ];
   useEffect(()=> {
     fetchSubjects();
     fetchMCQ();
   },[userId])
-  useEffect(()=> {
-    console.log("Subject", selectedSubject)
-    if(selectedSubject !== null) {
-      fetchChapters();
-      setMCQs(allMCQs.filter((item)=> {
-        return(item.subject_id === selectedSubject.id) 
-    }))
-    }
-  },[selectedSubject])
+  // useEffect(()=> {
+  //   console.log("Subject", selectedSubject)
+  //   if(selectedSubject !== null) {
+  //     fetchChapters();
+  //     setMCQs(allMCQs.filter((item)=> {
+  //       return(item.subject_id === selectedSubject.id) 
+  //   }))
+  //   }
+  // },[selectedSubject])
 
-  useEffect(()=> {
-    if(selectedChapters !== null) {
-        fetchTopics();
-        setMCQs(allMCQs.filter((item)=> {
-            return(item.chapter_id === selectedChapters.id) 
-        }))
-    }
-    console.log("Selected MCQs", MCQs);
-    console.log("Selectedchapters", selectedChapters);
-  },[selectedChapters])
+  // useEffect(()=> {
+  //   if(selectedChapters !== null) {
+  //       fetchTopics();
+  //       setMCQs(allMCQs.filter((item)=> {
+  //           return(item.chapter_id === selectedChapters.id) 
+  //       }))
+  //   }
+  //   console.log("Selected MCQs", MCQs);
+  //   console.log("Selectedchapters", selectedChapters);
+  // },[selectedChapters])
 
-  useEffect(()=> {
-    if(selectedTopic !== null) {
-        setMCQs(allMCQs.filter((item)=> {
-            return(item.topic_id === selectedTopic.id) 
-        }))
-    }
-    console.log("Selected MCQs", MCQs);
-    console.log("Selected topics", selectedTopic);
-  },[selectedTopic])
+  // useEffect(()=> {
+  //   if(selectedTopic !== null) {
+  //       setMCQs(allMCQs.filter((item)=> {
+  //           return(item.topic_id === selectedTopic.id) 
+  //       }))
+  //   }
+  //   console.log("Selected MCQs", MCQs);
+  //   console.log("Selected topics", selectedTopic);
+  // },[selectedTopic])
   
   const handleCreate = () => {
     navigate('/CreateMCQ')
@@ -170,12 +258,12 @@ const Home = () => {
     }
   }
   const fetchMCQ = () => {
-    fetch("http://localhost:3000/Examination/reviewMCQ", {
+    fetch("http://localhost:3000/Examination/reviewMCQByUserID", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
           },
-        body: JSON.stringify({})
+        body: JSON.stringify({user_id: userId})
     })
     .then(response => response.json())
     .then((data) => {
@@ -200,16 +288,17 @@ const Home = () => {
         <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%' }}>
           {/* Sidebar or Left Section */}
           <Sidebar style = {{sidebarStyle}} />
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', overflowX: 'hidden'}}>
+          <Box sx={{ flex: 6, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', overflowX: 'hidden'}}>
             {/* Header Section */}
+            <Navbar/>
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center' }} onClick={() => navigate(-1)}>
+              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center', color: "#7451f8", }} onClick={() => navigate(-1)}>
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
-              <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2 }}>
+              <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2, color: "#7451f8", }}>
                 MCQ Bank
               </Typography>
-              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50}}>Create MCQ</Button>
+              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8",}}>Create MCQ</Button>
             </Box>
             {/* Content Section */}
             {!flag?(
@@ -219,10 +308,22 @@ const Home = () => {
                   flexDirection: 'row',      // Aligns children horizontally
                   gap: '8px',                // Reduce space between the boxes
                   justifyContent: 'flex-start', // Aligns boxes to the start of the container
-                  alignItems: 'center',      // Vertically aligns items in the center
+                  alignItems: 'center', 
+                  padding: 4,   
+                  height: "100%"  // Vertically aligns items in the center
                 }}
               >
-                <Box>
+                <DataGrid
+                  className="datagrid"
+                  rows={MCQs}
+                  columns={Columns}
+                  pageSize={9}
+                  rowsPerPageOptions={[9]}
+                  components={{
+                    Toolbar: GridToolbar,
+                  }}
+                />
+                {/* <Box>
                   <DropDown name="Subjects" data={subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
                 </Box>
                 <Box>
@@ -230,13 +331,13 @@ const Home = () => {
                 </Box>
                 <Box>
                   <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
-                </Box>
+                </Box> */}
               </Box>
               ):(<></>)}
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>
+            {/* <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>
              { console.log("1Selected MCQs", MCQs)}
               <MCQinfo MCQData={MCQs} flag={flag} setFlag={setFlag} setMCQData={setMCQs}/>
-            </Box>
+            </Box> */}
           </Box>
         </Box>
       </Box>

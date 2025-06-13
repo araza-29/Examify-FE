@@ -1,7 +1,11 @@
 import {Card,CardActions,CardContent,TextField, Typography,Button,Box,Input, FormControl, Select, InputLabel, MenuItem} from '@mui/material'
+import Sidebar from "../../components/sidebar/Sidebar";
+import Navbar from "../../components/navbar/Navbar";
 import DropDown from '../../components/DropDown/DropDown';
 import {useEffect, useState} from 'react';
 import { Subject } from '@mui/icons-material';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 function QuestionCreater() {
@@ -9,16 +13,22 @@ function QuestionCreater() {
         const [Question, setQuestion] = useState([]);
         const [userId, setUserId] = useState(5);
         const [subject,setSubject] = useState([]);
-        const[selectedSubject,setSelectedSubject] = useState([]);
+        const[selectedSubject,setSelectedSubject] = useState(null);
+        const [classes,setClasses] = useState([]);
+        const[selectedClass,setSelectedClass] = useState(null);
         const [Chapters, setChapters] = useState([]);
         const [Topic, setTopics] = useState([]);
-        const [selectedChapters, setSelectedChapters] = useState([]);
-        const [selectedTopic, setSelectedTopics] = useState([]);
+        const [selectedChapters, setSelectedChapters] = useState(null);
+        const [selectedTopic, setSelectedTopics] = useState(null);
         const [image, setImage] = useState(null);
+        useEffect(()=>{
+            setSelectedClass(null);
+            fetchClasses();
+        },[userId])
         useEffect(()=>{
             setSelectedSubject(null);
             fetchSubject();
-        },[userId])
+        },[selectedClass])
         useEffect(()=> {
             setSelectedChapters(null);
             fetchChapters();
@@ -27,8 +37,7 @@ function QuestionCreater() {
             setSelectedTopics(null);
             fetchTopics();
           },[selectedChapters])
-
-        const onSave = () => {
+       const onSave = () => {
             console.log("SelectedTopic", selectedTopic);
             console.log("SelectedTopic", selectedSubject);
             fetch("http://localhost:3000/Examination/createQuestion", {
@@ -64,9 +73,10 @@ function QuestionCreater() {
         const onCancel = () => {
             navigate('/questionbank')
         }
-        const fetchSubject = () => {
+
+        const fetchClasses = () => {
             if(userId){
-            fetch("http://localhost:3000/Examination/reviewSubjectsByUserID",{
+            fetch("http://localhost:3000/Examination/reviewClassesByUserID",{
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
@@ -75,20 +85,43 @@ function QuestionCreater() {
             })
             .then(response => response.json())
             .then((data) => {
+                console.log("Class data", data);
+                if(data.code === 200) {
+                    setClasses(data.data);
+                }
+                else {
+                    console.log("Class data not found");
+                }
+            }).catch((error) => {
+                console.error("Error fetching class:", error);
+            })
+          }
+        }
+        const fetchSubject = () => {
+            if(selectedClass){
+            fetch("http://localhost:3000/Examination/reviewSubjectsByClassID",{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({class_id: selectedClass.id})
+            })
+            .then(response => response.json())
+            .then((data) => {
                 console.log("Subject data", data);
                 if(data.code === 200) {
                     setSubject(data.data);
                 }
                 else {
-                    console.log("Chapter data not found");
+                    console.log("Subject data not found");
                 }
             }).catch((error) => {
-                console.error("Error fetching chapters:", error);
+                console.error("Error fetching subject:", error);
             })
           }
         }
           const fetchChapters = () => {
-            if(selectedSubject.id){
+            if(selectedSubject){
                 fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
                     method: "POST",
                     headers: {
@@ -111,7 +144,7 @@ function QuestionCreater() {
             }
           }
           const fetchTopics = () => {
-            if(selectedChapters.id){
+            if(selectedChapters){
                 fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
                     method: "POST",
                     headers: {
@@ -136,88 +169,106 @@ function QuestionCreater() {
           }
         return(
         <>
-            <Card sx={{ width: '80%', m: 'auto', mt: 4, boxShadow: 3 }}>
-                <CardContent>
-                    <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 'bold' }}>
-                        Create Questions
-                    </Typography>
-                    <TextField
-                        variant="outlined"
-                        label="Write your question here"
-                        value={Question.name}
-                        onChange={(event)=>setQuestion({...Question, name: event.target.value})}
-                        sx={{ width: '100%', mb: 2 }}
-                    />
-                    <TextField
-                        variant="outlined"
-                        label="Marks"
-                        value={Question.marks}
-                        onChange = {(event)=>setQuestion({...Question, marks: event.target.value})}
-                        sx={{ width: '100%', mb: 2 }}
-                    />
-                    <FormControl sx={{width: '100%', mb: 2 }}>
-                        <InputLabel sx={{ color: 'primary.main' }}>Question Type</InputLabel>
-                        <Select
-                            value={Question?.type || ""}
-                            name="searchTopic"
-                            onChange={(event) => setQuestion({...Question, type: event.target.value})}
-                            sx={{ 
-                                backgroundColor: 'background.paper', 
-                                borderRadius: 1 
-                            }}
-                        >
-                            <MenuItem key={1} value="long">long</MenuItem>
-                            <MenuItem key={2} value="short">Short</MenuItem>
-                        </Select>
-                    </FormControl>
-                    <TextField
-                        variant="outlined"
-                        label="Answer"
-                        value={Question.answer}
-                        onChange={(event)=>setQuestion({...Question, answer: event.target.value})}
-                        sx={{ width: '100%', mb: 2 }}
-                    />
-                    <Box sx={{ width: "90%",margin: "auto", display: "flex", alignItems: "center", gap: 2, p: 2, border: "1px dashed #ccc", borderRadius: 2 }}>
-                        <Button
-                            variant="contained"
-                            component="label"
-                            sx={{ textTransform: "none" }}
-                        >
-                            Upload File
-                            <input
-                                type="file"
-                                hidden
-                                onChange={(e) => setImage(e.target.files[0])}
-                            />
-                        </Button>
+        <Box sx={{display:"flex"}}>
+            <Box sx={{flex: 1}}>
+                <Sidebar/>
+            </Box>
+            <Box sx={{flex: 6}}>
+                <Navbar/>
+                <Box sx ={{padding: 3}}>
+                        <Box sx={{display: "flex", mb: 2,}}>
+                            <Button
+                                variant="text"
+                                sx={{
+                                    display: "flex",
+                                    px: 2,
+                                    py: 2,
+                                    fontSize: "1.25rem",
+                                    alignItems: "center",
+                                    color: "#7451f8",
+                                }}
+                                onClick={() => navigate(-1)}
+                            >
+                            <FontAwesomeIcon icon={faArrowLeft} />
+                            </Button>
+                            <Typography variant="h6" sx={{ mt: 1, color: 'text.primary', fontWeight: 'bold' }}>
+                                Create Questions
+                            </Typography>
+                        </Box>
                         <TextField
                             variant="outlined"
-                            fullWidth
-                            value={image ? image.name : ""}
-                            placeholder="No file selected"
-                            InputProps={{ readOnly: true }}
+                            label="Write your question here"
+                            value={Question.name}
+                            onChange={(event)=>setQuestion({...Question, name: event.target.value})}
+                            sx={{ width: '100%', mb: 2 }}
                         />
+                        <TextField
+                            variant="outlined"
+                            label="Marks"
+                            value={Question.marks}
+                            onChange = {(event)=>setQuestion({...Question, marks: event.target.value})}
+                            sx={{ width: '100%', mb: 2 }}
+                        />
+                        <FormControl sx={{width: '100%', mb: 2 }}>
+                            <InputLabel sx={{ color: 'primary.main' }}>Question Type</InputLabel>
+                            <Select
+                                value={Question?.type || ""}
+                                name="searchTopic"
+                                onChange={(event) => setQuestion({...Question, type: event.target.value})}
+                                sx={{ 
+                                    backgroundColor: 'background.paper', 
+                                    borderRadius: 1 
+                                }}
+                            >
+                                <MenuItem key={1} value="long">Descriptive Questions</MenuItem>
+                                <MenuItem key={2} value="short">Short Questions</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            variant="outlined"
+                            label="Answer"
+                            value={Question.answer}
+                            onChange={(event)=>setQuestion({...Question, answer: event.target.value})}
+                            sx={{ width: '100%', mb: 2 }}
+                        />
+                        <Box sx={{ width: "97%",margin: "auto", display: "flex", alignItems: "center", gap: 2, p: 2, border: "1px dashed #ccc", borderRadius: 2 }}>
+                            <Button
+                                variant="contained"
+                                component="label"
+                                sx={{ textTransform: "none" }}
+                            >
+                                Upload File
+                                <input
+                                    type="file"
+                                    hidden
+                                    onChange={(e) => setImage(e.target.files[0])}
+                                />
+                            </Button>
+                            <TextField
+                                variant="outlined"
+                                sx={{width: "90%"}}
+                                value={image ? image.name : ""}
+                                placeholder="No file selected"
+                                InputProps={{ readOnly: true }}
+                            />
+                        </Box>
+                        <Box>
+                            <DropDown name = {"Classes"} data = {classes} selectedData={selectedClass} setSelectedData={setSelectedClass} width={"100%"}/>
+                            <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} width={"100%"}/>
+                            <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"100%"}/>
+                            <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"100%"}/>
+                        </Box>
+                        <Box sx={{mt: 3}}>
+                            <Button variant="contained" color="primary" onClick = {onSave} sx={{ fontWeight: 'bold', marginRight: 3 }}>
+                                Save
+                            </Button>
+                            <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
+                                Cancel
+                            </Button>
+                        </Box>
                     </Box>
-                    <Box>
-                        <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} sx={{ width: '300px' }}/>
-                    </Box>
-                    <Box>
-                        <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} sx={{ width: '300px' }}/>
-                    </Box>
-                    <Box>
-                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
-                    </Box>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>
-                    <Button variant="contained" color="primary" onClick = {onSave} sx={{ fontWeight: 'bold' }}>
-                        Save
-                    </Button>
-                    <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
-                        Cancel
-                    </Button>
-                </CardActions>
-            </Card>
-    
+            </Box>
+        </Box>
         </>
         );
     }

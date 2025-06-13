@@ -4,7 +4,7 @@ import {Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 const SearchableDropDown = ({data, selectedData, setSelectedData, name, width }) => {
     return ( 
         <div>
-            <FormControl sx={{ minWidth: width, margin: 2 }}>
+            <FormControl sx={{ minWidth: width, margin: 1 }}>
                 <InputLabel sx={{ color: "#7451f8" }}>{name}</InputLabel>
                 <Select
                     value={selectedData?.name || ""}
