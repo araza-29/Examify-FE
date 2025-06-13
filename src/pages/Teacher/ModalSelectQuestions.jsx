@@ -12,7 +12,7 @@ export function ModalSelectQuestions({setQuestions, SelectedQuestions, id, secti
     };
     return (
         <>
-       <Button onClick={handleOpen} sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: '#3f51b5','&:hover': {backgroundColor: '#303f9f'}}}>
+       <Button onClick={handleOpen} sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: "#7451f8",'&:hover': {backgroundColor: '#303f9f'}}}>
             Select Question
             <FontAwesomeIcon style={{ marginLeft: 8, background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)', color: 'white', borderRadius: '50%' }} />
         </Button>

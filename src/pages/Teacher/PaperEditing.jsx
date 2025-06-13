@@ -64,7 +64,7 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
           gap={4}
           justifyContent="center"
         >
-          <Typography variant="h5" gutterBottom>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold"}}>
             Edit Headers Info
           </Typography>
 
@@ -176,7 +176,7 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
         <Grid sx={{ pt: 0, display: "flex", justifyContent: "flex-end" }}>
           <Button
             sx={{
-              background: "linear-gradient(90deg, #2196F3 0%, #21CBF3 100%)",
+              backgroundColor: "#7451f8",
               color: "white",
               "&:hover": {
                 background: "linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)",
@@ -189,7 +189,7 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
           <Button
             sx={{
               ml: 2, // Converts 'ml-2' (margin-left)
-              background: "linear-gradient(90deg, #2196F3 0%, #21CBF3 100%)", // Simulates gradient variant
+              backgroundColor: "#7451f8", // Simulates gradient variant
             }}
             onClick={() => setEditOpen(false)}
           >
@@ -236,7 +236,7 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Typography
           variant="h4"
-          sx={{ fontFamily: '"font-mar", Arial, sans-serif', opacity: 0.75 }}
+          sx={{ fontSize: "2rem", fontWeight: "bold", opacity: 0.75}}
         >
           Header Info
         </Typography>
@@ -332,7 +332,7 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
               {/* <FontAwesomeIcon style={{ marginRight: '0.5rem' }} icon={faSchool} /> */}
               <Box display="flex" flexWrap="wrap" sx={{ pt: "0.27rem" }}>
                 {OldData.departmentNames.map((d) => (
-                  <Tag key={d}>{d}</Tag>
+                  <Tag key={d} sx={{backgroundColor: "#7451f8"}}>{d}</Tag>
                 ))}
               </Box>
             </Box>
@@ -404,7 +404,7 @@ const Teacher = () => {
     // class: "Class",
     // subject: "Subject Name",
     // ExaminationYear: "2023",
-    departmentNames: ["Karachi", "Lahore"],
+    departmentNames: ["Jinnah", "Iqbal"],
     // sections: 3,
     // duration: "4 hours",
     // marks: 80,
@@ -754,6 +754,7 @@ useEffect(() => {
                     py: 2,
                     fontSize: "1.25rem",
                     alignItems: "center",
+                    color: "#7451f8",
                   }}
                   onClick={() => handleBack()}
                 >
@@ -761,7 +762,7 @@ useEffect(() => {
                 </Button>
                 <Typography
                   variant="h3"
-                  sx={{ fontFamily: "Mar", opacity: 0.75, ml: 2 }}
+                  sx={{fontSize: "2.5rem", fontWeight: "bold", ml: 2, color: "#7451f8",}}
                 >
                   Paper Editor
                 </Typography>
@@ -771,7 +772,7 @@ useEffect(() => {
                 onClick={() => handleSubmitButton("save")}
                 disabled={isDisabled}
                 color="primary"
-                sx={{ px: 3, py: 1.5, fontSize: "1rem" }}
+                sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", }}
               >
                 Save Paper
               </Button>
@@ -780,7 +781,7 @@ useEffect(() => {
                 onClick={() => handleSubmitButton("Submit")}
                 disabled={isDisabled}
                 color="primary"
-                sx={{ px: 3, py: 1.5, fontSize: "1rem" }}
+                sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8" }}
               >
                 Submit Paper
               </Button>
@@ -812,7 +813,7 @@ useEffect(() => {
                 <Button onClick={() => {
                           setSectionFlag(true);
                         }}
-                        sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: '#3f51b5','&:hover': {backgroundColor: '#303f9f'}}}>
+                        sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: "#7451f8",'&:hover': {backgroundColor: '#303f9f'}}}>
                       Section
                       <FontAwesomeIcon style={{ marginLeft: 8, background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)', color: 'white', borderRadius: '50%' }} />
                   </Button>
@@ -842,7 +843,7 @@ useEffect(() => {
                       sx={{
                         fontSize: "2rem", 
                         fontWeight: "bold",
-                        color: "#333",
+                        color: "#7451f8",
                         mb: 1,
                       }}
                     >
@@ -852,7 +853,7 @@ useEffect(() => {
                       sx={{ display: "flex", flexDirection: "row", gap: 30 }}
                     >
                       <FontAwesomeIcon
-                        style={{ fontSize: "2rem", marginTop: "10px" }}
+                        style={{ fontSize: "2rem", marginTop: "10px", color: "#7451f8", }}
                         icon={faTimesCircle}
                       />
                     </Box>
