@@ -170,8 +170,7 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
         }
         return(
         <>
-            <Card sx={{ width: "100%", m: 'auto', mt: 4, boxShadow: 3 }}>
-                <CardContent>
+            <Box sx={{margin: 2}}>
                     <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 'bold' }}>
                         Create MCQ
                     </Typography>
@@ -211,16 +210,16 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
                         <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"100%"}/>
                         <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"100%"}/>
                     </Box>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>
-                    <Button variant="contained" onClick = {onSave} color="primary" sx={{ fontWeight: 'bold' }}>
+                    <Box>
+                    <Button variant="contained" onClick = {onSave} color="primary" sx={{ fontWeight: 'bold', mr: 2, backgroundColor: "#7451f8" }}>
                         Save
                     </Button>
-                    <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
+                    <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold', backgroundColor: "#7451f8" }}>
                         Cancel
                     </Button>
-                </CardActions>
-            </Card>
+                    </Box>
+
+            </Box>
     
         </>
         );

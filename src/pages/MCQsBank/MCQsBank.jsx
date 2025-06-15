@@ -1,5 +1,6 @@
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
+import MCQEditor from "./MCQEditor";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
@@ -55,6 +56,7 @@ const Home = () => {
   const [flag, setFlag] = useState(false);
   const [userId, setUserId] = useState(5);
   const [MCQs, setMCQs] = useState([]);
+  const [MCQInfo, setMCQInfo] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [Chapters, setChapters] = useState([]);
   const [allMCQs, setAllMCQs] = useState([]);
@@ -139,7 +141,7 @@ const Home = () => {
               </Link>
     
               <div
-                onClick={() => handleEdit(params.row.id)}
+                onClick={() => handleEdit(params.row)}
                 style={{
                   padding: "2px 5px",
                   borderRadius: "5px",
@@ -216,6 +218,10 @@ const Home = () => {
   
   const handleCreate = () => {
     navigate('/CreateMCQ')
+  }
+  const handleEdit = (mcq) => {
+    setMCQInfo(mcq);
+    setFlag(true)
   }
   const fetchSubjects = () => {
     console.log("UserID", userId)
@@ -329,7 +335,7 @@ const Home = () => {
               <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8",}}>Create MCQ</Button>
             </Box>
             {/* Content Section */}
-            {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo} onSaveMCQ={handleSaveMCQ}/> :(
+            {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo}/> :(
               <Box
                 sx={{
                   display: 'flex',          // Enables flexbox
