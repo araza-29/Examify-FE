@@ -188,8 +188,6 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
           }
         return(
         <>
-            <Card sx={{ width: "90%", m: 'auto', mt: 4, boxShadow: 3 }}>
-                <CardContent>
                     <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 'bold' }}>
                         Edit Question
                     </Typography>
@@ -208,14 +206,36 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
                         sx={{ width: '100%', mb: 2 }}
                     />
                     <FormControl sx={{ width: '100%', mb: 2 }}>
-                        <InputLabel sx={{ color: 'primary.main' }}>Question Type</InputLabel>
+                        <InputLabel 
+                        id="question-type-label"
+                        shrink
+                        sx={{ 
+                            color: "#7451f8", 
+                            '&.Mui-focused': {
+                                color: '#7451f8',
+                            },
+                            }}
+                        >Question Type</InputLabel>
                         <Select
+                            labelId="question-type-label"
+                            label="Question Type"
+                            displayEmpty
                             value={editedQuestion?.type || ""}
                             name="searchTopic"
                             onChange={(event) => setEditedQuestion({...editedQuestion, type: event.target.value})}
                             sx={{ 
                                 backgroundColor: 'background.paper', 
-                                borderRadius: 1 
+                                borderRadius: 1,
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#7451f8',
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#7451f8',
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#7451f8',
+                                },
+                                
                             }}
                         >
                             <MenuItem key={1} value="long">Long Questions</MenuItem>
@@ -228,26 +248,21 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
                         value={editedQuestion.answer}
                         onChange={(event)=>setEditedQuestion({...editedQuestion, answer: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
-                    />
+                    /> 
                     <Box>
-                        <DropDown name = {"Subjects"} data ={subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} sx={{ width: '100%' }}/>
+                        <DropDown name = {"Classes"} data = {classes} selectedData={selectedClass} setSelectedData={setSelectedClass} width={"100%"}/>
+                        <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} width={"100%"}/>
+                        <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"100%"}/>
+                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"100%"}/>
                     </Box>
                     <Box>
-                        <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} sx={{ width: '100%' }}/>
+                        <Button variant="contained" onClick = {onSave} color="primary" sx={{ fontWeight: 'bold', mr: 1, backgroundColor: "#7451f8" }}>
+                            Save
+                        </Button>
+                        <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold', backgroundColor: "#7451f8" }}>
+                            Cancel
+                        </Button>
                     </Box>
-                    <Box>
-                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '100%' }}/>
-                    </Box>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>
-                    <Button variant="contained" onClick = {onSave} color="primary" sx={{ fontWeight: 'bold' }}>
-                        Save
-                    </Button>
-                    <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
-                        Cancel
-                    </Button>
-                </CardActions>
-            </Card>
     
         </>
         );

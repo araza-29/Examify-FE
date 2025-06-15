@@ -8,6 +8,8 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
     const [userId, setUserId] = useState(5);
     const [subject,setSubject] = useState([]);
     const [editedMCQ, setEditedMCQ] = useState(MCQ)
+    const [classes,setClasses] = useState([]);
+    const[selectedClass,setSelectedClass] = useState([]);
     const[selectedSubject,setSelectedSubject] = useState({id: MCQ.subject_id,name: MCQ.subject_name});
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
@@ -20,14 +22,21 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
         { id: 4, value: MCQ?.choice4 || "" }
       ]);
     useEffect(()=>{
-        fetchSubject();
+        setSelectedClass(null);
+        fetchClasses();
     },[userId])
+    useEffect(()=>{
+        setSelectedSubject(null);
+        fetchSubject();
+    },[selectedClass])
     useEffect(()=> {
+        setSelectedChapters(null);
         fetchChapters();
-      },[selectedSubject])
-      useEffect(()=> {
+        },[selectedSubject])
+        useEffect(()=> {
+        setSelectedTopics(null);
         fetchTopics();
-      },[selectedChapters])
+        },[selectedChapters])
     //   const addChoices = () => {
     //     if(choices.length<4){
     //         const newId = choices.length + 1;
@@ -66,9 +75,9 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
         setFlag(false)
     }
     
-    const fetchSubject = () => {
+    const fetchClasses = () => {
         if(userId){
-        fetch("http://localhost:3000/Examination/reviewSubjectsByUserID",{
+        fetch("http://localhost:3000/Examination/reviewClassesByUserID",{
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -77,20 +86,43 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
         })
         .then(response => response.json())
         .then((data) => {
+            console.log("Class data", data);
+            if(data.code === 200) {
+                setClasses(data.data);
+            }
+            else {
+                console.log("Class data not found");
+            }
+        }).catch((error) => {
+            console.error("Error fetching class:", error);
+        })
+        }
+    }
+    const fetchSubject = () => {
+        if(selectedClass && selectedClass.id){
+        fetch("http://localhost:3000/Examination/reviewSubjectsByClassID",{
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({class_id: selectedClass.id})
+        })
+        .then(response => response.json())
+        .then((data) => {
             console.log("Subject data", data);
             if(data.code === 200) {
                 setSubject(data.data);
             }
             else {
-                console.log("Chapter data not found");
+                console.log("Subject data not found");
             }
         }).catch((error) => {
-            console.error("Error fetching chapters:", error);
+            console.error("Error fetching subject:", error);
         })
-      }
+        }
     }
-      const fetchChapters = () => {
-        if(selectedSubject.id){
+        const fetchChapters = () => {
+        if(selectedSubject && selectedSubject.id){
             fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
                 method: "POST",
                 headers: {
@@ -111,9 +143,9 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
                 console.error("Error fetching chapters:", error);
             })
         }
-      }
-      const fetchTopics = () => {
-        if(selectedChapters.id){
+        }
+        const fetchTopics = () => {
+        if(selectedChapters && selectedChapters.id){
             fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
                 method: "POST",
                 headers: {
@@ -135,7 +167,7 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
                 console.error("Error fetching topics:", error);
             })
         }
-      }
+        }
         return(
         <>
             <Card sx={{ width: "100%", m: 'auto', mt: 4, boxShadow: 3 }}>
@@ -174,13 +206,10 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
                         sx={{ width: '100%', mb: 2 }}
                     />
                     <Box>
-                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} sx={{ width: '300px' }}/>
-                    </Box>
-                    <Box>
-                        <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} sx={{ width: '300px' }}/>
-                    </Box>
-                    <Box>
-                        <DropDown name = {"Subjects"} data ={subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} sx={{ width: '300px' }}/>
+                        <DropDown name = {"Classes"} data = {classes} selectedData={selectedClass} setSelectedData={setSelectedClass} width={"100%"}/>
+                        <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} width={"100%"}/>
+                        <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"100%"}/>
+                        <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"100%"}/>
                     </Box>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'flex-end', pr: 2 }}>

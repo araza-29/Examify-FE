@@ -77,12 +77,12 @@ const Home = () => {
         {
           field: "marks",
           headerName: "Marks",
-          width: 230,
+          width: 70,
         },
         {
           field: "topic_name",
           headerName: "Topic",
-          width: 230,
+          width: 200,
           // filterable: true,
           // type: 'singleSelect', // important
           // valueOptions: topic.map(option => option.name),
@@ -104,7 +104,7 @@ const Home = () => {
           // type: 'singleSelect', // important
           // valueOptions: Subjects.map(option => option.name),
           // filterOperators: getGridSingleSelectOperators(),
-          width: 230,
+          width: 120,
         },
         {
           field: "class_name",
@@ -113,14 +113,14 @@ const Home = () => {
           // type: 'singleSelect', // important
           // valueOptions: classes.map(option => option.name),
           // filterOperators: getGridSingleSelectOperators(),
-          width: 230,
+          width: 70,
         },
         {
           field: "action",
           headerName: "Action",
-          width: 250,
+          width: 220,
           renderCell: (params) => (
-            <div style={{ display: "flex", alignItems: "center", gap: "50px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "30px" }}>
               <Link
                 to={`/user/${params.row.id}`}
                 style={{ textDecoration: "none" }}
@@ -329,7 +329,7 @@ const Home = () => {
               <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8",}}>Create MCQ</Button>
             </Box>
             {/* Content Section */}
-            {!flag?(
+            {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo} onSaveMCQ={handleSaveMCQ}/> :(
               <Box
                 sx={{
                   display: 'flex',          // Enables flexbox
@@ -361,7 +361,7 @@ const Home = () => {
                   <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
                 </Box> */}
               </Box>
-              ):(<></>)}
+              )}
             {/* <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>
              { console.log("1Selected MCQs", MCQs)}
               <MCQinfo MCQData={MCQs} flag={flag} setFlag={setFlag} setMCQData={setMCQs}/>

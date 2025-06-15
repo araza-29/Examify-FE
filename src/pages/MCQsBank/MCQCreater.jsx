@@ -224,22 +224,16 @@ function MCQCreater() {
                                 sx={{ width: '100%', mb: 2 }}
                             />
                             <Box>
-                                <DropDown name = {"Classes"} data = {classes} selectedData={selectedClass} setSelectedData={setSelectedClass} width={'100%' }/>
-                            </Box>
-                            <Box>
-                                <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} width={'100%' }/>
-                            </Box>
-                            <Box>
-                                <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={'100%' }/>
-                            </Box>
-                            <Box>
-                                <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={'100%' }/>
+                                <DropDown name = {"Classes"} data = {classes} selectedData={selectedClass} setSelectedData={setSelectedClass} width={"100%"}/>
+                                <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} width={"100%"}/>
+                                <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"100%"}/>
+                                <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"100%"}/>
                             </Box>
                             <Box sx={{mt: 3}}>
-                                <Button variant="contained" color="primary" onClick = {onSave} sx={{ fontWeight: 'bold', marginRight: 3 }}>
+                                <Button variant="contained" color="primary" onClick = {onSave} sx={{ fontWeight: 'bold', marginRight: 3, backgroundColor: "#7451f8", }}>
                                     Save
                                 </Button>
-                                <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold' }}>
+                                <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold', backgroundColor: "#7451f8", }}>
                                     Cancel
                                 </Button>
                             </Box>
