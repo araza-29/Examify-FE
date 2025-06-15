@@ -7,6 +7,8 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
     console.log("QuestionInfo",Questions);
     const [userId, setUserId] = useState(5);
     const [subject,setSubject] = useState([]);
+    const [classes,setClasses] = useState([]);
+    const[selectedClass,setSelectedClass] = useState(null);
     const [editedQuestion, setEditedQuestion] = useState(Questions);
     const[selectedSubject,setSelectedSubject] = useState({id: Questions.subject_id,name: Questions.subject_name});
     const [Chapters, setChapters] = useState([]);
@@ -31,17 +33,21 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
         })
     },[])
     useEffect(()=>{
+        setSelectedClass(null);
+        fetchClasses();
+    },[userId])
+    useEffect(()=>{
         setSelectedSubject(null);
         fetchSubject();
-    },[userId])
+    },[selectedClass])
     useEffect(()=> {
         setSelectedChapters(null);
         fetchChapters();
-      },[selectedSubject])
-      useEffect(()=> {
+        },[selectedSubject])
+        useEffect(()=> {
         setSelectedTopics(null);
         fetchTopics();
-      },[selectedChapters])
+        },[selectedChapters])
     const onSave = () => {
         console.log("SelectedTopic", selectedTopic);
         console.log("SelectedTopic", selectedSubject);
@@ -87,76 +93,99 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
     const onCancel = () => {
         setFlag(false)
     }
-    const fetchSubject = () => {
-        if(userId){
-        fetch("http://localhost:3000/Examination/reviewSubjectsByUserID",{
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({user_id: userId})
-        })
-        .then(response => response.json())
-        .then((data) => {
-            console.log("Subject data", data);
-            if(data.code === 200) {
-                setSubject(data.data);
-            }
-            else {
-                console.log("Chapter data not found");
-            }
-        }).catch((error) => {
-            console.error("Error fetching chapters:", error);
-        })
-      }
-    }
-      const fetchChapters = () => {
-        if(selectedSubject.id){
-            fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
+     const fetchClasses = () => {
+            if(userId){
+            fetch("http://localhost:3000/Examination/reviewClassesByUserID",{
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({subject_id: selectedSubject.id})
+                body: JSON.stringify({user_id: userId})
             })
             .then(response => response.json())
             .then((data) => {
-                console.log("Chapter data", data);
+                console.log("Class data", data);
                 if(data.code === 200) {
-                    setChapters(data.data);
+                    setClasses(data.data);
                 }
                 else {
-                    console.log("Chapter data not found");
+                    console.log("Class data not found");
                 }
             }).catch((error) => {
-                console.error("Error fetching chapters:", error);
+                console.error("Error fetching class:", error);
             })
+          }
         }
-      }
-      const fetchTopics = () => {
-        if(selectedChapters.id){
-            fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
+        const fetchSubject = () => {
+            if(selectedClass){
+            fetch("http://localhost:3000/Examination/reviewSubjectsByClassID",{
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({chapter_id: selectedChapters.id})
+                body: JSON.stringify({class_id: selectedClass.id})
             })
             .then(response => response.json())
-            .then((data)=> {
-                console.log("Topic data", data);
+            .then((data) => {
+                console.log("Subject data", data);
                 if(data.code === 200) {
-                    setTopics(data.data);
+                    setSubject(data.data);
                 }
                 else {
-                    console.log("Topics data not found");
+                    console.log("Subject data not found");
                 }
+            }).catch((error) => {
+                console.error("Error fetching subject:", error);
             })
-            .catch((error) => {
-                console.error("Error fetching topics:", error);
-            })
+          }
         }
-      }
+          const fetchChapters = () => {
+            if(selectedSubject){
+                fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({subject_id: selectedSubject.id})
+                })
+                .then(response => response.json())
+                .then((data) => {
+                    console.log("Chapter data", data);
+                    if(data.code === 200) {
+                        setChapters(data.data);
+                    }
+                    else {
+                        console.log("Chapter data not found");
+                    }
+                }).catch((error) => {
+                    console.error("Error fetching chapters:", error);
+                })
+            }
+          }
+          const fetchTopics = () => {
+            if(selectedChapters){
+                fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({chapter_id: selectedChapters.id})
+                })
+                .then(response => response.json())
+                .then((data)=> {
+                    console.log("Topic data", data);
+                    if(data.code === 200) {
+                        setTopics(data.data);
+                    }
+                    else {
+                        console.log("Topics data not found");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching topics:", error);
+                })
+            }
+          }
         return(
         <>
             <Card sx={{ width: "90%", m: 'auto', mt: 4, boxShadow: 3 }}>

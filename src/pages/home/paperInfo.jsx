@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect} from "react";
 import Navbar from "../../components/navbar/Navbar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { 
   Box, Grid, Typography, Paper, Container, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip
 } from "@mui/material";
@@ -102,7 +102,22 @@ const PaperInfo = () => {
       .then((response) => response.json())
       .then((data)=>{
         console.log("Papers Fetched", data)
-        setPapers(data.data);
+        const newPapers = data.data.map((item) => {
+        if(item.locked === 1) {
+          return { ...item, status: 'locked' };
+        }
+        else if(item.reviewed === 1) {
+          return { ...item, status: 'reviewed' };
+        }
+        else if (item.completed === 1) {
+          return { ...item, status: 'completed' };
+        }
+        else {
+          return { ...item, status: 'Not completed' };
+        }
+        return item;
+      });
+        setPapers(newPapers);
       })
   },[])
 
@@ -132,7 +147,22 @@ const PaperInfo = () => {
   //   }
   // }, [papers]);
 
-  const handleClick = (index) => {
+  const handleEdit = (index) => {
+    const role = localStorage.getItem("role")
+    const paper = papers.find((p) => p.id === index);
+    if (!paper) return;
+    console.log("Papersid",index);
+    if(role === "Teacher")
+      navigate("/PaperEditing", { state: { paper: paper } });
+    else if(role === "Adminstrator")
+      navigate("/PaperView", { state: { paper: paper } });
+    else if(role === "Examination")
+      navigate("/PaperView", { state: { paper: paper } });
+  };
+  const handleView = (index) => {
+    navigate("/PaperEditing", { state: { paper: papers[index] } });
+  };
+  const handleDelete = (index) => {
     navigate("/PaperEditing", { state: { paper: papers[index] } });
   };
  const paperColumns = [
@@ -143,14 +173,19 @@ const PaperInfo = () => {
     //   width: 230,
     // },
     {
-      field: "paper",
+      field: "type",
       headerName: "Paper",
-      width: 230,
+      width: 200,
     },
     {
       field: "date",
-      headerName: "Date",
-      width: 230,
+      headerName: "Paper Date",
+      width: 150,
+    },
+    {
+      field: "due_date",
+      headerName: "Due Date",
+      width: 150,
     },
     {
       field: "subject_name",
@@ -159,7 +194,7 @@ const PaperInfo = () => {
       // type: 'singleSelect', // important
       // // valueOptions: Subjects.map(option => option.name),
       // filterOperators: getGridSingleSelectOperators(),
-      width: 230,
+      width: 200,
     },
     {
       field: "class_name",
@@ -168,30 +203,61 @@ const PaperInfo = () => {
       // type: 'singleSelect', // important
       // // valueOptions: classes.map(option => option.name),
       // filterOperators: getGridSingleSelectOperators(),
-      width: 230,
+      width: 150,
     },
     {
-      field: "status",
-      headerName: "Status",
-      // filterable: true,
-      // type: 'singleSelect', // important
-      // // valueOptions: classes.map(option => option.name),
-      // filterOperators: getGridSingleSelectOperators(),
-      width: 230,
+      field: "action",
+      headerName: "Action",
+      width: 250,
+      renderCell: (params) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "50px" }}>
+          <Link
+            to={`/user/${params.row.id}`}
+            style={{ textDecoration: "none" }}
+          >
+            <div
+              style={{
+                padding: "2px 5px",
+                borderRadius: "5px",
+                color: "darkblue",
+                border: "1px dotted rgba(0, 0, 139, 0.596)",
+                cursor: "pointer",
+              }}
+            >
+              View
+            </div>
+          </Link>
+
+          <div
+            onClick={() => handleEdit(params.row.id)}
+            style={{
+              padding: "2px 5px",
+              borderRadius: "5px",
+              color: "rgb(27, 204, 11)",
+              border: "1px dotted rgba(72, 231, 24, 0.596)",
+              cursor: "pointer",
+            }}
+          >
+            Edit
+          </div>
+
+          <div
+            onClick={() => handleDelete(params.row.id)}
+            style={{
+              padding: "2px 5px",
+              borderRadius: "5px",
+              color: "crimson",
+              border: "1px dotted rgba(220, 20, 60, 0.6)",
+              cursor: "pointer",
+            }}
+          >
+            Delete
+          </div>
+        </div>
+      ),
     },
-    // {
-    //   field: "status",
-    //   headerName: "Status",
-    //   width: 160,
-    //   renderCell: (params) => {
-    //     return (
-    //       <div className={`cellWithStatus ${params.row.status}`}>
-    //         {params.row.status}
-    //       </div>
-    //     );
-    //   },
-    // },
   ];
+
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
       <Sidebar />
@@ -216,7 +282,6 @@ const PaperInfo = () => {
             <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2, color: "#7451f8", }}>
               Papers
             </Typography>
-            <Button variant="contained" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8"}}>Create Paper</Button>
           </Box>
           
           {papers.length === 0 ? (

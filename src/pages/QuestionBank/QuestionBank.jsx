@@ -1,4 +1,5 @@
 import Sidebar from "../../components/sidebar/Sidebar";
+import QuestionEditor from "./QuestionEditor";
 import Navbar from "../../components/navbar/Navbar";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
@@ -33,7 +34,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Questioninfo from "./QuestionsInfo";
 import DropDown from "../../components/DropDown/DropDown";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import QuestionCreater from "./QuestionCreater";
 import { Subject } from "@mui/icons-material";
 
@@ -294,12 +295,12 @@ const Home = () => {
     {
       field: "marks",
       headerName: "Marks",
-      width: 230,
+      width: 70 ,
     },
     {
       field: "topic_name",
       headerName: "Topic",
-      width: 230,
+      width: 200,
       filterable: true,
       type: 'singleSelect', // important
       valueOptions: topic.map(option => option.name),
@@ -321,7 +322,7 @@ const Home = () => {
       type: 'singleSelect', // important
       valueOptions: Subjects.map(option => option.name),
       filterOperators: getGridSingleSelectOperators(),
-      width: 230,
+      width: 120,
     },
     {
       field: "class_name",
@@ -330,43 +331,59 @@ const Home = () => {
       type: 'singleSelect', // important
       valueOptions: classes.map(option => option.name),
       filterOperators: getGridSingleSelectOperators(),
-      width: 230,
+      width: 70,
     },
-    {
-    field: "action",
+   {
+      field: "action",
       headerName: "Action",
-      width: 200,
-      renderCell: (params) => {
-        return (
-          <div className="cellAction">
-            {/* <Link
-              to={`/srecord/${params.row.id}`}
-              style={{ textDecoration: "none" }}
-            > */}
-              <div className="viewButton">View</div>
-            {/* </Link> */}
+      width: 250,
+      renderCell: (params) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "50px" }}>
+          <Link
+            to={`/user/${params.row.id}`}
+            style={{ textDecoration: "none" }}
+          >
             <div
-              className="deleteButton"
-              onClick={() => handleDelete(params.row.id)}
+              style={{
+                padding: "2px 5px",
+                borderRadius: "5px",
+                color: "darkblue",
+                border: "1px dotted rgba(0, 0, 139, 0.596)",
+                cursor: "pointer",
+              }}
             >
-              Delete
+              View
             </div>
+          </Link>
+
+          <div
+            onClick={()=>{toggleQuestionEditor(params.row)}}
+            style={{
+              padding: "2px 5px",
+              borderRadius: "5px",
+              color: "rgb(27, 204, 11)",
+              border: "1px dotted rgba(72, 231, 24, 0.596)",
+              cursor: "pointer",
+            }}
+          >
+            Edit
           </div>
-        );
-      },
+
+          <div
+            onClick={() => handleDelete(params.row.id)}
+            style={{
+              padding: "2px 5px",
+              borderRadius: "5px",
+              color: "crimson",
+              border: "1px dotted rgba(220, 20, 60, 0.6)",
+              cursor: "pointer",
+            }}
+          >
+            Delete
+          </div>
+        </div>
+      ),
     },
-    // {
-    //   field: "status",
-    //   headerName: "Status",
-    //   width: 160,
-    //   renderCell: (params) => {
-    //     return (
-    //       <div className={`cellWithStatus ${params.row.status}`}>
-    //         {params.row.status}
-    //       </div>
-    //     );
-    //   },
-    // },
   ];
 
   useEffect(() => {
