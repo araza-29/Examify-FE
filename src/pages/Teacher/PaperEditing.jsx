@@ -381,10 +381,14 @@ const Teacher = () => {
   const navigate = useNavigate();
   const [AllowEdit, setAllowEdit] = useState(false);
   const [selectedQuestion, setQuestions] = useState([]);
+  const [newQuestion, setNewQuestion] = useState(null);
+  const [newMCQ, setNewMCQ] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
-  const [isSaved, setIsSaved] = useState(true);
+  const [oldSectionLetters, setOldSectionLetters] = useState([]);
+  const [newSectionLetters, setNewSectionLetters] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
   const [sectionFlag, setSectionFlag] = useState(false);
   const [sectionsCheck, setSectionsCheck] = useState([]);
   let [token] = useState(localStorage.getItem("token"));
@@ -415,7 +419,7 @@ const Teacher = () => {
   useEffect(() => {
       const handleBeforeUnload = (event) => {
         console.log("IsSaved", isSaved);  
-        if(!isSaved) {
+        if(!isSaved || isDisabled) {
           event.preventDefault();
           event.returnValue = "Are you sure?";
         }
@@ -426,88 +430,121 @@ const Teacher = () => {
       };
 }, [isSaved]);
 
-  useEffect(()=>{
-    if (fetchedOnce.current) return; // Prevents second call
-    fetchedOnce.current = true;
-    console.log("PaperCheck", paper);
-    console.log("PaperIDCheck", paper.id);
-    setExsistingInfo({
-      ...exsistingInfo,
-      subject: paper.subject_name,
-      class: paper.class_name,
-      ExaminationYear: paper.year,
-      duration: paper.duration,
-      marks: paper.marks,
-    })
-    Promise.all([
-      fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paper_id: paper.id }),
-      }).then((response) => response.json()),
-    
-      fetch("http://localhost:3000/Examination/reviewQuestionsByPaperID", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paper_id: paper.id }),
-      }).then((response) => response.json()),
+  useEffect(() => {
+  if (fetchedOnce.current) return; // Prevents second call
+  fetchedOnce.current = true;
+  console.log("PaperCheck", paper);
+  console.log("PaperIDCheck", paper.id);
+  
+  setExsistingInfo({
+    ...exsistingInfo,
+    subject: paper.subject_name,
+    class: paper.class_name,
+    ExaminationYear: paper.year,
+    duration: paper.duration,
+    marks: paper.marks,
+  });
 
-      fetch("http://localhost:3000/Examination/reviewMCQsByPaperID", {
+  const sectionsAreEqual = (section1, section2) => {
+    return (
+      section1.name === section2.name &&
+      section1.type === section2.type &&
+      section1.description === section2.description &&
+      section1.marks === section2.marks
+    );
+  };
+
+  const fetchDataSequentially = async () => {
+    try {
+      // Step 1: Fetch Questions first
+      console.log("Step 1: Fetching Questions...");
+      const questionsResponse = await fetch("http://localhost:3000/Examination/reviewQuestionsByPaperID", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paper_id: paper.id }),
-      }).then((response) => response.json()),
-    ])
-      .then(([sectionsResponse, questionsResponse, mcqsResponse]) => {
-        if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
-          console.log("Fetched Sections:", sectionsResponse.data);
-          setSectionLetters(sectionsResponse.data);
-        }
-    
-        if (questionsResponse.code === 200) {
-          console.log("Fetched Questions:", questionsResponse.data);
-          
-          // Ensure sectionLetters is updated before mapping questions
-          setQuestions((prev) => {
-            const updatedQuestions = questionsResponse.data.map((question) => {
-              const matchedSection = sectionsResponse.data.find(
-                (section) => Number(section.id) === Number(question.section_id)
-              );
-    
-              return {
-                ...question,
-                section: matchedSection ? matchedSection.name : null, // Assign the section name if found
-              };
-            });
-    
-            console.log("Updated Questions:", updatedQuestions);
-            return updatedQuestions;
+      }).then((response) => response.json());
+
+      let fetchedQuestions = [];
+      if (questionsResponse.code === 200) {
+        console.log("Fetched Questions:", questionsResponse.data);
+        fetchedQuestions = questionsResponse.data;
+      }
+
+      // Step 2: Fetch MCQs second
+      console.log("Step 2: Fetching MCQs...");
+      const mcqsResponse = await fetch("http://localhost:3000/Examination/reviewMCQsByPaperID", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paper_id: paper.id }),
+      }).then((response) => response.json());
+
+      let fetchedMCQs = [];
+      if (mcqsResponse.code === 200) {
+        console.log("Fetched MCQs:", mcqsResponse.data);
+        fetchedMCQs = mcqsResponse.data;
+      }
+
+      // Step 3: Fetch Sections last (after questions and MCQs are stored)
+      console.log("Step 3: Fetching Sections...");
+      const sectionsResponse = await fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paper_id: paper.id }),
+      }).then((response) => response.json());
+
+      if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
+        console.log("Fetched Sections:", sectionsResponse.data);
+        
+        // Sort sections by name in ascending order (A, B, C, etc.)
+        const sortedSections = sectionsResponse.data.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+        
+        setSectionLetters(sortedSections);
+        setOldSectionLetters(sortedSections);
+
+        // Step 4: Map sections to questions now that we have all data
+        if (fetchedQuestions.length > 0) {
+          const updatedQuestions = fetchedQuestions.map((question) => {
+            const matchedSection = sortedSections.find(
+              (section) => Number(section.id) === Number(question.section_id)
+            );
+
+            return {
+              ...question,
+              section: matchedSection ? matchedSection.name : null,
+            };
           });
+
+          console.log("Updated Questions with Sections:", updatedQuestions);
+          setQuestions(updatedQuestions);
         }
-        if (mcqsResponse.code === 200) {
-          console.log("Fetched Questions:", mcqsResponse.data);
-          
-          // Ensure sectionLetters is updated before mapping questions
-          setMCQs((prev) => {
-            const updatedMCQ = mcqsResponse.data.map((mcq) => {
-              const matchedSection = sectionsResponse.data.find(
-                (section) => Number(section.id) === Number(mcq.section_id)
-              );
-    
-              return {
-                ...mcq,
-                section: matchedSection ? matchedSection.name : null, // Assign the section name if found
-              };
-            });
-    
-            console.log("Updated Questions:", updatedMCQ);
-            return updatedMCQ;
+
+        // Step 5: Map sections to MCQs
+        if (fetchedMCQs.length > 0) {
+          const updatedMCQs = fetchedMCQs.map((mcq) => {
+            const matchedSection = sortedSections.find(
+              (section) => Number(section.id) === Number(mcq.section_id)
+            );
+
+            return {
+              ...mcq,
+              section: matchedSection ? matchedSection.name : null,
+            };
           });
+
+          console.log("Updated MCQs with Sections:", updatedMCQs);
+          setMCQs(updatedMCQs);
         }
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-    
-  }, [paper]);
+      }
+
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  fetchDataSequentially();
+}, []);
 
   useEffect(() => {
     setQuestions((prevQuestions) =>
@@ -534,7 +571,7 @@ useEffect(() => {
 
   setSectionLetters((prevSectionLetters) => {
       const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
-          id: prevSectionLetters[index]?.id ?? index,  // Maintain ID or assign index
+          id: prevSectionLetters[index]?.id,  // Maintain ID or assign index
           name: `Section ${String.fromCharCode(65 + index)}`, // A, B, C...
           type: prevSectionLetters[index]?.type || "",
           description: prevSectionLetters[index]?.description || "",
@@ -604,8 +641,8 @@ useEffect(() => {
             return null;
         })
     }
-
-        const sectionPromises = sectionLetters.map((sec) =>
+      if(newSectionLetters !== null) {
+        const sectionPromises = newSectionLetters.map((sec) =>
             fetch("http://localhost:3000/Examination/createSection", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -625,7 +662,6 @@ useEffect(() => {
         );
 
         const sectionResponses = await Promise.all(sectionPromises);
-
         const updatedSections = sectionLetters.map((sec, index) => {
             const response = sectionResponses[index];
 
@@ -637,12 +673,14 @@ useEffect(() => {
             return { ...sec, id: response.data.id };
         });
 
-        setSectionLetters(updatedSections);
+        setSectionLetters({...sectionLetters, ...updatedSections});
+        setNewSectionLetters(null);
         console.log("Updated Sections", updatedSections);
-
+      }
+      if(newQuestion !== null) {
         console.log("Selected Question", selectedQuestion);
-        selectedQuestion.map((q) => {
-            const foundSection = updatedSections.find((sec) => sec.name === q.section);
+        const question = newQuestion.map((q) => {
+            const foundSection = sectionLetters.find((sec) => sec.name === q.section);
             fetch("http://localhost:3000/Examination/createQuestionMapping", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -659,8 +697,12 @@ useEffect(() => {
                     }
                 });
         });
-        selectedMCQ.map((q) => {
-          const foundSection = updatedSections.find((sec) => sec.name === q.section);
+        const questioResponses = await Promise.all(question);
+        setNewQuestion(null);
+      }
+      if(newMCQ !== null) { 
+        const mcq = newMCQ.map((q) => {
+          const foundSection = sectionLetters.find((sec) => sec.name === q.section);
           fetch("http://localhost:3000/Examination/createQuestionMapping", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -677,6 +719,9 @@ useEffect(() => {
                   }
               });
       });
+        const mcqResponses = await Promise.all(mcq);
+        setNewMCQ(null);
+    }
         console.log("✅ All Question Mappings Created Successfully!");
         toast.success(`Paper ${action}ed!`);
     setIsSaved(true);
@@ -813,7 +858,7 @@ useEffect(() => {
                 <Button onClick={() => {
                           setSectionFlag(true);
                         }}
-                        sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '100%', color: 'white', backgroundColor: "#7451f8",'&:hover': {backgroundColor: '#303f9f'}}}>
+                        sx={{ marginRight: { xs: 0, md: 3 }, marginTop: { xs: 3, lg: 0 }, width: '110%', color: 'white', backgroundColor: "#7451f8",'&:hover': {backgroundColor: '#303f9f'}}}>
                       Section
                       <FontAwesomeIcon style={{ marginLeft: 8, background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)', color: 'white', borderRadius: '50%' }} />
                   </Button>
@@ -824,6 +869,9 @@ useEffect(() => {
                   SelectedMCQs={selectedMCQ}
                   sections={sectionLetters}
                   setIsSaved={setIsSaved}
+                  subject_id={paper.subject_id}
+                  class_id={paper.class_id}
+                  setNewMCQ={setNewMCQ}
                 ></ModalSelectMCQs>
               </Box>
               <Box sx={{ width: "91.666667%", my: 2 }}>
@@ -832,9 +880,12 @@ useEffect(() => {
                   SelectedQuestions={selectedQuestion}
                   sections={sectionLetters}
                   setIsSaved={setIsSaved}
+                  subject_id={paper.subject_id}
+                  class_id={paper.class_id}
+                  setNewQuestion={setNewQuestion}
                 ></ModalSelectQuestions>
               </Box>
-              <SectionHandler exsistingInfo={exsistingInfo} setExsistingInfo={setExsistingInfo} sections={sectionLetters} setSections={setSectionLetters} sectionFlag={sectionFlag} setSectionFlag={setSectionFlag} setIsSaved={setIsSaved} isSaved={isSaved}/>
+              <SectionHandler exsistingInfo={exsistingInfo} setExsistingInfo={setExsistingInfo} sections={sectionLetters} setSections={setSectionLetters} sectionFlag={sectionFlag} setSectionFlag={setSectionFlag} setIsSaved={setIsSaved} isSaved={isSaved} setNewSectionLetters={setNewSectionLetters}/>
               {console.log("SectionLetters check", isSaved)}
               {sectionLetters.map((letter, index) => (
                 <>

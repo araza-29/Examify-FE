@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 import toast from 'react-hot-toast';
 
-export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections, setIsSaved}) {
+export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections, setIsSaved, subject_id, class_id, setNewMCQ}) {
     const [MCQsFlag, setMCQsFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(3);
     const [MCQs, setMCQs] = useState([]);
@@ -26,7 +26,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             headers: {
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify({subject_id: 3})
+            body: JSON.stringify({subject_id: subject_id, class_id: class_id})
         })
         .then(response => response.json())
         .then((data) => {
@@ -150,6 +150,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
         setMCQs((prevMCQs) =>
             prevMCQs.filter((q) => !q.selected)
         );
+        setNewMCQ(selected)
         setIsSaved(false)
         handleOpen();
     }
@@ -185,7 +186,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily.mar }}>
                 Select MCQs for the Paper
             </Typography>
-            <Box sx={{display:'flex', maxHeight: 2}}>
+            <Box sx={{display:'flex', maxHeight: 2, maxHeight: 2, marginBottom: 8, marginTop: 3}}>
                 <Box sx={{display:'flex', marginRight: 2, alignItem:'center'}}>
                     <Typography variant="h5" sx={{marginRight: 1}}>
                         <FontAwesomeIcon icon={faFilter}/>
@@ -194,14 +195,12 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
                         Filter
                     </Typography>
                 </Box>
-                <Box>
-                    <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics}/>
-                </Box>
-                <Box>
-                    <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
-                </Box>
-                <Box>
-                    <DropDown name = {"Sections"} data = {MCQsSection} selectedData={selectedSection} setSelectedData={setSelectedSection} />
+                <Box sx={{display: "flex", flexDirection: "row", gap: "80px", justifyContent: "flex-start"}}>
+                    <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"300px"}/>
+                    
+                    <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"300px"}/>
+                    
+                    <DropDown name = {"Sections"} data = {MCQsSection} selectedData={selectedSection} setSelectedData={setSelectedSection} width={"300px"}/>
                 </Box>
             </Box>
             <Box sx={{ height: '100%', width: '100%', fontSize: '0.875rem', maxHeight: '70vh', overflow: 'scroll' }}>
@@ -225,12 +224,12 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             <Divider style={{ color: "black" }} sx={{ my: 2 }}/>
             <Box sx={{ display: 'flex',flexDirection: "row", justifyContent: 'flex-end', mt: 3, gap: 2}}> 
                 <Box sx={{ display: 'flex',flexDirection: "row"}}> 
-                    <Button size="large" onClick={handleOpen} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                    <Button size="large" onClick={handleOpen} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
                         Cancel
                     </Button>
                 </Box>
                 <Box sx={{ display: 'flex',flexDirection: "row"}}>
-                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
                         Done
                     </Button>
                 </Box>

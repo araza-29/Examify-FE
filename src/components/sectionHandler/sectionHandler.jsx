@@ -201,21 +201,23 @@ return(
             variant="contained"
             sx={{
             background:
-                "linear-gradient(90deg, #2196F3 0%, #21CBF3 100%)",
+                "#7451f8",
             color: "white",
-            "&:hover": {
-                background:
-                "linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)",
-            },
+            // "&:hover": {
+            //     background:
+            //     "linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)",
+            // },
             }}
             onClick={handleSubmit}
         >
             Save Changes
         </Button>
         <Button
-            variant="outlined"
+            variant="contained"
             sx={{
             ml: 2,
+            backgroundColor: "#7451f8",
+
             }}
             onClick={() => setSectionFlag(false)}
         >

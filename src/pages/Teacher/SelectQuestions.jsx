@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 import toast from 'react-hot-toast';
 
-export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections, setIsSaved}) {
+export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections, setIsSaved, subject_id, class_id, setNewQuestion}) {
     console.log("SelectQuestions check in section",sections);
     const [QuestionFlag, setQuestionFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(3);
@@ -24,7 +24,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     useEffect(()=> {
         fetchChapters();
         fetchQuestion();
-    },[subjectId])
+    },[subject_id])
 
     useEffect(()=> {
         fetchTopics();
@@ -47,7 +47,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({subject_id: 3})
+            body: JSON.stringify({subject_id: subject_id})
         })
         .then(response => response.json())
         .then((data) => {
@@ -93,7 +93,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             headers: {
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify({subject_id: 3})
+            body: JSON.stringify({subject_id: subject_id, class_id: class_id})
         })
         .then(response => response.json())
         .then((data) => {
@@ -159,7 +159,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         setQuestions((prevQuestions) =>
             prevQuestions.filter((q) => !q.selected)
         );
-    
+        setNewQuestion(selected);
         console.log("Updated Selected Questions:", selected);
         setIsSaved(false)
         handleOpen();
@@ -203,8 +203,8 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily.mar }}>
                 Select Question for the Paper
             </Typography>
-            <Box sx={{display:'flex', maxHeight: 2}}>
-                <Box sx={{display:'flex', marginRight: 2, alignItem:'center'}}>
+            <Box sx={{display:'flex', maxHeight: 2, marginBottom: 8, marginTop: 3}}>
+                <Box sx={{display:'flex', marginRight: 2, marginLeft: 2, alignItem:'center'}}>
                     <Typography variant="h5" sx={{marginRight: 1}}>
                         <FontAwesomeIcon icon={faFilter}/>
                     </Typography>
@@ -212,14 +212,12 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                         Filter
                     </Typography>
                 </Box>
-                <Box>
-                    <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics}/>
-                </Box>
-                <Box>
-                    <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
-                </Box>
-                <Box>
-                    <DropDown name = {"Sections"} data = {QuestionSection} selectedData={selectedSection} setSelectedData={setSelectedSection} />
+                <Box sx={{display: "flex", flexDirection: "row", gap: "80px", justifyContent: "flex-start"}}>
+                    <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"300px"}/>
+                    
+                    <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"300px"}/>
+                    
+                    <DropDown name = {"Sections"} data = {QuestionSection} selectedData={selectedSection} setSelectedData={setSelectedSection} width={"300px"}/>
                 </Box>
             </Box>
             <Box sx={{ height: '100%', width: '100%', fontSize: '0.875rem', maxHeight: '70vh', overflow: 'scroll' }}>
@@ -243,12 +241,12 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             <Divider style={{ color: "black" }} sx={{ my: 2 }}/>
             <Box sx={{ display: 'flex',flexDirection: "row", justifyContent: 'flex-end', mt: 3, gap: 2}}> 
                 <Box sx={{ display: 'flex',flexDirection: "row"}}> 
-                    <Button size="large" onClick={handleClose} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                    <Button size="large" onClick={handleClose} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
                         Cancel
                     </Button>
                 </Box>
                 <Box sx={{ display: 'flex',flexDirection: "row"}}>
-                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
+                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
                         Done
                     </Button>
                 </Box>
