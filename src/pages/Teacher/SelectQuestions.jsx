@@ -159,7 +159,12 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         setQuestions((prevQuestions) =>
             prevQuestions.filter((q) => !q.selected)
         );
-        setNewQuestion(selected);
+        const updatedSelected = selected.map(q => ({
+            ...q,
+            section: selectedSection.name
+        }));
+
+        setNewQuestion(updatedSelected);
         console.log("Updated Selected Questions:", selected);
         setIsSaved(false)
         handleOpen();

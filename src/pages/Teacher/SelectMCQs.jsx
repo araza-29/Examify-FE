@@ -150,7 +150,11 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
         setMCQs((prevMCQs) =>
             prevMCQs.filter((q) => !q.selected)
         );
-        setNewMCQ(selected)
+         const updatedSelected = selected.map(q => ({
+            ...q,
+            section: selectedSection.name
+        }));
+        setNewMCQ(updatedSelected)
         setIsSaved(false)
         handleOpen();
     }

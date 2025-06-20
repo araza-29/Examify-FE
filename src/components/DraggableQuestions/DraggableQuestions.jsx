@@ -4,7 +4,7 @@ import parser from "html-react-parser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Box, Typography } from "@mui/material";
-const DraggableQuestions = ({ section, Questions, SetQuestions }) => {
+const DraggableQuestions = ({ section, Questions, SetQuestions, setDeletedQuestions }) => {
   const handleDragEnd = (result) => {
     if (!result.destination) return;
     console.log(Questions);
@@ -16,6 +16,8 @@ const DraggableQuestions = ({ section, Questions, SetQuestions }) => {
   };
   console.log("Draggable section", section);
   const handleDelete = (id) => {
+    const deletedQuestions = Questions.filter((Question) => Question.id === id);
+    setDeletedQuestions(deletedQuestions)
     const updatedQuestions = Questions.filter((Question) => Question.id !== id);
     SetQuestions(updatedQuestions);
   };
