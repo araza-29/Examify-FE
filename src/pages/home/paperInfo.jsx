@@ -91,12 +91,13 @@ const InfoCard = ({ paper, date, subject, className, status }) => {
 const PaperInfo = () => {
   const navigate = useNavigate();
   const [papers, setPapers] = useState([]);
+  const [userId, setUserID] = useState(parseInt(localStorage.getItem("userId"), 10));
   useEffect(()=>{
     fetch("http://localhost:3000/Examination/reviewAllPaperByUserID", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        user_id: 5
+        user_id: userId
       }),
     })
       .then((response) => response.json())

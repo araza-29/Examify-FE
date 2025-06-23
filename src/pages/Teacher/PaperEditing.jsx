@@ -329,6 +329,29 @@ const Teacher = () => {
     departmentNames: ["Jinnah", "Iqbal"],
   })
 
+  function convertTo12HourRange(timeStr, durationHours) {
+    // Fix "24" hour by converting it to 0 and adding a day if needed
+    let [hour, minute, second] = timeStr.split(":").map(Number);
+    if (hour >= 24) {
+      hour = hour - 24;
+    }
+
+    const start = new Date();
+    start.setHours(hour, minute, 0, 0);
+
+    const end = new Date(start);
+    end.setHours(start.getHours() + Number(durationHours));
+
+    const formatTime = (date) => {
+      const h = date.getHours() % 12 || 12;
+      const m = date.getMinutes().toString().padStart(2, "0");
+      const ampm = date.getHours() >= 12 ? "PM" : "AM";
+      return `${h}:${m}${ampm}`;
+    };
+
+    return `${formatTime(start)} to ${formatTime(end)}`;
+  }
+
   // Prevent page refresh without saving
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -416,7 +439,7 @@ const Teacher = () => {
             { length: exsistingInfo.sections - prevSectionLetters.length },
             (_, index) => ({
               id: prevSectionLetters.length + index,
-              name: `Section ${String.fromCharCode(65 + prevSectionLetters.length + index)}`,
+              name: `Section “${String.fromCharCode(65 + prevSectionLetters.length + index)}”`,
               type: "",
               description: "",
               marks: 0,
@@ -440,7 +463,7 @@ const Teacher = () => {
       // Generate new sections
       const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
         id: prevSectionLetters[index]?.id || index,
-        name: `Section ${String.fromCharCode(65 + index)}`,
+        name: `Section “${String.fromCharCode(65 + index)}”`,
         type: prevSectionLetters[index]?.type || "",
         description: prevSectionLetters[index]?.description || "",
         marks: prevSectionLetters[index]?.marks || 0,
@@ -466,8 +489,12 @@ const Teacher = () => {
       subject: paper.subject_name,
       class: paper.class_name,
       ExaminationYear: paper.year,
+      examination: paper.type,
       duration: paper.duration,
       marks: paper.marks,
+      date: paper.date,
+      center: paper.center_name,
+      time: convertTo12HourRange(paper.time, paper.duration)
     }))
 
     const fetchDataSequentially = async () => {

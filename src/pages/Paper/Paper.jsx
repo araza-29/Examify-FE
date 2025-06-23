@@ -1,6 +1,21 @@
 import React from 'react';
 import { PDFViewer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import parse from 'html-react-parser';
+import { Font } from '@react-pdf/renderer';
+
+Font.register({
+  family: 'TimesNewRoman',
+  fonts: [
+    {
+      src: 'https://db.onlinewebfonts.com/t/32441506567973bb1e65e8c3fbada474.ttf',
+      fontWeight: 'normal',
+    },
+    {
+      src: 'https://db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.ttf',
+      fontWeight: 'bold',
+    },
+  ],
+});
 
 const styles = StyleSheet.create({
     page: {
@@ -9,32 +24,99 @@ const styles = StyleSheet.create({
     },
     header: {
         textAlign: 'center',
-        marginBottom: 10,
+        marginBottom: 20,
+        paddingVertical: 2,
+        borderBottomWidth: 2,
+        borderBottomColor: '#333',
     },
     instituteName: {
         fontSize: 18,
         fontFamily: 'Times-Bold',
+        marginBottom: 10,
+        textAlign: 'center',
+        textTransform: 'uppercase',
+    },
+    examDetailsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
         marginBottom: 5,
+    },
+    leftDetails: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        flex: 1.05,
+    },
+    centerDetails: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        flex: 2,
+    },
+    rightDetails: {
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        flex: 1,
+    },
+    detailText: {
+        fontSize: 12,
+        fontFamily: 'Times-Roman',
+        marginBottom: 2,
     },
     examTitle: {
         fontSize: 12,
-        marginBottom: 5,
-        fontFamily: 'Times-Roman',
+        fontFamily: 'Times-Bold',
+        textAlign: 'center',
+        marginBottom: 2,
+        textTransform: 'uppercase'
     },
     timeDetails: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 10,
         fontSize: 12,
         fontFamily: 'Times-Roman',
     },
     leftColumn: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+    position: 'relative',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
     },
-    rightColumn: {
-        flexDirection: 'column',
-        alignItems: 'flex-end',
+
+    date: {
+    position: 'absolute',
+    left: 10,
+    fontSize: 12,
+    fontFamily: 'Times-Roman',
+    },
+
+    rightGroup: {
+    position: 'absolute',
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8, // not supported in all versions, can replace with margin
+    },
+
+    Time: {
+    fontSize: 12,
+    fontFamily: 'Times-Roman',
+    marginRight: 10,
+    },
+
+    marks: {
+    fontSize: 12,
+    fontFamily: 'Times-Roman',
+    },
+
+    subjectText: {
+        fontSize: 12,
+        fontFamily: 'Times-Roman',
+        marginBottom: 3,
+    },
+    maxMarksText: {
+        fontSize: 12,
+        fontFamily: 'Times-Bold',
     },
     sectionHeaderContainer: {
         flexDirection: 'row',
@@ -43,14 +125,17 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     sectionNameWrapper: {
-        flex: 1,
+        flex: 5,
         textAlign: 'center',
     },
     sectionHeader: {
         paddingTop: 10,
         fontFamily: 'Times-Bold',
-        textDecoration: 'underline',
+        textDecorationLine: 'underline',
         fontSize: 16,
+        textAlign: 'center',
+        textTransform: 'uppercase',
+        textDecoration: 'underline'
     },
     sectionSubheader: {
         textAlign: 'center',
@@ -62,6 +147,7 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         fontFamily: 'Times-Roman',
         fontSize: 14,
+        flex: 1
     },
     question: {
         marginBottom: 5,
@@ -135,23 +221,26 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
         <Document>
             <Page size="A4" style={styles.page}>
                 {/* Original Header */}
-                <View fixed>
-                    <View style={styles.header}>
-                        <Text style={styles.instituteName}>{BasicInfo.header}</Text>
-                        <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION {BasicInfo.ExaminationYear}</Text>
-                        <Text style={styles.examTitle}>{BasicInfo.subject}</Text>
-                    </View>
-
-                    <View style={styles.timeDetails}>
-                        <View style={styles.leftColumn}>
-                            <Text>Date: {BasicInfo.date}</Text>
-                            <Text>Time: {BasicInfo.time}</Text>
+                <View style={styles.header}>
+                    <Text style={styles.instituteName}>{BasicInfo.header}</Text>    
+                    <View style={styles.examDetailsRow}>
+                        {/* Left side - Date and Time */}
+                        <View style={styles.leftDetails}>
+                            <Text style={styles.detailText}>Date: {BasicInfo.date}</Text>
+                            <Text style={styles.detailText}>Time: {BasicInfo.time}</Text>
                         </View>
-                        <View style={styles.rightColumn}>
-                            <Text>Max. Marks: {BasicInfo.marks}</Text>
+                        
+                        {/* Center - Examination details */}
+                        <View style={styles.centerDetails}>
+                            <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION, {BasicInfo.ExaminationYear}</Text>
+                            <Text style={styles.examTitle}>{BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})</Text>
+                        </View>
+                        
+                        {/* Right side - Max Marks */}
+                        <View style={styles.rightDetails}>
+                            <Text style={styles.detailText}>Max. Marks: {BasicInfo.marks}</Text>
                         </View>
                     </View>
-                    <View style={styles.divider} />
                 </View>
 
                 {/* Sections */}

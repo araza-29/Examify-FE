@@ -51,9 +51,9 @@ const Login = () => {
           
           // Redirect based on role
           localStorage.setItem("userId", data.data.id)
-          if(role === "4")
+          if(role === "1")
             localStorage.setItem("role", "Teacher")
-          else if(role==="7")
+          else if(role==="2")
             localStorage.setItem("role", "Adminstrator")
           else if(role==="3")
             localStorage.setItem("role", "Examination")
@@ -92,8 +92,8 @@ const Login = () => {
                 onChange={(e) => setRole(e.target.value)}
                 label="Select Role"
               >
-                <MenuItem value="7">Administrator</MenuItem>
-                <MenuItem value="4">Teacher</MenuItem>
+                <MenuItem value="2">Administrator</MenuItem>
+                <MenuItem value="1">Teacher</MenuItem>
                 <MenuItem value="3">Examination</MenuItem>
               </Select>
             </FormControl>

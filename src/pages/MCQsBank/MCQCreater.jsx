@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 function MCQCreater() {
         const navigate = useNavigate();
         const [MCQ, setMCQ] = useState([]);
-        const [userId, setUserId] = useState(5);
+        const [userId, setUserId] = useState(parseInt(localStorage.getItem("userId"), 10));
         const [classes,setClasses] = useState([]);
         const[selectedClass,setSelectedClass] = useState([]);
         const [subject,setSubject] = useState([]);

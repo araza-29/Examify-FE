@@ -87,7 +87,7 @@ const Home = () => {
   const [topic, setTopics] = useState([]);
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
-  const [userID, setUserID] = useState(5);
+  const [userID, setUserID] = useState(parseInt(localStorage.getItem("userId"), 10));
   const [flag, setFlag] = useState(false);
 
   useEffect(() => {

@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 function QuestionCreater() {
         const navigate = useNavigate();
         const [Question, setQuestion] = useState([]);
-        const [userId, setUserId] = useState(5);
+        const [userId, setUserId] = useState(parseInt(localStorage.getItem("userId"), 10));
         const [subject,setSubject] = useState([]);
         const[selectedSubject,setSelectedSubject] = useState(null);
         const [classes,setClasses] = useState([]);

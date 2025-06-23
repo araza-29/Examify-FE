@@ -54,7 +54,7 @@ const Home = () => {
   };
   const [MCQFlag, setMCQFlag] = useState(false);
   const [flag, setFlag] = useState(false);
-  const [userId, setUserId] = useState(5);
+  const [userId, setUserId] = useState(parseInt(localStorage.getItem("userId"), 10));
   const [MCQs, setMCQs] = useState([]);
   const [MCQInfo, setMCQInfo] = useState([]);
   const [subjects, setSubjects] = useState([]);
