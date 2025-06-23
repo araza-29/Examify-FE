@@ -76,39 +76,34 @@ const styles = StyleSheet.create({
         fontFamily: 'Times-Roman',
     },
     leftColumn: {
-    position: 'relative',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
+        position: 'relative',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
     },
-
     date: {
-    position: 'absolute',
-    left: 10,
-    fontSize: 12,
-    fontFamily: 'Times-Roman',
+        position: 'absolute',
+        left: 10,
+        fontSize: 12,
+        fontFamily: 'Times-Roman',
     },
-
     rightGroup: {
-    position: 'absolute',
-    right: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8, // not supported in all versions, can replace with margin
+        position: 'absolute',
+        right: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
-
     Time: {
-    fontSize: 12,
-    fontFamily: 'Times-Roman',
-    marginRight: 10,
+        fontSize: 12,
+        fontFamily: 'Times-Roman',
+        marginRight: 10,
     },
-
     marks: {
-    fontSize: 12,
-    fontFamily: 'Times-Roman',
+        fontSize: 12,
+        fontFamily: 'Times-Roman',
     },
-
     subjectText: {
         fontSize: 12,
         fontFamily: 'Times-Roman',
@@ -143,13 +138,42 @@ const styles = StyleSheet.create({
         fontSize: 10,
         marginBottom: 5,
     },
-    sectionMarks: {
+    // Updated question style for continuous numbering
+    question: {
+        marginBottom: 5,
+        fontSize: 12,
+        fontFamily: 'Times-Roman',
+    },
+    // New style for notes as questions (non-descriptive sections)
+    noteContainer:{
         paddingTop: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    noteAsQuestion: {
+        marginBottom: 8,
+        fontSize: 12,
+        fontFamily: 'Times-Bold',
+        fontWeight: 'bold',
+        flex: 5
+    },
+    sectionMarks: {
+        marginBottom: 8,
         fontFamily: 'Times-Roman',
         fontSize: 14,
         flex: 1
     },
-    question: {
+    // New style for normal notes (descriptive sections)
+    normalNote: {
+        marginBottom: 8,
+        fontSize: 12,
+        fontFamily: 'Times-Bold',
+        fontWeight: 'bold',
+        textAlign: 'left',
+        flex: 5
+    },
+    // Style for descriptive questions with continuous numbering
+    descriptiveQuestion: {
         marginBottom: 5,
         fontSize: 12,
         fontFamily: 'Times-Roman',
@@ -182,40 +206,93 @@ const styles = StyleSheet.create({
 
 const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
     function MCQ({ htmlString, choices, index }) {
-        const parsedElements = parse(htmlString);
-        const parsedChoices = choices.map(q => parse(q));
-    
-        function toRoman(num) {
-            const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-            return romanNumerals[num - 1] || num;
-        }
-    
-        return (
-            <View>
-                <View style={{ marginBottom: 4 }}>
-                    <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                        <Text style={{ fontFamily: "Times-Bold", marginRight: 5, fontSize: 11 }}>
-                            {toRoman(index)}.
-                        </Text>
-                        <Text style={{ fontSize: 12, fontFamily: "Times-Roman" }}>
-                            {parsedElements}
-                        </Text>
-                    </View>
-    
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'flex-start' }}>
-                        <View style={{ width: '40%', alignItems: 'flex-start' }}>
-                            <Text style={{ fontSize: 11 }}>• {parsedChoices[0]}</Text>
-                            <Text style={{ fontSize: 11 }}>• {parsedChoices[1]}</Text>
-                        </View>
-                        <View style={{ width: '40%', alignItems: 'flex-start' }}>
-                            <Text style={{ fontSize: 11 }}>• {parsedChoices[2]}</Text>
-                            <Text style={{ fontSize: 11 }}>• {parsedChoices[3]}</Text>
-                        </View>
-                    </View>
+    const parsedElements = parse(htmlString);
+    const parsedChoices = choices.map(q => parse(q));
+
+    function toRoman(num) {
+        const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+        return romanNumerals[num - 1] || num;
+    }
+
+    return (
+        <View style={{ marginBottom: 10 }}>
+            {/* Question header */}
+            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <Text style={{ 
+                    fontFamily: "Times-Roman", 
+                    marginRight: 8, 
+                    fontSize: 12,
+                    minWidth: 20
+                }}>
+                    {toRoman(index)}.
+                </Text>
+                <Text style={{ 
+                    fontSize: 12, 
+                    fontFamily: "Times-Roman",
+                    flex: 1,
+                    lineHeight: 1.3
+                }}>
+                    {parsedElements}
+                </Text>
+            </View>
+
+            {/* Choices in two columns */}
+            <View style={{ 
+                flexDirection: 'row', 
+                justifyContent: 'space-between',
+                paddingLeft: 28, // Align with question text
+            }}>
+                {/* Left column */}
+                <View style={{ 
+                    width: '45%',
+                    alignItems: 'flex-start'
+                }}>
+                    <Text style={{ 
+                        fontSize: 11, 
+                        fontFamily: "Times-Roman",
+                        marginBottom: 2,
+                        lineHeight: 1.3
+                    }}>
+                        • {parsedChoices[0]}
+                    </Text>
+                    
+                    <Text style={{ 
+                        fontSize: 11, 
+                        fontFamily: "Times-Roman",
+                        marginBottom: 2,
+                        lineHeight: 1.3
+                    }}>
+                        • {parsedChoices[1]}
+                    </Text>
+                </View>
+
+                {/* Right column */}
+                <View style={{ 
+                    width: '45%',
+                    alignItems: 'flex-start'
+                }}>
+                    <Text style={{ 
+                        fontSize: 11, 
+                        fontFamily: "Times-Roman",
+                        marginBottom: 2,
+                        lineHeight: 1.3
+                    }}>
+                        • {parsedChoices[2]}
+                    </Text>
+                    
+                    <Text style={{ 
+                        fontSize: 11, 
+                        fontFamily: "Times-Roman",
+                        marginBottom: 2,
+                        lineHeight: 1.3
+                    }}>
+                        • {parsedChoices[3]}
+                    </Text>
                 </View>
             </View>
-        );
-    }
+        </View>
+    );
+}
 
     return (
         <Document>
@@ -244,34 +321,100 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                 </View>
 
                 {/* Sections */}
-                {section.map((sec, secIndex) => (
-                    <View key={secIndex}>
-                        <View style={styles.sectionHeaderContainer}>
-                            <View style={styles.sectionNameWrapper}>
-                                <Text style={styles.sectionHeader}>{sec.name}</Text>
-                                <Text style={styles.sectionHeader}>({sec.type})</Text>
+                {section.map((sec, secIndex) => {
+                    // Calculate starting question number for this section
+                    let questionCounter = 1;
+                    
+                    // For non-descriptive sections, count all previous questions and notes as questions
+                    if (sec.type.toLowerCase() !== 'descriptive questions') {
+                        for (let i = 0; i < secIndex; i++) {
+                            const prevSection = section[i];
+                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
+                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
+                            
+                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
+                                // For previous descriptive sections, count questions normally
+                                questionCounter += prevQuestions + prevMCQs;
+                            } else {
+                                // For previous non-descriptive sections, count questions + 1 for note
+                                questionCounter += prevQuestions + prevMCQs + 1;
+                            }
+                        }
+                    } else {
+                        // For descriptive sections, count all previous questions and notes as questions
+                        for (let i = 0; i < secIndex; i++) {
+                            const prevSection = section[i];
+                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
+                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
+                            
+                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
+                                questionCounter += prevQuestions + prevMCQs;
+                            } else {
+                                questionCounter += prevQuestions + prevMCQs + 1; // +1 for note as question
+                            }
+                        }
+                    }
+
+                    return (
+                        <View key={secIndex}>
+                            <View style={styles.sectionHeaderContainer}>
+                                <View style={styles.sectionNameWrapper}>
+                                    <Text style={styles.sectionHeader}>{sec.name}</Text>
+                                    <Text style={styles.sectionHeader}>({sec.type})</Text>
+                                </View>
                             </View>
-                            <Text style={styles.sectionMarks}>({sec.marks} Marks)</Text>
+                            <View style={styles.noteContainer}>
+                                {/* Handle notes based on section type */}
+                                {sec.type.toLowerCase() === 'descriptive questions' ? (
+                                    /* Normal note for descriptive sections */
+                                    <Text style={styles.normalNote}>
+                                        NOTE: {sec.description}
+                                    </Text>
+                                ) : (
+                                    /* Note as question for non-descriptive sections */
+                                    <Text style={styles.noteAsQuestion}>
+                                        Q{questionCounter}. {sec.description}
+                                    </Text>
+                                )}
+                                <Text style={styles.sectionMarks}>({sec.marks} Marks)</Text>
+                            </View>
+                            {/* Render questions with continuous numbering */}
+                            {htmlQuestions
+                                .filter(q => q.section === sec.name)
+                                .map((q, idx) => {
+                                    const currentQuestionNumber = sec.type.toLowerCase() === 'descriptive questions' 
+                                        ? questionCounter + idx 
+                                        : questionCounter + 1 + idx; // +1 because note took a question number
+                                    
+                                    return (
+                                        <View key={idx} style={sec.type.toLowerCase() === 'descriptive questions' ? styles.descriptiveQuestion : styles.question}>
+                                            <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
+                                        </View>
+                                    );
+                                })}
+
+                            {/* Render MCQs with continuous numbering */}
+                            {htmlMCQ
+                                .filter(q => q.section === sec.name)
+                                .map((q, idx) => {
+                                    const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
+                                    const currentQuestionNumber = sec.type.toLowerCase() === 'descriptive questions'
+                                        ? questionCounter + questionsInThisSection + idx
+                                        : questionCounter + 1 + questionsInThisSection + idx; // +1 because note took a question number
+                                    
+                                    return (
+                                        <View key={idx}>
+                                            <MCQ 
+                                                index={currentQuestionNumber} 
+                                                htmlString={q.name} 
+                                                choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
+                                            />
+                                        </View>
+                                    );
+                                })}
                         </View>
-                        <Text style={styles.sectionSubheader}>{sec.description}</Text>
-
-                        {htmlQuestions
-                            .filter(q => q.section === sec.name)
-                            .map((q, idx) => (
-                                <View key={idx} style={styles.question}>
-                                    <Text>Q{idx + 1}. {parse(q.name)}</Text>
-                                </View>
-                            ))}
-
-                        {htmlMCQ
-                            .filter(q => q.section === sec.name)
-                            .map((q, idx) => (
-                                <View key={idx}>
-                                    <MCQ index={idx + 1} htmlString={q.name} choices={[q.choice1, q.choice2, q.choice3, q.choice4]}/>
-                                </View>
-                            ))}
-                    </View>
-                ))}
+                    );
+                })}
             </Page>
         </Document>
     );
