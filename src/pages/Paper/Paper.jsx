@@ -205,14 +205,14 @@ const styles = StyleSheet.create({
 });
 
 const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
+    function toRoman(num) {
+        const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
+        return romanNumerals[num - 1] || num;
+    }
     function MCQ({ htmlString, choices, index }) {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
 
-    function toRoman(num) {
-        const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
-        return romanNumerals[num - 1] || num;
-    }
 
     return (
         <View style={{ marginBottom: 10 }}>
@@ -379,28 +379,52 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                 <Text style={styles.sectionMarks}>({sec.marks} Marks)</Text>
                             </View>
                             {/* Render questions with continuous numbering */}
-                            {htmlQuestions
-                                .filter(q => q.section === sec.name)
-                                .map((q, idx) => {
-                                    const currentQuestionNumber = sec.type.toLowerCase() === 'descriptive questions' 
-                                        ? questionCounter + idx 
-                                        : questionCounter + 1 + idx; // +1 because note took a question number
-                                    
+                        {htmlQuestions
+                            .filter(q => q.section === sec.name)
+                            .map((q, idx) => {
+                                const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
+                                
+                                if (isDescriptive) {
+                                    // For descriptive sections, use regular Q numbering
+                                    const currentQuestionNumber = questionCounter + idx;
                                     return (
-                                        <View key={idx} style={sec.type.toLowerCase() === 'descriptive questions' ? styles.descriptiveQuestion : styles.question}>
+                                        <View key={idx} style={styles.descriptiveQuestion}>
                                             <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
                                         </View>
                                     );
-                                })}
+                                } else {
+                                    // For non-descriptive sections, use Roman numerals starting from i
+                                    const romanIndex = toRoman(idx + 1);
+                                    return (
+                                        <View key={idx} style={styles.question}>
+                                            <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+                                                <Text style={{ 
+                                                    fontFamily: "Times-Roman", 
+                                                    marginRight: 8, 
+                                                    fontSize: 12,
+                                                    minWidth: 20
+                                                }}>
+                                                    {romanIndex}.
+                                                </Text>
+                                                <Text style={{ 
+                                                    fontSize: 12, 
+                                                    fontFamily: "Times-Roman",
+                                                    flex: 1
+                                                }}>
+                                                    {parse(q.name)}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    );
+                                }
+                            })}
 
                             {/* Render MCQs with continuous numbering */}
                             {htmlMCQ
                                 .filter(q => q.section === sec.name)
                                 .map((q, idx) => {
                                     const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
-                                    const currentQuestionNumber = sec.type.toLowerCase() === 'descriptive questions'
-                                        ? questionCounter + questionsInThisSection + idx
-                                        : questionCounter + 1 + questionsInThisSection + idx; // +1 because note took a question number
+                                    const currentQuestionNumber = 1
                                     
                                     return (
                                         <View key={idx}>

@@ -155,6 +155,9 @@ return(
                     displayEmpty
                     >
                     <MenuItem value="">Section Type</MenuItem>
+                    <MenuItem value="Short Questions">
+                        Short Questions
+                    </MenuItem>
                     <MenuItem value="Descriptive Questions">
                         Descriptive Questions
                     </MenuItem>

@@ -385,6 +385,10 @@ const Teacher = () => {
 
   // Enhanced sectionsAreEqual function
   const sectionsAreEqual = (section1, section2) => {
+    
+    console.log("SectionCheck1", section1)
+    
+    console.log("SectionCheck2", section2)
     return (
       section1.name === section2.name &&
       section1.type === section2.type &&
@@ -402,11 +406,13 @@ const Teacher = () => {
       if (!section.databaseId) {
         // This is a completely new section
         newSectionsArray.push(section)
+        console.log("ssection", section)
       } else {
         // This section exists in database, check if it's modified
         const originalSection = originalSections.find((orig) => orig.id === section.databaseId)
-
+        console.log("Equal check", sectionsAreEqual(section, originalSection))
         if (originalSection && !sectionsAreEqual(section, originalSection)) {
+          console.log("OriginalSection", originalSection, section)
           // Section has been modified
           updatedSectionsArray.push({
             ...section,
@@ -420,61 +426,77 @@ const Teacher = () => {
     setUpdatedSections(updatedSectionsArray)
 
     console.log("New Sections:", newSectionsArray)
-    console.log("Updated Sections:", updatedSectionsArray)
+    console.log("Updated Sections in categorize:", updatedSectionsArray)
   }
 
   // Enhanced useEffect for section management
   useEffect(() => {
-    console.log("Updated Sections Length:", exsistingInfo.sections)
+  console.log("Updated Sections Length:", exsistingInfo.sections)
 
-    if (exsistingInfo.sections === undefined || exsistingInfo.sections === null) {
-      return
+  if (exsistingInfo.sections === undefined || exsistingInfo.sections === null) {
+    return
+  }
+  
+  console.log("Sections existing", sectionLetters)
+  
+  setSectionLetters((prevSectionLetters) => {
+    // If we have existing sections from database, don't override them during initial load
+    if (prevSectionLetters.length > 0 && prevSectionLetters.some((sec) => sec.isFromDatabase)) {
+      if (exsistingInfo.sections > prevSectionLetters.length) {
+        const additionalSections = Array.from(
+          { length: exsistingInfo.sections - prevSectionLetters.length },
+          (_, index) => ({
+            id: prevSectionLetters.length + index,
+            name: `Section "${String.fromCharCode(65 + prevSectionLetters.length + index)}"`,
+            type: "",
+            description: "",
+            marks: 0,
+            databaseId: null,
+            isFromDatabase: false,
+          }),
+        )
+
+        const updatedSections = [...prevSectionLetters, ...additionalSections]
+        setTimeout(() => categorizeSections(updatedSections), 0)
+        return updatedSections
+      } else if (exsistingInfo.sections < prevSectionLetters.length) {
+        const trimmedSections = prevSectionLetters.slice(0, exsistingInfo.sections)
+        setTimeout(() => categorizeSections(trimmedSections), 0)
+        return trimmedSections
+      }
+      setTimeout(() => categorizeSections(prevSectionLetters), 0)
+      console.log("Sections updated", prevSectionLetters)
+      return prevSectionLetters
     }
 
-    setSectionLetters((prevSectionLetters) => {
-      // If we have existing sections from database, don't override them during initial load
-      if (prevSectionLetters.length > 0 && prevSectionLetters.some((sec) => sec.isFromDatabase)) {
-        if (exsistingInfo.sections > prevSectionLetters.length) {
-          const additionalSections = Array.from(
-            { length: exsistingInfo.sections - prevSectionLetters.length },
-            (_, index) => ({
-              id: prevSectionLetters.length + index,
-              name: `Section “${String.fromCharCode(65 + prevSectionLetters.length + index)}”`,
-              type: "",
-              description: "",
-              marks: 0,
-              databaseId: null,
-              isFromDatabase: false,
-            }),
-          )
-
-          const updatedSections = [...prevSectionLetters, ...additionalSections]
-          setTimeout(() => categorizeSections(updatedSections), 0)
-          return updatedSections
-        } else if (exsistingInfo.sections < prevSectionLetters.length) {
-          const trimmedSections = prevSectionLetters.slice(0, exsistingInfo.sections)
-          setTimeout(() => categorizeSections(trimmedSections), 0)
-          return trimmedSections
+    // Generate new sections - PRESERVE EXISTING VALUES
+    const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => {
+      const existingSection = prevSectionLetters[index]
+      
+      // If section exists, preserve all its values
+      if (existingSection) {
+        return {
+          ...existingSection,
+          id: existingSection.id || index,
         }
-        setTimeout(() => categorizeSections(prevSectionLetters), 0)
-        return prevSectionLetters
       }
-
-      // Generate new sections
-      const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => ({
-        id: prevSectionLetters[index]?.id || index,
-        name: `Section “${String.fromCharCode(65 + index)}”`,
-        type: prevSectionLetters[index]?.type || "",
-        description: prevSectionLetters[index]?.description || "",
-        marks: prevSectionLetters[index]?.marks || 0,
-        databaseId: prevSectionLetters[index]?.databaseId || null,
-        isFromDatabase: prevSectionLetters[index]?.isFromDatabase || false,
-      }))
-
-      setTimeout(() => categorizeSections(newSections), 0)
-      return newSections
+      
+      // Only create default values for completely new sections
+      return {
+        id: index,
+        name: `Section "${String.fromCharCode(65 + index)}"`,
+        type: "",
+        description: "",
+        marks: 0,
+        databaseId: null,
+        isFromDatabase: false,
+      }
     })
-  }, [exsistingInfo.sections, originalSections])
+
+    setTimeout(() => categorizeSections(newSections), 0)
+    return newSections
+  })
+}, [exsistingInfo.sections, originalSections, sectionLetters])
 
   // Enhanced fetch sections logic
   useEffect(() => {
@@ -666,6 +688,7 @@ const Teacher = () => {
               // Store the mapping between original section and new database ID
               sectionIdMapping.set(sec.name, result.data.id)
               console.log(`✅ Section ${sec.name} created with ID: ${result.data.id}`)
+              setNewSections([])
             } else {
               console.error(`❌ Failed to create section ${sec.name}:`, result)
             }
@@ -696,7 +719,7 @@ const Teacher = () => {
 
         for (const sec of updatedSections) {
           try {
-            const response = await fetch("http://localhost:3000/Examination/updateSection", {
+            const response = await fetch("http://localhost:3000/Examination/updateSections", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -705,12 +728,14 @@ const Teacher = () => {
                 type: sec.type,
                 description: sec.description,
                 marks: sec.marks,
+                paper_id: paper.id
               }),
             })
 
             const result = await response.json()
             if (result && result.code === 200) {
               console.log(`✅ Section ${sec.name} updated successfully`)
+              setUpdatedSections([])
             } else {
               console.error(`❌ Failed to update section ${sec.name}:`, result)
             }
@@ -858,8 +883,6 @@ const Teacher = () => {
       console.log("✅ All operations completed successfully!")
 
       // Clear the tracking arrays after successful operations
-      setNewSections([])
-      setUpdatedSections([])
 
       // Update original sections to current state for future comparisons
       setTimeout(() => {
@@ -1079,7 +1102,7 @@ const Teacher = () => {
                       Selected Question: {marksTotal(letter.name, letter.type)}/{letter.marks}
                     </Typography>
 
-                    {letter.type === "Descriptive Questions" ? (
+                    {letter.type !== "Multiple Choice Questions" ? (
                       selectedQuestion.length !== 0 ? (
                         <DraggableQuestions section={letter} SetQuestions={setQuestions} Questions={selectedQuestion} setDeletedQuestions={setDeletedQuestion}/>
                       ) : (

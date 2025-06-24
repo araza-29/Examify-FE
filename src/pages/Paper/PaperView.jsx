@@ -111,6 +111,7 @@ const PaperView = () => {
     // instruction: "No Instruction just attempt the Paper",
   });
 
+  
   useEffect(() => {
       const handleBeforeUnload = (event) => {
         console.log("IsSaved", isSaved);  
@@ -135,8 +136,12 @@ const PaperView = () => {
       subject: paper.subject_name,
       class: paper.class_name,
       ExaminationYear: paper.year,
+      examination: paper.type,
       duration: paper.duration,
       marks: paper.marks,
+      date: paper.date,
+      center: paper.center_name,
+      time: paper.time
     })
     Promise.all([
       fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {

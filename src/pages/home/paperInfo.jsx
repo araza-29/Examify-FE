@@ -92,34 +92,201 @@ const PaperInfo = () => {
   const navigate = useNavigate();
   const [papers, setPapers] = useState([]);
   const [userId, setUserID] = useState(parseInt(localStorage.getItem("userId"), 10));
+  function convertTo12HourRange(timeStr, durationHours) {
+    // Fix "24" hour by converting it to 0 and adding a day if needed
+    let [hour, minute, second] = timeStr.split(":").map(Number);
+    if (hour >= 24) {
+      hour = hour - 24;
+    }
+
+    const start = new Date();
+    start.setHours(hour, minute, 0, 0);
+
+    const end = new Date(start);
+    end.setHours(start.getHours() + Number(durationHours));
+
+    const formatTime = (date) => {
+      const h = date.getHours() % 12 || 12;
+      const m = date.getMinutes().toString().padStart(2, "0");
+      const ampm = date.getHours() >= 12 ? "PM" : "AM";
+      return `${h}:${m}${ampm}`;
+    };
+
+    return `${formatTime(start)} to ${formatTime(end)}`;
+  }
   useEffect(()=>{
-    fetch("http://localhost:3000/Examination/reviewAllPaperByUserID", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId
-      }),
-    })
-      .then((response) => response.json())
-      .then((data)=>{
-        console.log("Papers Fetched", data)
-        const newPapers = data.data.map((item) => {
-        if(item.locked === 1) {
-          return { ...item, status: 'locked' };
-        }
-        else if(item.reviewed === 1) {
-          return { ...item, status: 'reviewed' };
-        }
-        else if (item.completed === 1) {
-          return { ...item, status: 'completed' };
-        }
-        else {
-          return { ...item, status: 'Not completed' };
-        }
-        return item;
-      });
-        setPapers(newPapers);
+    let role = localStorage.getItem("role")
+    if(role === "Teacher"){
+      fetch("http://localhost:3000/Examination/reviewAllPaperByUserID", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId
+        }),
       })
+        .then((response) => response.json())
+        .then((data)=>{
+          console.log("Papers Fetched", data)
+          const newPapers = data.data.map((item) => {
+          if(item.locked === 1) {
+            return { ...item, status: 'locked' };
+          }
+          else if(item.reviewed === 1) {
+            return { ...item, status: 'reviewed' };
+          }
+          else if (item.completed === 1) {
+            return { ...item, status: 'completed' };
+          }
+          else {
+            return { ...item, status: 'Not completed' };
+          }
+          return item;
+        });
+          setPapers(newPapers);
+        })
+    }
+    else if(role === "Adminstrator") {
+        fetch("http://localhost:3000/Examination/reviewAllPaper", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId
+        }),
+      })
+        .then((response) => response.json())
+        .then((data)=>{
+          console.log("Papers Fetched", data)
+          const newPapers = data.data.map((item) => {
+          if(item.locked === 1) {
+            return { ...item, 
+              status: 'locked', 
+              subject: itme.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration)
+          };
+          }
+          else if(item.reviewed === 1) {
+            return { ...item, 
+              status: 'reviewed',
+              subject: itme.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration)
+            };
+          }
+          else if (item.completed === 1) {
+            return { ...item, 
+              status: 'completed',
+              subject: itme.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration) };
+          }
+          else {
+            return { ...item, 
+              status: 'Not completed',
+              subject: item.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration) };
+          }
+          return item;
+        });
+          setPapers(newPapers);
+        })
+    }
+    else if(role === "Examination") {
+        fetch("http://localhost:3000/Examination/reviewAllPaper", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId
+        }),
+      })
+        .then((response) => response.json())
+        .then((data)=>{
+          console.log("Papers Fetched", data)
+          const newPapers = data.data.map((item) => {
+          if(item.locked === 1) {
+            return { ...item, 
+              status: 'locked', 
+              subject: itme.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration)
+          };
+          }
+          else if(item.reviewed === 1) {
+            return { ...item, 
+              status: 'reviewed',
+              subject: itme.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration)
+            };
+          }
+          else if (item.completed === 1) {
+            return { ...item, 
+              status: 'completed',
+              subject: itme.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration) };
+          }
+          else {
+            return { ...item, 
+              status: 'Not completed',
+              subject: itme.subject_name,
+              class: item.class_name,
+              ExaminationYear: item.year,
+              examination: item.type,
+              duration: item.duration,
+              marks: item.marks,
+              date: item.date,
+              center: item.center_name,
+              time: convertTo12HourRange(item.time, item.duration) };
+          }
+          return item;
+        });
+          setPapers(newPapers);
+        })
+    }
   },[])
 
   const handleCreate = () => {

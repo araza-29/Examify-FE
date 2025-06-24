@@ -18,7 +18,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     const [selectedChapters, setSelectedChapters] = useState([]);
     const [selectedTopic, setSelectedTopics] = useState([]);
     const [selectedSection, setSelectedSection] = useState([]);
-    const [QuestionSection, setQuestionSections] = useState(sections.filter(letter=>letter.type==="Descriptive Questions"));
+    const [QuestionSection, setQuestionSections] = useState(sections.filter(letter=>letter.type!=="Multiple Choice Questions"));
     const theme = useTheme();
 
     useEffect(()=> {
