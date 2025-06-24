@@ -4,6 +4,7 @@ import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import Paper from "../Paper/Paper";
+import PaperKey from "../Paper/PaperKey";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
@@ -150,7 +151,7 @@ const PaperView = () => {
         body: JSON.stringify({ paper_id: paper.id }),
       }).then((response) => response.json()),
     
-      fetch("http://localhost:3000/Examination/reviewQuestionsByPaperID", {
+      fetch("http://localhost:3000/Examination/reviewQuestionsWithAnswerByPaperID", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paper_id: paper.id }),
@@ -324,30 +325,7 @@ useEffect(() => {
       toast.error("Paper not saved!")
     }
   }
-  const marksTotal = (section, type) => {
-    var sum = 0;
-    console.log("selectedQuestion", selectedQuestion);
-    console.log("selectedQuestion[0]", selectedQuestion);
-    if (type === "Multiple Choice Questions") {
-      selectedMCQ.forEach((q) => {
-        if (q.section == section) sum = sum + 1;
-      });
-    } else {
-      selectedQuestion.forEach((q) => {
-        if (q.section == section) sum = sum + q.marks;
-      });
-    }
-    console.log(sum);
-    return sum;
-  };
-  console.log(sectionLetters);
-  const MCQMarks = () => {
-    var sum = 0;
-    selectedMCQ.forEach((q) => {
-      sum = sum + 1;
-    });
-    console.log(sum);
-  };
+  
   return (
     <div className="home" style={homeStyle}>
       <Box sx={{ width: "100%", height: "100vh", overflow: "hidden" }}>
@@ -432,7 +410,7 @@ useEffect(() => {
           {console.log(selectedQuestion)}
           <Box
             sx={{
-                flex: 5,
+                flex: 8,
                 overflowY: "auto",
                 height: "20%",
                 display: "flex",
@@ -440,8 +418,14 @@ useEffect(() => {
                 alignItems: "start", // or "center" if you want vertical center
             }}
             >
-            <Box sx={{ width: "60%" }}>
+            <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5 }}>
                 <Paper
+                htmlQuestions={selectedQuestion}
+                htmlMCQ={selectedMCQ}
+                BasicInfo={exsistingInfo}
+                section={sectionLetters}
+                />
+                <PaperKey
                 htmlQuestions={selectedQuestion}
                 htmlMCQ={selectedMCQ}
                 BasicInfo={exsistingInfo}

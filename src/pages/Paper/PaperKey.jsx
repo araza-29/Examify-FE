@@ -177,6 +177,8 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         fontSize: 12,
         fontFamily: 'Times-Roman',
+        display: "flex",
+        flexDirection: "column"
     },
     choice: {
         marginLeft: 10,
@@ -209,11 +211,22 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
         const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
         return romanNumerals[num - 1] || num;
     }
-    function MCQ({ htmlString, choices, index }) {
+    function MCQ({ htmlString, choices, index, answer }) {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
 
-
+    console.log("Choice:", choices[0]);
+    console.log("Answer:", answer);
+    console.log("Equal?", choices[0] === answer);
+    const getChoiceStyle = (choice) => ({
+        fontSize: 11,
+        fontFamily: "Times-Roman",
+        marginBottom: 2,
+        lineHeight: 1.3,
+        color: choice === answer ? 'green' : 'black',
+        fontWeight: choice === answer ? 'bold' : 'normal',
+        backgroundColor: choice === answer ? '#d1ffd6' : 'transparent'
+    });
     return (
         <View style={{ marginBottom: 10 }}>
             {/* Question header */}
@@ -244,24 +257,14 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
             }}>
                 {/* Left column */}
                 <View style={{ 
-                    width: '45%',
+                    width: '100%',
                     alignItems: 'flex-start'
                 }}>
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
+                    <Text style={getChoiceStyle(choices[0])}>
                         • {parsedChoices[0]}
                     </Text>
                     
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
+                    <Text style={getChoiceStyle(choices[1])}>
                         • {parsedChoices[1]}
                     </Text>
                 </View>
@@ -271,21 +274,11 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                     width: '45%',
                     alignItems: 'flex-start'
                 }}>
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
+                    <Text style={getChoiceStyle(choices[2])}>
                         • {parsedChoices[2]}
                     </Text>
                     
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
+                    <Text style={getChoiceStyle(choices[3])}>
                         • {parsedChoices[3]}
                     </Text>
                 </View>
@@ -390,6 +383,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                     return (
                                         <View key={idx} style={styles.descriptiveQuestion}>
                                             <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
+                                            <Text>Answer: {parse(q.answer)}</Text>
                                         </View>
                                     );
                                 } else {
@@ -406,13 +400,20 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                 }}>
                                                     {romanIndex}.
                                                 </Text>
-                                                <Text style={{ 
-                                                    fontSize: 12, 
-                                                    fontFamily: "Times-Roman",
-                                                    flex: 1
-                                                }}>
-                                                    {parse(q.name)}
-                                                </Text>
+                                                <View sx={{display: "flex", flexDirection: "column", flex: 1}}>
+                                                    <Text style={{ 
+                                                        fontSize: 12, 
+                                                        fontFamily: "Times-Roman",
+                                                    }}>
+                                                        {parse(q.name)}
+                                                    </Text>
+                                                    <Text style={{ 
+                                                        fontSize: 12, 
+                                                        fontFamily: "Times-Roman",
+                                                    }}>
+                                                        Answer: {parse(q.answer)}
+                                                    </Text>
+                                                </View>
                                             </View>
                                         </View>
                                     );
@@ -432,6 +433,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                 index={currentQuestionNumber} 
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
+                                                answer={q.answer}
                                             />
                                         </View>
                                     );
