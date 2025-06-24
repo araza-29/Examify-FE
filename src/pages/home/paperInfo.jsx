@@ -116,36 +116,8 @@ const PaperInfo = () => {
   }
   useEffect(()=>{
     let role = localStorage.getItem("role")
-    if(role === "Teacher"){
-      fetch("http://localhost:3000/Examination/reviewAllPaperByUserID", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId
-        }),
-      })
-        .then((response) => response.json())
-        .then((data)=>{
-          console.log("Papers Fetched", data)
-          const newPapers = data.data.map((item) => {
-          if(item.locked === 1) {
-            return { ...item, status: 'locked' };
-          }
-          else if(item.reviewed === 1) {
-            return { ...item, status: 'reviewed' };
-          }
-          else if (item.completed === 1) {
-            return { ...item, status: 'completed' };
-          }
-          else {
-            return { ...item, status: 'Not completed' };
-          }
-          return item;
-        });
-          setPapers(newPapers);
-        })
-    }
-    else if(role === "Adminstrator") {
+    
+    if(role === "Examination") {
         fetch("http://localhost:3000/Examination/reviewAllPaper", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -159,7 +131,7 @@ const PaperInfo = () => {
           const newPapers = data.data.map((item) => {
           if(item.locked === 1) {
             return { ...item, 
-              status: 'locked', 
+              status: 'locked',
               subject: itme.subject_name,
               class: item.class_name,
               ExaminationYear: item.year,
@@ -168,7 +140,7 @@ const PaperInfo = () => {
               marks: item.marks,
               date: item.date,
               center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration)
+              time: convertTo12HourRange(item.time, item.duration) 
           };
           }
           else if(item.reviewed === 1) {
@@ -182,7 +154,7 @@ const PaperInfo = () => {
               marks: item.marks,
               date: item.date,
               center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration)
+              time: convertTo12HourRange(item.time, item.duration) 
             };
           }
           else if (item.completed === 1) {
@@ -196,12 +168,12 @@ const PaperInfo = () => {
               marks: item.marks,
               date: item.date,
               center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration) };
+              time: convertTo12HourRange(item.time, item.duration)  };
           }
           else {
             return { ...item, 
               status: 'Not completed',
-              subject: item.subject_name,
+              subject: itme.subject_name,
               class: item.class_name,
               ExaminationYear: item.year,
               examination: item.type,
@@ -209,15 +181,15 @@ const PaperInfo = () => {
               marks: item.marks,
               date: item.date,
               center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration) };
+              time: convertTo12HourRange(item.time, item.duration)  };
           }
           return item;
         });
           setPapers(newPapers);
         })
     }
-    else if(role === "Examination") {
-        fetch("http://localhost:3000/Examination/reviewAllPaper", {
+    else {
+        fetch("http://localhost:3000/Examination/reviewAllPaperByUserID", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -230,57 +202,21 @@ const PaperInfo = () => {
           const newPapers = data.data.map((item) => {
           if(item.locked === 1) {
             return { ...item, 
-              status: 'locked', 
-              subject: itme.subject_name,
-              class: item.class_name,
-              ExaminationYear: item.year,
-              examination: item.type,
-              duration: item.duration,
-              marks: item.marks,
-              date: item.date,
-              center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration)
+              status: 'locked'
           };
           }
           else if(item.reviewed === 1) {
             return { ...item, 
-              status: 'reviewed',
-              subject: itme.subject_name,
-              class: item.class_name,
-              ExaminationYear: item.year,
-              examination: item.type,
-              duration: item.duration,
-              marks: item.marks,
-              date: item.date,
-              center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration)
+              status: 'reviewed'
             };
           }
           else if (item.completed === 1) {
             return { ...item, 
-              status: 'completed',
-              subject: itme.subject_name,
-              class: item.class_name,
-              ExaminationYear: item.year,
-              examination: item.type,
-              duration: item.duration,
-              marks: item.marks,
-              date: item.date,
-              center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration) };
+              status: 'completed'};
           }
           else {
             return { ...item, 
-              status: 'Not completed',
-              subject: itme.subject_name,
-              class: item.class_name,
-              ExaminationYear: item.year,
-              examination: item.type,
-              duration: item.duration,
-              marks: item.marks,
-              date: item.date,
-              center: item.center_name,
-              time: convertTo12HourRange(item.time, item.duration) };
+              status: 'Not completed'};
           }
           return item;
         });
@@ -320,12 +256,10 @@ const PaperInfo = () => {
     const paper = papers.find((p) => p.id === index);
     if (!paper) return;
     console.log("Papersid",index);
-    if(role === "Teacher")
+    if(role === "Examination")
+      navigate("/PaperView", { state: { paper: paper } });
+    else
       navigate("/PaperEditing", { state: { paper: paper } });
-    else if(role === "Adminstrator")
-      navigate("/PaperView", { state: { paper: paper } });
-    else if(role === "Examination")
-      navigate("/PaperView", { state: { paper: paper } });
   };
   const handleView = (index) => {
     navigate("/PaperEditing", { state: { paper: papers[index] } });
@@ -348,12 +282,12 @@ const PaperInfo = () => {
     {
       field: "date",
       headerName: "Paper Date",
-      width: 150,
+      width: 100,
     },
     {
       field: "due_date",
       headerName: "Due Date",
-      width: 150,
+      width: 100,
     },
     {
       field: "subject_name",
@@ -372,6 +306,11 @@ const PaperInfo = () => {
       // // valueOptions: classes.map(option => option.name),
       // filterOperators: getGridSingleSelectOperators(),
       width: 150,
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 120,
     },
     {
       field: "action",
