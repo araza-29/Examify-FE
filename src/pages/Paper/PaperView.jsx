@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
 import SectionHandler from "../../components/sectionHandler/sectionHandler"
+import Feedback from "../../components/feedbackForm/feedback"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import {
@@ -87,6 +88,7 @@ const PaperView = () => {
   const [isSaved, setIsSaved] = useState(true);
   const [sectionFlag, setSectionFlag] = useState(false);
   const [sectionsCheck, setSectionsCheck] = useState([]);
+  const [feedbackFlag, setFeedbackFlag] = useState(false);
   let [token] = useState(localStorage.getItem("token"));
   const [exsistingInfo, setExsistingInfo] = useState({
     header: 'THE EDUCATION LINK',
@@ -281,25 +283,10 @@ useEffect(() => {
     console.log("Section", sectionLetters);
     console.log("Existing information:", exsistingInfo);
     console.log("PaperId", paper);
-    const role = localStorage.getItem("role")
+    const userID = localStorage.getItem("userId")
 
     // 🔹 Fetch sections from the database
-    if(action==="approve" && role === "senior") {
-      fetch("http://localhost:3000/Examination/updatePaper", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                paper_id: paper.id,
-                reviewed: 1
-            }),
-        })
-        .then((response) => response.json())
-        .catch((error) => {
-            console.error(`❌ Error creating section ${sec.name}:`, error);
-            return null;
-        })
-    }
-    else if (action==="approve" && role === "examination") {
+    if (action==="approve") {
         fetch("http://localhost:3000/Examination/updatePaper", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -313,6 +300,22 @@ useEffect(() => {
             console.error(`❌ Error creating section ${sec.name}:`, error);
             return null;
         })
+    }
+    else if (action==="reject") {
+        fetch("http://localhost:3000/Examination/updatePaper", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                paper_id: paper.id,
+                locked: 2
+            }),
+        })
+        .then((response) => response.json())
+        .catch((error) => {
+            console.error(`❌ Error creating section ${sec.name}:`, error);
+            return null;
+        })
+        setFeedbackFlag(true)
     }
     setIsSaved(true);
     setIsDisabled(false); // ✅ Re-enable button at the end
@@ -400,11 +403,12 @@ useEffect(() => {
                     Approve paper
                 </Button>
               </Box>
+              <Feedback flag ={feedbackFlag} setFlag={setFeedbackFlag} paperID={paper.id} />
             </Box>
 
             {/* Content Section */}
           </Box>
-
+            
           {/* Paper Viewer Section */}
           {console.log(selectedMCQ)}
           {console.log(selectedQuestion)}

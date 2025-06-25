@@ -121,9 +121,7 @@ const PaperInfo = () => {
         fetch("http://localhost:3000/Examination/reviewAllPaper", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId
-        }),
+        body: JSON.stringify({}),
       })
         .then((response) => response.json())
         .then((data)=>{
@@ -132,7 +130,7 @@ const PaperInfo = () => {
           if(item.locked === 1) {
             return { ...item, 
               status: 'locked',
-              subject: itme.subject_name,
+              subject: item.subject_name,
               class: item.class_name,
               ExaminationYear: item.year,
               examination: item.type,
@@ -146,7 +144,7 @@ const PaperInfo = () => {
           else if(item.reviewed === 1) {
             return { ...item, 
               status: 'reviewed',
-              subject: itme.subject_name,
+              subject: item.subject_name,
               class: item.class_name,
               ExaminationYear: item.year,
               examination: item.type,
@@ -160,7 +158,7 @@ const PaperInfo = () => {
           else if (item.completed === 1) {
             return { ...item, 
               status: 'completed',
-              subject: itme.subject_name,
+              subject: item.subject_name,
               class: item.class_name,
               ExaminationYear: item.year,
               examination: item.type,
@@ -173,7 +171,7 @@ const PaperInfo = () => {
           else {
             return { ...item, 
               status: 'Not completed',
-              subject: itme.subject_name,
+              subject: item.subject_name,
               class: item.class_name,
               ExaminationYear: item.year,
               examination: item.type,
@@ -185,6 +183,7 @@ const PaperInfo = () => {
           }
           return item;
         });
+          console.log("CheckPapers", newPapers);
           setPapers(newPapers);
         })
     }
