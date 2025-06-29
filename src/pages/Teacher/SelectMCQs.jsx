@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 import toast from 'react-hot-toast';
 
-export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections, setIsSaved, subject_id, class_id, setNewMCQ}) {
+export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections, setIsSaved, subject_id, class_id, setNewMCQ, medium}) {
     const [MCQsFlag, setMCQsFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(3);
     const [MCQs, setMCQs] = useState([]);
@@ -20,13 +20,13 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
     const theme = useTheme();
 
     const fetchMCQs = () => {
-        console.log(subjectId);
+        console.log("HelloPello",subjectId, medium);
         fetch("http://localhost:3000/Examination/reviewMCQBySubjectID", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify({subject_id: subject_id, class_id: class_id})
+            body: JSON.stringify({subject_id: subject_id, class_id: class_id, medium: medium})
         })
         .then(response => response.json())
         .then((data) => {
@@ -137,7 +137,8 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             toast.error("Please assign marks to sections before selecting mcqs for it")
             return;
         }
-        const selected = MCQs.filter((question) => question.selected);
+        const selectedFromQuestions = MCQs.filter((question) => question.selected);
+        const selected = [...selectedFromQuestions, ...SelectMCQs];
         const totalMarks = selected.reduce((sum, q) => sum + (1 || 0), 0);
         if(selectedSection.marks<totalMarks) {
             toast.error("You total mcqs marks exceed assigned section marks")

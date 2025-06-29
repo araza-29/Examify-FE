@@ -181,13 +181,13 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
                         onChange={(event)=>setEditedMCQ({...editedMCQ, name: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
-                    {/* <TextField
+                    <TextField
                         variant="outlined"
-                        label="Marks"
-                        value={editedMCQ.marks}
-                        onChange={(event)=>setEditedMCQ({...editedMCQ, marks: event.target.value})}
+                        label="Medium"
+                        value={editedMCQ.medium}
+                        onChange={(event)=>setEditedMCQ({...editedMCQ, medium: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
-                    /> */}
+                    />
                     {choices.map(box => (
                         <TextField
                         variant="outlined"
@@ -201,7 +201,7 @@ function MCQEditor({MCQ, setFlag, setMCQ, onSaveMCQ}) {
                         variant="outlined"
                         label="Answer"
                         value={editedMCQ.answer}
-                        onChange = {(event)=>setEditedtMCQ({...editedMCQ, answer: event.target.value})}
+                        onChange = {(event)=>setEditedMCQ({...editedMCQ, answer: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
                     <Box>

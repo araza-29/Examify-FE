@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 import toast from 'react-hot-toast';
 
-export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections, setIsSaved, subject_id, class_id, setNewQuestion}) {
+export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections, setIsSaved, subject_id, class_id, setNewQuestion, medium}) {
     console.log("SelectQuestions check in section",sections);
     const [QuestionFlag, setQuestionFlag] = useState(false);
     const [subjectId, setSubjectId] = useState(3);
@@ -93,7 +93,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             headers: {
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify({subject_id: subject_id, class_id: class_id})
+            body: JSON.stringify({subject_id: subject_id, class_id: class_id, medium: medium})
         })
         .then(response => response.json())
         .then((data) => {
@@ -143,8 +143,10 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
         console.log("Section in selectQuestion:", selectedSection);
     
         // Get the selected questions
-        const selected = Questions.filter((question) => question.selected);
+        const selectedFromQuestions = Questions.filter((question) => question.selected);
+        const selected = [...selectedFromQuestions, ...SelectQuestion];
         const totalMarks = selected.reduce((sum, q) => sum + (q.marks || 0), 0);
+        console.log("selectedSectionMarkCheck", Questions)
         if(selectedSection.marks<totalMarks) {
             toast.error("You total questions marks exceed assigned section marks")
             return;

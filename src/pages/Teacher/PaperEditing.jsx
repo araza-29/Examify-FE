@@ -305,7 +305,7 @@ const Teacher = () => {
   const [sectionLetters, setSectionLetters] = useState([])
   const [oldSectionLetters, setOldSectionLetters] = useState([])
   const [newSectionLetters, setNewSectionLetters] = useState(null)
-  const [isSaved, setIsSaved] = useState(false)
+  const [isSaved, setIsSaved] = useState(true)
   const [sectionFlag, setSectionFlag] = useState(false)
   const [sectionsCheck, setSectionsCheck] = useState([])
   const [token] = useState(localStorage.getItem("token"))
@@ -327,6 +327,7 @@ const Teacher = () => {
     marks: 60,
     instruction: "Attempt any 8 questions from this section. All questions carry equal marks.",
     departmentNames: ["Jinnah", "Iqbal"],
+    medium: "English"
   })
 
   function convertTo12HourRange(timeStr, durationHours) {
@@ -441,13 +442,81 @@ const Teacher = () => {
   
   setSectionLetters((prevSectionLetters) => {
     // If we have existing sections from database, don't override them during initial load
+    if(exsistingInfo.medium === "English") {
+      if (prevSectionLetters.length > 0 && prevSectionLetters.some((sec) => sec.isFromDatabase)) {
+        if (exsistingInfo.sections > prevSectionLetters.length) {
+          const additionalSections = Array.from(
+            { length: exsistingInfo.sections - prevSectionLetters.length },
+            (_, index) => ({
+              id: prevSectionLetters.length + index,
+              name: `Section "${String.fromCharCode(65 + prevSectionLetters.length + index)}"`,
+              type: "",
+              description: "",
+              marks: 0,
+              databaseId: null,
+              isFromDatabase: false,
+            }),
+          )
+
+          const updatedSections = [...prevSectionLetters, ...additionalSections]
+          setTimeout(() => categorizeSections(updatedSections), 0)
+          return updatedSections
+        } else if (exsistingInfo.sections < prevSectionLetters.length) {
+          const trimmedSections = prevSectionLetters.slice(0, exsistingInfo.sections)
+          setTimeout(() => categorizeSections(trimmedSections), 0)
+          return trimmedSections
+        }
+        setTimeout(() => categorizeSections(prevSectionLetters), 0)
+        console.log("Sections updated", prevSectionLetters)
+        return prevSectionLetters
+      }
+
+      // Generate new sections - PRESERVE EXISTING VALUES
+      const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => {
+        const existingSection = prevSectionLetters[index]
+        
+        // If section exists, preserve all its values
+        if (existingSection) {
+          return {
+            ...existingSection,
+            id: existingSection.id || index,
+          }
+        }
+        
+        // Only create default values for completely new sections
+        return {
+          id: index,
+          name: `Section "${String.fromCharCode(65 + index)}"`,
+          type: "",
+          description: "",
+          marks: 0,
+          databaseId: null,
+          isFromDatabase: false,
+        }
+      })
+      setTimeout(() => categorizeSections(newSections), 0)
+      return newSections
+    }
+    // Urdu alphabet mapping
+else if(exsistingInfo.medium === "Urdu") {
+  const urduAlphabet = ['الف', 'ب', 'پ', 'ت', 'ٹ', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ڈ', 'ذ', 'ر', 'ڑ', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ہ', 'ء', 'ی', 'ے'];
+
+    // Function to get Urdu alphabet letter
+    const getUrduLetter = (index) => {
+      if (index < urduAlphabet.length) {
+        return urduAlphabet[index];
+      }
+      // For indices beyond the alphabet, you could implement double letters like الف الف, الف ب, etc.
+      // For now, fallback to the index number
+      return (index + 1).toString();
+    };
     if (prevSectionLetters.length > 0 && prevSectionLetters.some((sec) => sec.isFromDatabase)) {
       if (exsistingInfo.sections > prevSectionLetters.length) {
         const additionalSections = Array.from(
           { length: exsistingInfo.sections - prevSectionLetters.length },
           (_, index) => ({
             id: prevSectionLetters.length + index,
-            name: `Section "${String.fromCharCode(65 + prevSectionLetters.length + index)}"`,
+            name: `حصہ "${getUrduLetter(prevSectionLetters.length + index)}"`, // "Section" in Urdu
             type: "",
             description: "",
             marks: 0,
@@ -484,7 +553,7 @@ const Teacher = () => {
       // Only create default values for completely new sections
       return {
         id: index,
-        name: `Section "${String.fromCharCode(65 + index)}"`,
+        name: `حصہ "${getUrduLetter(index)}"`, // "Section" in Urdu with Urdu letter
         type: "",
         description: "",
         marks: 0,
@@ -492,11 +561,12 @@ const Teacher = () => {
         isFromDatabase: false,
       }
     })
-
     setTimeout(() => categorizeSections(newSections), 0)
     return newSections
+  }
+  return prevSectionLetters
   })
-}, [exsistingInfo.sections, originalSections, sectionLetters])
+}, [exsistingInfo.sections, originalSections, sectionLetters, exsistingInfo.medium])
 
   // Enhanced fetch sections logic
   useEffect(() => {
@@ -516,6 +586,7 @@ const Teacher = () => {
       marks: paper.marks,
       date: paper.date,
       center: paper.center_name,
+      medium: paper.medium,
       time: convertTo12HourRange(paper.time, paper.duration)
     }))
 
@@ -1034,6 +1105,7 @@ const Teacher = () => {
               </Box>
 
               <Box sx={{ width: "91.666667%", my: 2 }}>
+                {console.log("Before mcqs check", exsistingInfo.medium)}
                 <ModalSelectMCQs
                   setMCQs={setMCQs}
                   SelectedMCQs={selectedMCQ}
@@ -1042,6 +1114,7 @@ const Teacher = () => {
                   subject_id={paper.subject_id}
                   class_id={paper.class_id}
                   setNewMCQ={setNewMCQ}
+                  medium={exsistingInfo.medium}
                 />
               </Box>
 
@@ -1054,6 +1127,7 @@ const Teacher = () => {
                   subject_id={paper.subject_id}
                   class_id={paper.class_id}
                   setNewQuestion={setNewQuestion}
+                  medium={exsistingInfo.medium}
                 />
               </Box>
 

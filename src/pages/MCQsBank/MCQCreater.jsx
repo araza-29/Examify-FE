@@ -52,12 +52,17 @@ function MCQCreater() {
         const onSave = () => {
             console.log("SelectedTopic", selectedTopic);
             console.log("SelectedTopic", selectedSubject);
+            const isValidAnswer = choices.some((q) => q.value === MCQ.answer);
+            if (!isValidAnswer) {
+                toast.error("Answer must match one of the choices.");
+                return;
+            }
             fetch("http://localhost:3000/Examination/createMCQ", {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({mcq_id: MCQ.id, name: MCQ.name, topic_id: selectedTopic.id, marks: MCQ.marks, subject_id: selectedSubject.id, selected: false, choice1: choices[0]?.value || null, choice2: choices[1]?.value || null, choice3: choices[2]?.value || null, choice4: choices[3]?.value || null, answer: MCQ.answer})
+                body: JSON.stringify({mcq_id: MCQ.id, name: MCQ.name, topic_id: selectedTopic.id, marks: MCQ.marks, subject_id: selectedSubject.id, selected: false, choice1: choices[0]?.value || null, choice2: choices[1]?.value || null, choice3: choices[2]?.value || null, choice4: choices[3]?.value || null, answer: MCQ.answer, medium: MCQ.medium})
             })
             .then(response => response.json())
             .then((data) => {
@@ -194,6 +199,7 @@ function MCQCreater() {
                                 </Typography>
                             </Box>
                             <TextField
+                                required
                                 variant="outlined"
                                 label="Write your MCQ here"
                                 value={MCQ.name}
@@ -201,14 +207,24 @@ function MCQCreater() {
                                 sx={{ width: '100%', mb: 2 }}
                             />
                             <TextField
+                                required
                                 variant="outlined"
                                 label="Marks"
                                 value={MCQ.marks}
                                 onChange = {(event)=>setMCQ({...MCQ, marks: event.target.value})}
                                 sx={{ width: '100%', mb: 2 }}
                             />
+                            <TextField
+                                required
+                                variant="outlined"
+                                label="Medium"
+                                value={MCQ.medium}
+                                onChange = {(event)=>setMCQ({...MCQ, medium: event.target.value})}
+                                sx={{ width: '100%', mb: 2 }}
+                            />
                             {choices.map(box => (
                                 <TextField
+                                required
                                 variant="outlined"
                                 label="Choices"
                                 value={box.value}
@@ -217,6 +233,7 @@ function MCQCreater() {
                             />
                             ))}
                             <TextField
+                                required
                                 variant="outlined"
                                 label="Answer"
                                 value={MCQ.answer}

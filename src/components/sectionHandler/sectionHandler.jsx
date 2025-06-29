@@ -106,6 +106,8 @@ return(
         >
             Sections Handler
         </Typography>
+            {console.log("BeforeChanged",editedInfo.medium)}
+            {console.log("AfterChanged",editedInfo.medium)}
         <TextField
         label="Sections"
         fullWidth

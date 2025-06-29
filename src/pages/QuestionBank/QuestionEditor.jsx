@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 function QuestionEditor({Questions, setFlag, setQuestion}) {
     console.log("QuestionInfo",Questions);
-    const [userId, setUserId] = useState(5);
+    const [userId, setUserId] = useState(parseInt(localStorage.getItem("userId"), 10));
     const [subject,setSubject] = useState([]);
     const [classes,setClasses] = useState([]);
     const[selectedClass,setSelectedClass] = useState(null);
@@ -56,7 +56,7 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({id: editedQuestion.id, name: editedQuestion.name, topic_id: selectedTopic.id, marks: editedQuestion.marks, subject_id: selectedSubject.id, selected: false})
+            body: JSON.stringify({id: editedQuestion.id, name: editedQuestion.name, topic_id: selectedTopic.id, marks: editedQuestion.marks, subject_id: selectedSubject.id, selected: false, medium: editedQuestion.medium})
         })
         .then(response => response.json())
         .then((data) => {
@@ -203,6 +203,13 @@ function QuestionEditor({Questions, setFlag, setQuestion}) {
                         label="Marks"
                         value={editedQuestion.marks}
                         onChange={(event)=>setEditedQuestion({...editedQuestion, marks: event.target.value})}
+                        sx={{ width: '100%', mb: 2 }}
+                    />
+                    <TextField
+                        variant="outlined"
+                        label="Medium"
+                        value={editedQuestion.medium}
+                        onChange={(event)=>setEditedQuestion({...editedQuestion, medium: event.target.value})}
                         sx={{ width: '100%', mb: 2 }}
                     />
                     <FormControl sx={{ width: '100%', mb: 2 }}>

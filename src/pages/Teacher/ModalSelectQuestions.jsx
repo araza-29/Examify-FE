@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import SelectQuestions from './SelectQuestions'
 
-export function ModalSelectQuestions({setQuestions, SelectedQuestions, id, sections, setIsSaved, subject_id, class_id, setNewQuestion}) {
+export function ModalSelectQuestions({setQuestions, SelectedQuestions, id, sections, setIsSaved, subject_id, class_id, setNewQuestion, medium}) {
     const [flag,setFlag] = useState(false);
     const handleOpen=()=>{
         console.log("Debug", SelectedQuestions);
@@ -18,7 +18,7 @@ export function ModalSelectQuestions({setQuestions, SelectedQuestions, id, secti
         </Button>
         <Dialog maxWidth="xl" PaperProps={{ sx: { backgroundColor: 'transparent', boxShadow: 'none', maxHeight: '100vh', overflowY: 'auto', py: 2, borderRadius: 2 }, className: 'scrollable-container' }} open={flag} handler={handleOpen}>
             <Card sx={{ backgroundColor: 'rgb(240,238,235)', width: '100%' }}>
-                <SelectQuestions handleOpen={handleOpen} SelectQuestion={SelectedQuestions} setSelectedQuestion={setQuestions} sections={sections} setIsSaved={setIsSaved} subject_id={subject_id} class_id={class_id} setNewQuestion={setNewQuestion}></SelectQuestions>
+                <SelectQuestions handleOpen={handleOpen} SelectQuestion={SelectedQuestions} setSelectedQuestion={setQuestions} sections={sections} setIsSaved={setIsSaved} subject_id={subject_id} class_id={class_id} setNewQuestion={setNewQuestion} medium={medium}></SelectQuestions>
             </Card>
         </Dialog>
         </>

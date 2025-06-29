@@ -45,7 +45,7 @@ function QuestionCreater() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({name: Question.name, topic_id: selectedTopic.id, marks: Question.marks, subject_id: selectedSubject.id, selected: false, type: Question.type})
+                body: JSON.stringify({name: Question.name, topic_id: selectedTopic.id, marks: Question.marks, subject_id: selectedSubject.id, selected: false, type: Question.type, medium: Question.medium})
             })
             .then(response => response.json())
             .then((data) => {
@@ -196,6 +196,7 @@ function QuestionCreater() {
                             </Typography>
                         </Box>
                         <TextField
+                            required
                             variant="outlined"
                             label="Write your question here"
                             value={Question.name}
@@ -203,13 +204,22 @@ function QuestionCreater() {
                             sx={{ width: '100%', mb: 2 }}
                         />
                         <TextField
+                            required
                             variant="outlined"
                             label="Marks"
                             value={Question.marks}
                             onChange = {(event)=>setQuestion({...Question, marks: event.target.value})}
                             sx={{ width: '100%', mb: 2 }}
                         />
-                        <FormControl sx={{width: '100%', mb: 2 }}>
+                        <TextField
+                            required
+                            variant="outlined"
+                            label="Medium"
+                            value={Question.medium}
+                            onChange = {(event)=>setQuestion({...Question, medium: event.target.value})}
+                            sx={{ width: '100%', mb: 2 }}
+                        />
+                        <FormControl required  sx={{width: '100%', mb: 2 }}>
                             <InputLabel sx={{ color: 'primary.main' }}>Question Type</InputLabel>
                             <Select
                                 value={Question?.type || ""}
@@ -225,6 +235,7 @@ function QuestionCreater() {
                             </Select>
                         </FormControl>
                         <TextField
+                            required 
                             variant="outlined"
                             label="Answer"
                             value={Question.answer}
