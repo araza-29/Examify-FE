@@ -1,264 +1,462 @@
-import {Card,CardActions,CardContent,TextField, Typography,Button,Box} from '@mui/material'
+import { TextField, Typography, Button, Box, FormHelperText } from '@mui/material';
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DropDown from '../../components/DropDown/DropDown';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
-import {useEffect, useState} from 'react';
-import { Subject } from '@mui/icons-material';
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 function MCQCreater() {
-        const navigate = useNavigate();
-        const [MCQ, setMCQ] = useState([]);
-        const [userId, setUserId] = useState(parseInt(localStorage.getItem("userId"), 10));
-        const [classes,setClasses] = useState([]);
-        const[selectedClass,setSelectedClass] = useState([]);
-        const [subject,setSubject] = useState([]);
-        const[selectedSubject,setSelectedSubject] = useState([]);
-        const [Chapters, setChapters] = useState([]);
-        const [textboxes, setTextBoxes] = useState([]);
-        const [Topic, setTopics] = useState([]);
-        const [selectedChapters, setSelectedChapters] = useState([]);
-        const [selectedTopic, setSelectedTopics] = useState([]);
-        const [choices, setChoices] = useState([
-            { id: 1, value: MCQ?.choice1 || "" },
-            { id: 2, value: MCQ?.choice2 || "" },
-            { id: 3, value: MCQ?.choice3 || "" },
-            { id: 4, value: MCQ?.choice4 || "" }
-          ]);
-        const handleChange = (id, newValue) => {
-            setChoices(choices.map(box => 
+    const navigate = useNavigate();
+    const [MCQ, setMCQ] = useState({
+        name: '',
+        marks: '',
+        medium: '',
+        answer: ''
+    });
+    const [errors, setErrors] = useState({
+        name: false,
+        marks: false,
+        medium: false,
+        answer: false,
+        choices: [false, false, false, false],
+        class: false,
+        subject: false,
+        chapter: false,
+        topic: false
+    });
+    const [userId] = useState(parseInt(localStorage.getItem("userId"), 10));
+    const [classes, setClasses] = useState([]);
+    const [selectedClass, setSelectedClass] = useState(null);
+    const [subject, setSubject] = useState([]);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+    const [Chapters, setChapters] = useState([]);
+    const [Topic, setTopics] = useState([]);
+    const [selectedChapters, setSelectedChapters] = useState(null);
+    const [selectedTopic, setSelectedTopics] = useState(null);
+    const [choices, setChoices] = useState([
+        { id: 1, value: '' },
+        { id: 2, value: '' },
+        { id: 3, value: '' },
+        { id: 4, value: '' }
+    ]);
+
+    // Validation functions
+    const validateForm = () => {
+        const newErrors = {
+            name: !MCQ.name,
+            marks: !MCQ.marks,
+            medium: !MCQ.medium,
+            answer: !MCQ.answer,
+            choices: choices.map(choice => !choice.value),
+            class: !selectedClass,
+            subject: !selectedSubject,
+            chapter: !selectedChapters,
+            topic: !selectedTopic
+        };
+        setErrors(newErrors);
+        
+        return !Object.values(newErrors).flat().some(Boolean);
+    };
+
+    const validateAnswer = () => {
+        const isValid = choices.some(choice => choice.value === MCQ.answer);
+        setErrors(prev => ({ ...prev, answer: !isValid }));
+        return isValid;
+    };
+
+    // Handlers
+    const handleChange = (id, newValue) => {
+        setChoices(choices.map(box => 
             box.id === id ? { ...box, value: newValue } : box
-            ));
+        ));
+        if (newValue) {
+            setErrors(prev => ({
+                ...prev,
+                choices: prev.choices.map((err, idx) => 
+                    idx === id - 1 ? false : err
+                )
+            }));
         }
-        useEffect(()=>{
-            setSelectedClass(null);
-            fetchClasses();
-        },[userId])
-        useEffect(()=>{
-            setSelectedSubject(null);
-            fetchSubject();
-        },[selectedClass])
-        useEffect(()=> {
-            setSelectedChapters(null);
-            fetchChapters();
-          },[selectedSubject])
-          useEffect(()=> {
-            setSelectedTopics(null);
-            fetchTopics();
-          },[selectedChapters])
-        const onSave = () => {
-            console.log("SelectedTopic", selectedTopic);
-            console.log("SelectedTopic", selectedSubject);
-            const isValidAnswer = choices.some((q) => q.value === MCQ.answer);
-            if (!isValidAnswer) {
-                toast.error("Answer must match one of the choices.");
-                return;
-            }
-            fetch("http://localhost:3000/Examination/createMCQ", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({mcq_id: MCQ.id, name: MCQ.name, topic_id: selectedTopic.id, marks: MCQ.marks, subject_id: selectedSubject.id, selected: false, choice1: choices[0]?.value || null, choice2: choices[1]?.value || null, choice3: choices[2]?.value || null, choice4: choices[3]?.value || null, answer: MCQ.answer, medium: MCQ.medium})
-            })
-            .then(response => response.json())
-            .then((data) => {
-                if(data.code === 200) {
-                    console.log("MCQ Uploaded successfully!");
-                    toast.success("MCQ created!")
-                }
-            })
-            navigate('/MCQSbank')
+    };
+
+    const handleMCQChange = (field, value) => {
+        setMCQ(prev => ({ ...prev, [field]: value }));
+        if (value) {
+            setErrors(prev => ({ ...prev, [field]: false }));
         }
-        const onCancel = () => {
-            navigate('/MCQSbank')
+    };
+
+    const handleDropdownChange = (setter, field) => (value) => {
+        setter(value);
+        if (value) {
+            setErrors(prev => ({ ...prev, [field]: false }));
+        }
+    };
+
+    // Form submission
+    const onSave = () => {
+        if (!validateForm()) {
+            toast.error("Please fill all required fields");
+            return;
+        }
+        if (!validateAnswer()) {
+            toast.error("Answer must match one of the choices");
+            return;
         }
 
-        const fetchClasses = () => {
-            if(userId){
-            fetch("http://localhost:3000/Examination/reviewClassesByUserID",{
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({user_id: userId})
+        fetch("http://localhost:3000/Examination/createMCQ", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: MCQ.name,
+                topic_id: selectedTopic.id,
+                marks: MCQ.marks,
+                subject_id: selectedSubject.id,
+                selected: false,
+                choice1: choices[0].value,
+                choice2: choices[1].value,
+                choice3: choices[2].value,
+                choice4: choices[3].value,
+                answer: MCQ.answer,
+                medium: MCQ.medium
             })
-            .then(response => response.json())
-            .then((data) => {
-                console.log("Class data", data);
-                if(data.code === 200) {
-                    setClasses(data.data);
-                }
-                else {
-                    console.log("Class data not found");
-                }
-            }).catch((error) => {
-                console.error("Error fetching class:", error);
-            })
-          }
-        }
-        const fetchSubject = () => {
-            if(selectedClass && selectedClass.id){
-            fetch("http://localhost:3000/Examination/reviewSubjectsByClassID",{
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({class_id: selectedClass.id})
-            })
-            .then(response => response.json())
-            .then((data) => {
-                console.log("Subject data", data);
-                if(data.code === 200) {
-                    setSubject(data.data);
-                }
-                else {
-                    console.log("Subject data not found");
-                }
-            }).catch((error) => {
-                console.error("Error fetching subject:", error);
-            })
-          }
-        }
-          const fetchChapters = () => {
-            if(selectedSubject && selectedSubject.id){
-                fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({subject_id: selectedSubject.id})
-                })
-                .then(response => response.json())
-                .then((data) => {
-                    console.log("Chapter data", data);
-                    if(data.code === 200) {
-                        setChapters(data.data);
-                    }
-                    else {
-                        console.log("Chapter data not found");
-                    }
-                }).catch((error) => {
-                    console.error("Error fetching chapters:", error);
-                })
+        })
+        .then(response => response.json())
+        .then((data) => {
+            if (data.code === 200) {
+                toast.success("MCQ created successfully!");
+                navigate('/MCQSbank');
+            } else {
+                toast.error("Failed to create MCQ");
             }
-          }
-          const fetchTopics = () => {
-            if(selectedChapters && selectedChapters.id){
-                fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({chapter_id: selectedChapters.id})
-                })
-                .then(response => response.json())
-                .then((data)=> {
-                    console.log("Topic data", data);
-                    if(data.code === 200) {
-                        setTopics(data.data);
-                    }
-                    else {
-                        console.log("Topics data not found");
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error fetching topics:", error);
-                })
+        })
+        .catch(error => {
+            console.error("Error creating MCQ:", error);
+            toast.error("Failed to create MCQ");
+        });
+    };
+
+    const onCancel = () => {
+        navigate('/MCQSbank');
+    };
+
+    // Data fetching
+    useEffect(() => {
+        fetchClasses();
+    }, [userId]);
+
+    useEffect(() => {
+        if (selectedClass) {
+            fetchSubject();
+        } else {
+            setSubject([]);
+        }
+    }, [selectedClass]);
+
+    useEffect(() => {
+        if (selectedSubject) {
+            fetchChapters();
+        } else {
+            setChapters([]);
+        }
+    }, [selectedSubject]);
+
+    useEffect(() => {
+        if (selectedChapters) {
+            fetchTopics();
+        } else {
+            setTopics([]);
+        }
+    }, [selectedChapters]);
+
+    const fetchClasses = () => {
+        fetch("http://localhost:3000/Examination/reviewClassesByUserID", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        })
+        .then(response => response.json())
+        .then((data) => {
+            if (data.code === 200) {
+                setClasses(data.data);
             }
-          }
-        return(
-        <>
-            <Box sx={{display: "flex"}}>
-                <Box sx={{flex: 1}}>
-                    <Sidebar/>
-                </Box>
-                <Box sx={{flex: 6}}>
-                    <Navbar/>
-                    <Box sx ={{padding: 3}}>
-                            <Box sx={{display: "flex", mb: 2,}}>
-                                <Button
-                                    variant="text"
-                                    sx={{
-                                        display: "flex",
-                                        px: 2,
-                                        py: 2,
-                                        fontSize: "1.25rem",
-                                        alignItems: "center",
-                                        color: "#7451f8",
-                                    }}
-                                    onClick={() => navigate(-1)}
-                                >
-                                    <FontAwesomeIcon icon={faArrowLeft} />
-                                </Button>
-                                <Typography variant="h6" sx={{ mt: 1, color: 'text.primary', fontWeight: 'bold' }}>
-                                    Create MCQs
-                                </Typography>
-                            </Box>
+        })
+        .catch(console.error);
+    };
+
+    const fetchSubject = () => {
+        fetch("http://localhost:3000/Examination/reviewSubjectsByClassID", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ class_id: selectedClass.id })
+        })
+        .then(response => response.json())
+        .then((data) => {
+            if (data.code === 200) {
+                setSubject(data.data);
+            }
+        })
+        .catch(console.error);
+    };
+
+    const fetchChapters = () => {
+        fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ subject_id: selectedSubject.id })
+        })
+        .then(response => response.json())
+        .then((data) => {
+            if (data.code === 200) {
+                setChapters(data.data);
+            }
+        })
+        .catch(console.error);
+    };
+
+    const fetchTopics = () => {
+        fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ chapter_id: selectedChapters.id })
+        })
+        .then(response => response.json())
+        .then((data) => {
+            if (data.code === 200) {
+                setTopics(data.data);
+            }
+        })
+        .catch(console.error);
+    };
+
+    return (
+        <Box sx={{ display: "flex" }}>
+            <Box sx={{ flex: 1 }}>
+                <Sidebar />
+            </Box>
+            <Box sx={{ flex: 6 }}>
+                <Navbar />
+                <Box sx={{ padding: 3 }}>
+                    <Box sx={{ display: "flex", mb: 2 }}>
+                        <Button
+                            variant="text"
+                            sx={{
+                                display: "flex",
+                                px: 2,
+                                py: 2,
+                                fontSize: "1.25rem",
+                                alignItems: "center",
+                                color: "#7451f8",
+                            }}
+                            onClick={() => navigate(-1)}
+                        >
+                            <FontAwesomeIcon icon={faArrowLeft} />
+                        </Button>
+                        <Typography variant="h6" sx={{ 
+                            fontFamily: 'Mar', 
+                            mt: 1, 
+                            fontWeight: 'bold', 
+                            color: "#7451f8" 
+                        }}>
+                            Create MCQs
+                        </Typography>
+                    </Box>
+
+                    {/* MCQ Question */}
+                    <TextField
+                        required
+                        fullWidth
+                        variant="outlined"
+                        label="Write your MCQ here"
+                        value={MCQ.name}
+                        onChange={(e) => handleMCQChange('name', e.target.value)}
+                        error={errors.name}
+                        helperText={errors.name ? "This field is required" : ""}
+                        sx={{ mb: 2 }}
+                    />
+
+                    {/* Marks */}
+                    <TextField
+                        required
+                        fullWidth
+                        variant="outlined"
+                        label="Marks"
+                        type="number"
+                        value={MCQ.marks}
+                        onChange={(e) => handleMCQChange('marks', e.target.value)}
+                        error={errors.marks}
+                        helperText={errors.marks ? "This field is required" : ""}
+                        sx={{ mb: 2 }}
+                    />
+
+                    {/* Medium */}
+                    <TextField
+                        required
+                        fullWidth
+                        variant="outlined"
+                        label="Medium"
+                        value={MCQ.medium}
+                        onChange={(e) => handleMCQChange('medium', e.target.value)}
+                        error={errors.medium}
+                        helperText={errors.medium ? "This field is required" : ""}
+                        sx={{ mb: 2 }}
+                    />
+
+                    {/* Choices */}
+                    {choices.map((box, index) => (
+                        <Box key={box.id} sx={{ mb: 2 }}>
                             <TextField
                                 required
+                                fullWidth
                                 variant="outlined"
-                                label="Write your MCQ here"
-                                value={MCQ.name}
-                                onChange={(event)=>setMCQ({...MCQ, name: event.target.value})}
-                                sx={{ width: '100%', mb: 2 }}
-                            />
-                            <TextField
-                                required
-                                variant="outlined"
-                                label="Marks"
-                                value={MCQ.marks}
-                                onChange = {(event)=>setMCQ({...MCQ, marks: event.target.value})}
-                                sx={{ width: '100%', mb: 2 }}
-                            />
-                            <TextField
-                                required
-                                variant="outlined"
-                                label="Medium"
-                                value={MCQ.medium}
-                                onChange = {(event)=>setMCQ({...MCQ, medium: event.target.value})}
-                                sx={{ width: '100%', mb: 2 }}
-                            />
-                            {choices.map(box => (
-                                <TextField
-                                required
-                                variant="outlined"
-                                label="Choices"
+                                label={`Choice ${box.id}`}
                                 value={box.value}
-                                onChange = {(event)=>handleChange(box.id, event.target.value)}
-                                sx={{ width: '100%', mb: 2 }}
+                                onChange={(e) => handleChange(box.id, e.target.value)}
+                                error={errors.choices[index]}
                             />
-                            ))}
-                            <TextField
-                                required
-                                variant="outlined"
-                                label="Answer"
-                                value={MCQ.answer}
-                                onChange = {(event)=>setMCQ({...MCQ, answer: event.target.value})}
-                                sx={{ width: '100%', mb: 2 }}
-                            />
-                            <Box>
-                                <DropDown name = {"Classes"} data = {classes} selectedData={selectedClass} setSelectedData={setSelectedClass} width={"100%"}/>
-                                <DropDown name = {"Subjects"} data = {subject} selectedData={selectedSubject} setSelectedData={setSelectedSubject} width={"100%"}/>
-                                <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"100%"}/>
-                                <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"100%"}/>
-                            </Box>
-                            <Box sx={{mt: 3}}>
-                                <Button variant="contained" color="primary" onClick = {onSave} sx={{ fontWeight: 'bold', marginRight: 3, backgroundColor: "#7451f8", }}>
-                                    Save
-                                </Button>
-                                <Button variant="contained" onClick = {onCancel} color="primary" sx={{ fontWeight: 'bold', backgroundColor: "#7451f8", }}>
-                                    Cancel
-                                </Button>
-                            </Box>
+                            {errors.choices[index] && (
+                                <FormHelperText error sx={{ mt: -1 }}>
+                                    This field is required
+                                </FormHelperText>
+                            )}
                         </Box>
+                    ))}
+
+                    {/* Answer */}
+                    <TextField
+                        required
+                        fullWidth
+                        variant="outlined"
+                        label="Answer"
+                        value={MCQ.answer}
+                        onChange={(e) => handleMCQChange('answer', e.target.value)}
+                        error={errors.answer}
+                        helperText={errors.answer ? "Must match one of the choices" : ""}
+                        sx={{ mb: 2 }}
+                    />
+
+                    {/* Dropdowns */}
+                    <Box sx={{ mb: 2 }}>
+                        <DropDown 
+                            name="Classes" 
+                            data={classes} 
+                            selectedData={selectedClass} 
+                            setSelectedData={handleDropdownChange(setSelectedClass, 'class')}
+                            error={errors.class}
+                            width="100%"
+                        />
+                        {errors.class && (
+                            <FormHelperText error sx={{ mt: -1, mb: 1 }}>
+                                This field is required
+                            </FormHelperText>
+                        )}
+
+                        <DropDown 
+                            name="Subjects" 
+                            data={subject} 
+                            selectedData={selectedSubject} 
+                            setSelectedData={handleDropdownChange(setSelectedSubject, 'subject')}
+                            error={errors.subject}
+                            width="100%"
+                        />
+                        {errors.subject && (
+                            <FormHelperText error sx={{ mt: -1, mb: 1 }}>
+                                This field is required
+                            </FormHelperText>
+                        )}
+
+                        <DropDown 
+                            name="Chapters" 
+                            data={Chapters} 
+                            selectedData={selectedChapters} 
+                            setSelectedData={handleDropdownChange(setSelectedChapters, 'chapter')}
+                            error={errors.chapter}
+                            width="100%"
+                        />
+                        {errors.chapter && (
+                            <FormHelperText error sx={{ mt: -1, mb: 1 }}>
+                                This field is required
+                            </FormHelperText>
+                        )}
+
+                        <DropDown 
+                            name="Topics" 
+                            data={Topic} 
+                            selectedData={selectedTopic} 
+                            setSelectedData={handleDropdownChange(setSelectedTopics, 'topic')}
+                            error={errors.topic}
+                            width="100%"
+                        />
+                        {errors.topic && (
+                            <FormHelperText error sx={{ mt: -1, mb: 1 }}>
+                                This field is required
+                            </FormHelperText>
+                        )}
+                    </Box>
+
+                    {/* Action Buttons */}
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        gap: 2,
+                        mt: 3
+                    }}>
+                        <Button 
+                            variant="contained" 
+                            onClick={onSave}
+                            sx={{ 
+                                fontWeight: 'bold', 
+                                backgroundColor: "#7451f8",
+                                fontSize: '1rem',
+                                px: 3,
+                                py: 1.5,
+                                minWidth: '120px',
+                                '&:hover': {
+                                    backgroundColor: '#5a3acb',
+                                    transform: 'scale(1.02)',
+                                    transition: 'all 0.2s ease'
+                                }
+                            }}
+                        >
+                            Save
+                        </Button>
+                        <Button 
+                            variant="contained" 
+                            onClick={onCancel}
+                            sx={{ 
+                                fontWeight: 'bold', 
+                                backgroundColor: "#7451f8",
+                                fontSize: '1rem',
+                                px: 3,
+                                py: 1.5,
+                                minWidth: '120px',
+                                '&:hover': {
+                                    backgroundColor: '#5a3acb',
+                                    transform: 'scale(1.02)',
+                                    transition: 'all 0.2s ease'
+                                }
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </Box>
                 </Box>
             </Box>
-        </>
-        );
-    }
+        </Box>
+    );
+}
 
-export default MCQCreater
+export default MCQCreater;

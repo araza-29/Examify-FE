@@ -123,22 +123,6 @@ const Home = () => {
           width: 220,
           renderCell: (params) => (
             <div style={{ display: "flex", alignItems: "center", gap: "30px" }}>
-              <Link
-                to={`/user/${params.row.id}`}
-                style={{ textDecoration: "none" }}
-              >
-                <div
-                  style={{
-                    padding: "2px 5px",
-                    borderRadius: "5px",
-                    color: "darkblue",
-                    border: "1px dotted rgba(0, 0, 139, 0.596)",
-                    cursor: "pointer",
-                  }}
-                >
-                  View
-                </div>
-              </Link>
     
               <div
                 onClick={() => handleEdit(params.row)}
@@ -332,7 +316,26 @@ const Home = () => {
               <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2, color: "#7451f8", }}>
                 MCQ Bank
               </Typography>
-              <Button variant="contained" color="primary" onClick = {handleCreate} sx={{ fontWeight: 'bold', marginLeft: 70, width: 200, height: 50, backgroundColor: "#7451f8",}}>Create MCQ</Button>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleCreate} 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  marginLeft: 90, 
+                  width: 200, 
+                  height: 50, 
+                  backgroundColor: "#7451f8",
+                  '&:hover': {
+                    backgroundColor: '#5a3acb', // Darker purple for hover
+                    // Optional: Add slight scale effect
+                    transform: 'scale(1.02)',
+                    transition: 'all 0.2s ease'
+                  }
+                }}
+              >
+                Create MCQ
+              </Button>
             </Box>
             {/* Content Section */}
             {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo}/> :(
