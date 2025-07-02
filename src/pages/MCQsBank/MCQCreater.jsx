@@ -29,6 +29,8 @@ function MCQCreater() {
     });
     const [userId] = useState(parseInt(localStorage.getItem("userId"), 10));
     const [classes, setClasses] = useState([]);
+    const [medium, setMedium] = useState([]);
+    const [answer, setAnswer] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
     const [subject, setSubject] = useState([]);
     const [selectedSubject, setSelectedSubject] = useState(null);
@@ -37,10 +39,10 @@ function MCQCreater() {
     const [selectedChapters, setSelectedChapters] = useState(null);
     const [selectedTopic, setSelectedTopics] = useState(null);
     const [choices, setChoices] = useState([
-        { id: 1, value: '' },
-        { id: 2, value: '' },
-        { id: 3, value: '' },
-        { id: 4, value: '' }
+        { id: 1, name: '' },
+        { id: 2, name: '' },
+        { id: 3, name: '' },
+        { id: 4, name: '' }
     ]);
 
     // Validation functions
@@ -48,9 +50,9 @@ function MCQCreater() {
         const newErrors = {
             name: !MCQ.name,
             marks: !MCQ.marks,
-            medium: !MCQ.medium,
-            answer: !MCQ.answer,
-            choices: choices.map(choice => !choice.value),
+            medium: !medium.name,
+            answer: !answer.name,
+            choices: choices.map(choice => !choice.name),
             class: !selectedClass,
             subject: !selectedSubject,
             chapter: !selectedChapters,
@@ -62,7 +64,7 @@ function MCQCreater() {
     };
 
     const validateAnswer = () => {
-        const isValid = choices.some(choice => choice.value === MCQ.answer);
+        const isValid = choices.some(choice => choice.name === answer.name);
         setErrors(prev => ({ ...prev, answer: !isValid }));
         return isValid;
     };
@@ -70,7 +72,7 @@ function MCQCreater() {
     // Handlers
     const handleChange = (id, newValue) => {
         setChoices(choices.map(box => 
-            box.id === id ? { ...box, value: newValue } : box
+            box.id === id ? { ...box, name: newValue } : box
         ));
         if (newValue) {
             setErrors(prev => ({
@@ -118,12 +120,12 @@ function MCQCreater() {
                 marks: MCQ.marks,
                 subject_id: selectedSubject.id,
                 selected: false,
-                choice1: choices[0].value,
-                choice2: choices[1].value,
-                choice3: choices[2].value,
-                choice4: choices[3].value,
-                answer: MCQ.answer,
-                medium: MCQ.medium
+                choice1: choices[0].name,
+                choice2: choices[1].name,
+                choice3: choices[2].name,
+                choice4: choices[3].name,
+                answer: answer.name,
+                medium: medium.name
             })
         })
         .then(response => response.json())
@@ -241,6 +243,7 @@ function MCQCreater() {
         })
         .catch(console.error);
     };
+    const allChoicesFilled = choices.every(choice => choice.name.trim() !== '');
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -303,17 +306,23 @@ function MCQCreater() {
                     />
 
                     {/* Medium */}
-                    <TextField
-                        required
-                        fullWidth
-                        variant="outlined"
-                        label="Medium"
-                        value={MCQ.medium}
-                        onChange={(e) => handleMCQChange('medium', e.target.value)}
-                        error={errors.medium}
-                        helperText={errors.medium ? "This field is required" : ""}
-                        sx={{ mb: 2 }}
+                    <DropDown 
+                        name="Medium" 
+                        data={[
+                            {id: 1, name: "English"},
+                            {id: 2, name: "Urdu"}
+                        ]} 
+                        selectedData={medium} 
+                        setSelectedData={handleDropdownChange(setMedium, 'medium')}
+                        error={errors.class}
+                        width="100%"
+                        required={true}
                     />
+                    {errors.medium && (
+                        <FormHelperText error sx={{ mt: -1, mb: 1 }}>
+                            This field is required
+                        </FormHelperText>
+                    )}
 
                     {/* Choices */}
                     {choices.map((box, index) => (
@@ -336,17 +345,22 @@ function MCQCreater() {
                     ))}
 
                     {/* Answer */}
-                    <TextField
-                        required
-                        fullWidth
-                        variant="outlined"
-                        label="Answer"
-                        value={MCQ.answer}
-                        onChange={(e) => handleMCQChange('answer', e.target.value)}
+                    <DropDown 
+                        name="Answer" 
+                        data={choices} 
+                        selectedData={answer} 
+                        setSelectedData={handleDropdownChange(setAnswer, 'answer')}
                         error={errors.answer}
-                        helperText={errors.answer ? "Must match one of the choices" : ""}
-                        sx={{ mb: 2 }}
+                        disabled={allChoicesFilled}
+                        width="100%"
+                        required={true}
+                        disableFlag={true}
                     />
+                    {errors.answer && (
+                        <FormHelperText error sx={{ mt: -1, mb: 1 }}>
+                            This field is required
+                        </FormHelperText>
+                    )}
 
                     {/* Dropdowns */}
                     <Box sx={{ mb: 2 }}>
@@ -357,6 +371,7 @@ function MCQCreater() {
                             setSelectedData={handleDropdownChange(setSelectedClass, 'class')}
                             error={errors.class}
                             width="100%"
+                            required={true}
                         />
                         {errors.class && (
                             <FormHelperText error sx={{ mt: -1, mb: 1 }}>
@@ -370,7 +385,10 @@ function MCQCreater() {
                             selectedData={selectedSubject} 
                             setSelectedData={handleDropdownChange(setSelectedSubject, 'subject')}
                             error={errors.subject}
+                            disabled={selectedClass}
                             width="100%"
+                            required={true}
+                            disableFlag={true}
                         />
                         {errors.subject && (
                             <FormHelperText error sx={{ mt: -1, mb: 1 }}>
@@ -385,6 +403,9 @@ function MCQCreater() {
                             setSelectedData={handleDropdownChange(setSelectedChapters, 'chapter')}
                             error={errors.chapter}
                             width="100%"
+                            disabled={selectedSubject}
+                            required={true}
+                            disableFlag={true}
                         />
                         {errors.chapter && (
                             <FormHelperText error sx={{ mt: -1, mb: 1 }}>
@@ -398,7 +419,10 @@ function MCQCreater() {
                             selectedData={selectedTopic} 
                             setSelectedData={handleDropdownChange(setSelectedTopics, 'topic')}
                             error={errors.topic}
+                            disabled={selectedChapters}
                             width="100%"
+                            required={true}
+                            disableFlag={true}
                         />
                         {errors.topic && (
                             <FormHelperText error sx={{ mt: -1, mb: 1 }}>

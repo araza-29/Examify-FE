@@ -36,11 +36,11 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
 
     // Validation functions
     const validateForm = () => {
-        const isValidAnswer = choices.some(choice => choice.name === editedMCQ.answer);
+        const isValidAnswer = choices.some(choice => choice.name === answer.name);
         const newErrors = {
             name: !editedMCQ.name,
-            medium: !editedMCQ.medium,
-            answer: !editedMCQ.answer || !isValidAnswer,
+            medium: !medium.name,
+            answer: !answer.name || !isValidAnswer,
             choices: choices.map(choice => !choice.name),
             class: !selectedClass,
             subject: !selectedSubject,
@@ -103,7 +103,7 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                 choice1: choices[0].name, 
                 choice2: choices[1].name, 
                 choice3: choices[2].name, 
-                choice4: choices[3].value,
+                choice4: choices[3].name,
                 answer: answer.name,
                 medium: medium.name
             })
@@ -114,16 +114,18 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                 toast.success("MCQ updated successfully!");
                 setMCQ({
                     ...editedMCQ,
+                    answer: answer.name,
+                    medium: medium.name,
                     topic_id: selectedTopic.id,
                     topic_name: selectedTopic.name,
                     chapter_id: selectedChapters.id, 
                     chapter_name: selectedChapters.name, 
                     subject_id: selectedSubject.id, 
                     subject_name: selectedSubject.name,
-                    choice1: choices[0].value, 
-                    choice2: choices[1].value, 
-                    choice3: choices[2].value, 
-                    choice4: choices[3].value
+                    choice1: choices[0].name, 
+                    choice2: choices[1].name, 
+                    choice3: choices[2].name, 
+                    choice4: choices[3].name
                 });
                 setFlag(false);
             }
@@ -271,6 +273,8 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
         }
     };
 
+    const allChoicesFilled = choices.every(choice => choice.name.trim() !== '');
+
     return (
         <Box sx={{
             margin: 2,
@@ -322,6 +326,7 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                 setSelectedData={handleDropdownChange(setMedium, 'medium')}
                 error={errors.class}
                 width="100%"
+                required={true}
             />
             {errors.medium && (
                 <FormHelperText error sx={{ mt: -1, mb: 1 }}>
@@ -355,8 +360,15 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                 selectedData={answer} 
                 setSelectedData={handleDropdownChange(setAnswer, 'answer')}
                 error={errors.answer}
+                disabled={allChoicesFilled}
+                required={true}
                 width="100%"
             />
+            {errors.answer && (
+                <FormHelperText error sx={{ mt: -1 }}>
+                    This field is required
+                </FormHelperText>
+            )}
             {/* Answer */}
             {/* <TextField
                 required
@@ -384,6 +396,7 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                     selectedData={selectedClass} 
                     setSelectedData={handleDropdownChange(setSelectedClass, 'class')}
                     error={errors.class}
+                    required={true}
                     width="100%"
                 />
                 {errors.class && (
@@ -399,6 +412,8 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                     setSelectedData={handleDropdownChange(setSelectedSubject, 'subject')}
                     error={errors.subject}
                     width="100%"
+                    required={true}
+                    disabled={selectedClass}
                 />
                 {errors.subject && (
                     <FormHelperText error sx={{ mt: -1, mb: 1 }}>
@@ -413,6 +428,8 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                     setSelectedData={handleDropdownChange(setSelectedChapters, 'chapter')}
                     error={errors.chapter}
                     width="100%"
+                    required={true}
+                    disabled={selectedSubject}
                 />
                 {errors.chapter && (
                     <FormHelperText error sx={{ mt: -1, mb: 1 }}>
@@ -427,6 +444,8 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                     setSelectedData={handleDropdownChange(setSelectedTopics, 'topic')}
                     error={errors.topic}
                     width="100%"
+                    required={true}
+                    disabled={selectedChapters}
                 />
                 {errors.topic && (
                     <FormHelperText error sx={{ mt: -1, mb: 1 }}>
