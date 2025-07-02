@@ -68,7 +68,7 @@ const Sidebar = () => {
           <Link to="/home" style={{ textDecoration: "none" }}>
             <li>
               <DashboardIcon className="icon" />
-              <span>Paper Editor</span>
+              <span>Home</span>
             </li>
           </Link>
          

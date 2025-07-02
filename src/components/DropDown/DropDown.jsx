@@ -21,8 +21,17 @@ const SearchableDropDown = ({data, selectedData,error = false, setSelectedData, 
                         }
                     }
                 }} disabled={isDisabled}>
-                <InputLabel error={error} sx={{ }}>{name}</InputLabel>
+                <InputLabel error={error} 
+                sx={{ 
+                    color: "#7451f8", 
+                    '&.Mui-focused': {
+                        color: '#7451f8',
+                    },
+                }}>{name}</InputLabel>
                 <Select
+                    labelId="question-type-label"
+                    label={name}
+                    displayEmpty
                     value={selectedData?.name || ""}
                     name="searchTopic"
                     error={error}
@@ -33,11 +42,15 @@ const SearchableDropDown = ({data, selectedData,error = false, setSelectedData, 
                         }
                     })}
                     sx={{ 
-                        borderRadius: 1 
-                    }}
-                    MenuProps={{
-                        PaperProps: {
-                        }
+                        backgroundColor: 'background.paper', 
+                        borderRadius: 1,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#7451f8',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#7451f8',
+                        },
+                        
                     }}
                 >
                     {data.map((item) => (

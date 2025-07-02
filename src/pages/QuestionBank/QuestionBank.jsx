@@ -290,7 +290,7 @@ const Home = () => {
     {
       field: "name",
       headerName: "Question",
-      width: 230,
+      width: 300,
     },
     {
       field: "marks",
@@ -336,25 +336,9 @@ const Home = () => {
    {
       field: "action",
       headerName: "Action",
-      width: 250,
+      width: 180,
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center", gap: "50px" }}>
-          <Link
-            to={`/user/${params.row.id}`}
-            style={{ textDecoration: "none" }}
-          >
-            <div
-              style={{
-                padding: "2px 5px",
-                borderRadius: "5px",
-                color: "darkblue",
-                border: "1px dotted rgba(0, 0, 139, 0.596)",
-                cursor: "pointer",
-              }}
-            >
-              View
-            </div>
-          </Link>
 
           <div
             onClick={()=>{toggleQuestionEditor(params.row)}}
@@ -451,10 +435,15 @@ const Home = () => {
                 onClick={handleCreate}
                 sx={{
                   fontWeight: "bold",
-                  marginLeft: 70,
+                  marginLeft: 80,
                   width: 200,
                   height: 50,
                   backgroundColor: "#7451f8",
+                  '&:hover': {
+                      backgroundColor: '#5a3acb',
+                      transform: 'scale(1.02)',
+                      transition: 'all 0.2s ease'
+                  }
                 }}
               >
                 Create Question

@@ -4,7 +4,7 @@ import Navbar from "../../components/navbar/Navbar";
 import DropDown from '../../components/DropDown/DropDown';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -147,34 +147,62 @@ function MCQCreater() {
         navigate('/MCQSbank');
     };
 
-    // Data fetching
+    const skipResetRef = useRef(true);
+
     useEffect(() => {
         fetchClasses();
     }, [userId]);
 
+    // 2. Handle class change (and initial fetch)
     useEffect(() => {
         if (selectedClass) {
+            // Only reset if we're not in initial setup
+            if (!skipResetRef.current) {
+                setSelectedSubject(null);
+                setSelectedChapters(null);
+                setSelectedTopics(null);
+            }
             fetchSubject();
         } else {
             setSubject([]);
         }
+        
     }, [selectedClass]);
 
+    // 3. Handle subject change (and initial fetch)
     useEffect(() => {
         if (selectedSubject) {
+            if (!skipResetRef.current) {
+                setSelectedChapters(null);
+                setSelectedTopics(null);
+            }
             fetchChapters();
         } else {
             setChapters([]);
         }
     }, [selectedSubject]);
 
+    // 4. Handle chapters change (and initial fetch)
     useEffect(() => {
         if (selectedChapters) {
+            if (!skipResetRef.current) {
+                setSelectedTopics(null);
+            }
             fetchTopics();
         } else {
             setTopics([]);
         }
     }, [selectedChapters]);
+
+    // 5. After initial setup, set skipReset to false
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            skipResetRef.current = false;
+        }, 100);
+        
+        return () => clearTimeout(timer);
+    }, []);
+
 
     const fetchClasses = () => {
         fetch("http://localhost:3000/Examination/reviewClassesByUserID", {
