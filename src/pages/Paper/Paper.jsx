@@ -138,13 +138,11 @@ const styles = StyleSheet.create({
         fontSize: 10,
         marginBottom: 5,
     },
-    // Updated question style for continuous numbering
     question: {
         marginBottom: 5,
         fontSize: 12,
         fontFamily: 'Times-Roman',
     },
-    // New style for notes as questions (non-descriptive sections)
     noteContainer:{
         paddingTop: 10,
         flexDirection: 'row',
@@ -163,7 +161,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         flex: 1
     },
-    // New style for normal notes (descriptive sections)
     normalNote: {
         marginBottom: 8,
         fontSize: 12,
@@ -172,7 +169,6 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         flex: 5
     },
-    // Style for descriptive questions with continuous numbering
     descriptiveQuestion: {
         marginBottom: 5,
         fontSize: 12,
@@ -202,21 +198,18 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 10,
     },
+    questionImage: {
+        width: '200px',
+        marginTop: 5
+    }
 });
 
-const PaperPDFEnglish = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
-    function toRoman(num) {
-        const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
-        return romanNumerals[num - 1] || num;
-    }
-    function MCQ({ htmlString, choices, index }) {
+const MCQComponent = ({ htmlString, choices, index, imageUrl }) => {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
 
-
     return (
         <View style={{ marginBottom: 10 }}>
-            {/* Question header */}
             <View style={{ flexDirection: 'row', marginBottom: 8 }}>
                 <Text style={{ 
                     fontFamily: "Times-Roman", 
@@ -226,379 +219,81 @@ const PaperPDFEnglish = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                 }}>
                     {toRoman(index)}.
                 </Text>
-                <Text style={{ 
-                    fontSize: 12, 
-                    fontFamily: "Times-Roman",
-                    flex: 1,
-                    lineHeight: 1.3
-                }}>
-                    {parsedElements}
-                </Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={{ 
+                        fontSize: 12, 
+                        fontFamily: "Times-Roman",
+                        lineHeight: 1.3
+                    }}>
+                        {parsedElements}
+                    </Text>
+                    {imageUrl && (
+                        <Image 
+                            src={imageUrl} 
+                            style={styles.questionImage}
+                        />
+                    )}
+                </View>
             </View>
 
-            {/* Choices in two columns */}
             <View style={{ 
                 flexDirection: 'row', 
                 justifyContent: 'space-between',
-                paddingLeft: 28, // Align with question text
+                paddingLeft: 28,
             }}>
-                {/* Left column */}
-                <View style={{ 
-                    width: '45%',
-                    alignItems: 'flex-start'
-                }}>
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[0]}
-                    </Text>
-                    
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[1]}
-                    </Text>
+                <View style={{ width: '45%' }}>
+                    <Text style={styles.choice}>• {parsedChoices[0]}</Text>
+                    <Text style={styles.choice}>• {parsedChoices[1]}</Text>
                 </View>
-
-                {/* Right column */}
-                <View style={{ 
-                    width: '45%',
-                    alignItems: 'flex-start'
-                }}>
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[2]}
-                    </Text>
-                    
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[3]}
-                    </Text>
+                <View style={{ width: '45%' }}>
+                    <Text style={styles.choice}>• {parsedChoices[2]}</Text>
+                    <Text style={styles.choice}>• {parsedChoices[3]}</Text>
                 </View>
             </View>
         </View>
-    );
-}
-
-    return (
-        <Document>
-            <Page size="A4" style={styles.page}>
-                {/* Original Header */}
-                <View style={styles.header}>
-                    <Text style={styles.instituteName}>{BasicInfo.header}</Text>    
-                    <View style={styles.examDetailsRow}>
-                        {/* Left side - Date and Time */}
-                        <View style={styles.leftDetails}>
-                            <Text style={styles.detailText}>Date: {BasicInfo.date}</Text>
-                            <Text style={styles.detailText}>Time: {BasicInfo.time}</Text>
-                        </View>
-                        
-                        {/* Center - Examination details */}
-                        <View style={styles.centerDetails}>
-                            <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION, {BasicInfo.ExaminationYear}</Text>
-                            <Text style={styles.examTitle}>{BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})</Text>
-                        </View>
-                        
-                        {/* Right side - Max Marks */}
-                        <View style={styles.rightDetails}>
-                            <Text style={styles.detailText}>Max. Marks: {BasicInfo.marks}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Sections */}
-                {section.map((sec, secIndex) => {
-                    // Calculate starting question number for this section
-                    let questionCounter = 1;
-                    
-                    // For non-descriptive sections, count all previous questions and notes as questions
-                    if (sec.type.toLowerCase() !== 'descriptive questions') {
-                        for (let i = 0; i < secIndex; i++) {
-                            const prevSection = section[i];
-                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
-                            
-                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
-                                // For previous descriptive sections, count questions normally
-                                questionCounter += prevQuestions + prevMCQs;
-                            } else {
-                                // For previous non-descriptive sections, count questions + 1 for note
-                                questionCounter += prevQuestions + prevMCQs + 1;
-                            }
-                        }
-                    } else {
-                        // For descriptive sections, count all previous questions and notes as questions
-                        for (let i = 0; i < secIndex; i++) {
-                            const prevSection = section[i];
-                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
-                            
-                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
-                                questionCounter += prevQuestions + prevMCQs;
-                            } else {
-                                questionCounter += prevQuestions + prevMCQs + 1; // +1 for note as question
-                            }
-                        }
-                    }
-
-                    return (
-                        <View key={secIndex}>
-                            <View style={styles.sectionHeaderContainer}>
-                                <View style={styles.sectionNameWrapper}>
-                                    <Text style={styles.sectionHeader}>{sec.name}</Text>
-                                    <Text style={styles.sectionHeader}>({sec.type})</Text>
-                                </View>
-                            </View>
-                            <View style={styles.noteContainer}>
-                                {/* Handle notes based on section type */}
-                                {sec.type.toLowerCase() === 'descriptive questions' ? (
-                                    /* Normal note for descriptive sections */
-                                    <Text style={styles.normalNote}>
-                                        NOTE: {sec.description}
-                                    </Text>
-                                ) : (
-                                    /* Note as question for non-descriptive sections */
-                                    <Text style={styles.noteAsQuestion}>
-                                        Q{questionCounter}. {sec.description}
-                                    </Text>
-                                )}
-                                <Text style={styles.sectionMarks}>({sec.marks} Marks)</Text>
-                            </View>
-                            {/* Render questions with continuous numbering */}
-                        {htmlQuestions
-                            .filter(q => q.section === sec.name)
-                            .map((q, idx) => {
-                                const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
-                                
-                                if (isDescriptive) {
-                                    // For descriptive sections, use regular Q numbering
-                                    const currentQuestionNumber = questionCounter + idx;
-                                    return (
-                                        <View key={idx} style={styles.descriptiveQuestion}>
-                                            <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
-                                            <Image src={q.image} alt="Question" />
-                                        </View>
-                                    );
-                                } else {
-                                    // For non-descriptive sections, use Roman numerals starting from i
-                                    const romanIndex = toRoman(idx + 1);
-                                    return (
-                                        <View key={idx} style={styles.question}>
-                                            <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                                                <Text style={{ 
-                                                    fontFamily: "Times-Roman", 
-                                                    marginRight: 8, 
-                                                    fontSize: 12,
-                                                    minWidth: 20
-                                                }}>
-                                                    {romanIndex}.
-                                                </Text>
-                                                <Text style={{ 
-                                                    fontSize: 12, 
-                                                    fontFamily: "Times-Roman",
-                                                    flex: 1
-                                                }}>
-                                                    {parse(q.name)}
-                                                </Text>
-                                            </View>
-                                            <Image 
-                                                src="http://localhost:3000/uploads/questions/question-1750894871091.jpg" 
-                                                alt="Question" 
-                                                style={{ width: '200px' }}
-                                            />
-                                        </View>
-                                    );
-                                }
-                            })}
-
-                            {/* Render MCQs with continuous numbering */}
-                            {htmlMCQ
-                                .filter(q => q.section === sec.name)
-                                .map((q, idx) => {
-                                    const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
-                                    const currentQuestionNumber = 1
-                                    
-                                    return (
-                                        <View key={idx}>
-                                            <MCQ 
-                                                index={currentQuestionNumber} 
-                                                htmlString={q.name} 
-                                                choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
-                                            />
-                                            <Image src={q.image} alt="Question" />
-                                        </View>
-                                    );
-                                })}
-                        </View>
-                    );
-                })}
-            </Page>
-        </Document>
     );
 };
 
-const PaperPDFUrdu = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
-    function toRoman(num) {
-        const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
-        return romanNumerals[num - 1] || num;
-    }
-    function MCQ({ htmlString, choices, index }) {
-    const parsedElements = parse(htmlString);
-    const parsedChoices = choices.map(q => parse(q));
-
-
-    return (
-        <View style={{ marginBottom: 10 }}>
-            {/* Question header */}
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                <Text style={{ 
-                    fontFamily: "Times-Roman", 
-                    marginRight: 8, 
-                    fontSize: 12,
-                    minWidth: 20
-                }}>
-                    {toRoman(index)}.
-                </Text>
-                <Text style={{ 
-                    fontSize: 12, 
-                    fontFamily: "Times-Roman",
-                    flex: 1,
-                    lineHeight: 1.3
-                }}>
-                    {parsedElements}
-                </Text>
-            </View>
-
-            {/* Choices in two columns */}
-            <View style={{ 
-                flexDirection: 'row', 
-                justifyContent: 'space-between',
-                paddingLeft: 28, // Align with question text
-            }}>
-                {/* Left column */}
-                <View style={{ 
-                    width: '45%',
-                    alignItems: 'flex-start'
-                }}>
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[0]}
-                    </Text>
-                    
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[1]}
-                    </Text>
-                </View>
-
-                {/* Right column */}
-                <View style={{ 
-                    width: '45%',
-                    alignItems: 'flex-start'
-                }}>
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[2]}
-                    </Text>
-                    
-                    <Text style={{ 
-                        fontSize: 11, 
-                        fontFamily: "Times-Roman",
-                        marginBottom: 2,
-                        lineHeight: 1.3
-                    }}>
-                        • {parsedChoices[3]}
-                    </Text>
-                </View>
-            </View>
-        </View>
-    );
+function toRoman(num) {
+    const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
+    return romanNumerals[num - 1] || num;
 }
 
+const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                {/* Original Header */}
                 <View style={styles.header}>
                     <Text style={styles.instituteName}>{BasicInfo.header}</Text>    
                     <View style={styles.examDetailsRow}>
-                        {/* Left side - Date and Time */}
                         <View style={styles.leftDetails}>
                             <Text style={styles.detailText}>Date: {BasicInfo.date}</Text>
                             <Text style={styles.detailText}>Time: {BasicInfo.time}</Text>
                         </View>
                         
-                        {/* Center - Examination details */}
                         <View style={styles.centerDetails}>
                             <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION, {BasicInfo.ExaminationYear}</Text>
                             <Text style={styles.examTitle}>{BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})</Text>
                         </View>
                         
-                        {/* Right side - Max Marks */}
                         <View style={styles.rightDetails}>
                             <Text style={styles.detailText}>Max. Marks: {BasicInfo.marks}</Text>
                         </View>
                     </View>
                 </View>
 
-                {/* Sections */}
                 {section.map((sec, secIndex) => {
-                    // Calculate starting question number for this section
                     let questionCounter = 1;
                     
-                    // For non-descriptive sections, count all previous questions and notes as questions
-                    if (sec.type.toLowerCase() !== 'descriptive questions') {
-                        for (let i = 0; i < secIndex; i++) {
-                            const prevSection = section[i];
-                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
-                            
-                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
-                                // For previous descriptive sections, count questions normally
-                                questionCounter += prevQuestions + prevMCQs;
-                            } else {
-                                // For previous non-descriptive sections, count questions + 1 for note
-                                questionCounter += prevQuestions + prevMCQs + 1;
-                            }
-                        }
-                    } else {
-                        // For descriptive sections, count all previous questions and notes as questions
-                        for (let i = 0; i < secIndex; i++) {
-                            const prevSection = section[i];
-                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
-                            
-                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
-                                questionCounter += prevQuestions + prevMCQs;
-                            } else {
-                                questionCounter += prevQuestions + prevMCQs + 1; // +1 for note as question
-                            }
+                    for (let i = 0; i < secIndex; i++) {
+                        const prevSection = section[i];
+                        const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
+                        const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
+                        
+                        if (prevSection.type.toLowerCase() === 'descriptive questions') {
+                            questionCounter += prevQuestions + prevMCQs;
+                        } else {
+                            questionCounter += prevQuestions + prevMCQs + 1;
                         }
                     }
 
@@ -611,40 +306,26 @@ const PaperPDFUrdu = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                 </View>
                             </View>
                             <View style={styles.noteContainer}>
-                                {/* Handle notes based on section type */}
                                 {sec.type.toLowerCase() === 'descriptive questions' ? (
-                                    /* Normal note for descriptive sections */
                                     <Text style={styles.normalNote}>
                                         NOTE: {sec.description}
                                     </Text>
                                 ) : (
-                                    /* Note as question for non-descriptive sections */
                                     <Text style={styles.noteAsQuestion}>
                                         Q{questionCounter}. {sec.description}
                                     </Text>
                                 )}
                                 <Text style={styles.sectionMarks}>({sec.marks} Marks)</Text>
                             </View>
-                            {/* Render questions with continuous numbering */}
-                        {htmlQuestions
-                            .filter(q => q.section === sec.name)
-                            .map((q, idx) => {
-                                const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
-                                
-                                if (isDescriptive) {
-                                    // For descriptive sections, use regular Q numbering
+
+                            {htmlQuestions
+                                .filter(q => q.section === sec.name)
+                                .map((q, idx) => {
+                                    const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
                                     const currentQuestionNumber = questionCounter + idx;
+                                    
                                     return (
-                                        <View key={idx} style={styles.descriptiveQuestion}>
-                                            <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
-                                            <Image src={q.image} alt="Question" />
-                                        </View>
-                                    );
-                                } else {
-                                    // For non-descriptive sections, use Roman numerals starting from i
-                                    const romanIndex = toRoman(idx + 1);
-                                    return (
-                                        <View key={idx} style={styles.question}>
+                                        <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
                                             <View style={{ flexDirection: 'row', marginBottom: 5 }}>
                                                 <Text style={{ 
                                                     fontFamily: "Times-Roman", 
@@ -652,37 +333,42 @@ const PaperPDFUrdu = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                     fontSize: 12,
                                                     minWidth: 20
                                                 }}>
-                                                    {romanIndex}.
+                                                    {isDescriptive ? `Q${currentQuestionNumber}.` : `${toRoman(idx + 1)}.`}
                                                 </Text>
-                                                <Text style={{ 
-                                                    fontSize: 12, 
-                                                    fontFamily: "Times-Roman",
-                                                    flex: 1
-                                                }}>
-                                                    {parse(q.name)}
-                                                </Text>
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={{ 
+                                                        fontSize: 12, 
+                                                        fontFamily: "Times-Roman",
+                                                        lineHeight: 1.3
+                                                    }}>
+                                                        {parse(q.name)}
+                                                    </Text>
+                                                    {q.image && (
+                                                        <Image 
+                                                            src={q.image} 
+                                                            style={styles.questionImage}
+                                                        />
+                                                    )}
+                                                </View>
                                             </View>
-                                            <Image src={q.image} alt="Question" />
                                         </View>
                                     );
-                                }
-                            })}
+                                })}
 
-                            {/* Render MCQs with continuous numbering */}
                             {htmlMCQ
                                 .filter(q => q.section === sec.name)
                                 .map((q, idx) => {
                                     const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
-                                    const currentQuestionNumber = 1
+                                    const currentQuestionNumber = questionCounter + questionsInThisSection + idx;
                                     
                                     return (
                                         <View key={idx}>
-                                            <MCQ 
+                                            <MCQComponent 
                                                 index={currentQuestionNumber} 
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
+                                                imageUrl={q.image}
                                             />
-                                            <Image src={q.image} alt="Question" />
                                         </View>
                                     );
                                 })}
@@ -695,29 +381,26 @@ const PaperPDFUrdu = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
 };
 
 const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section }) => {
-    console.log("Questions check for answer",htmlQuestions)
+    console.log('PDF Data:', {
+        BasicInfo,
+        htmlQuestions,
+        htmlMCQ,
+        section
+    });
+
     return (
         <PDFViewer
             showToolbar={false}
             style={{ width: '100%', height: '100vh', border: 'none' }}
         >
-            {BasicInfo.medium==="English"?(
-            <PaperPDFEnglish
+            <PaperPDF
                 BasicInfo={BasicInfo}
                 htmlContent={htmlContent}
                 htmlMCQ={htmlMCQ}
                 htmlQuestions={htmlQuestions}
                 section={section}
+                isUrdu={BasicInfo.medium === "Urdu"}
             />
-            ):(
-            <PaperPDFUrdu
-                BasicInfo={BasicInfo}
-                htmlContent={htmlContent}
-                htmlMCQ={htmlMCQ}
-                htmlQuestions={htmlQuestions}
-                section={section}
-            />
-            )}
         </PDFViewer>
     );
 };
