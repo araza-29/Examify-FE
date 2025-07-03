@@ -23,13 +23,11 @@ const SearchableDropDown = ({data, selectedData,error = false, setSelectedData, 
                 }} disabled={isDisabled}>
                 <InputLabel error={error} 
                 sx={{ 
-                    color: "#7451f8", 
                     '&.Mui-focused': {
                         color: '#7451f8',
                     },
                 }}>{name}</InputLabel>
                 <Select
-                    labelId="question-type-label"
                     label={name}
                     displayEmpty
                     value={selectedData?.name || ""}

@@ -28,6 +28,7 @@ function QuestionCreater() {
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
   const [image, setImage] = useState(null);
+  const [answerImage, setAnswerImage] = useState(null);
   const [medium, setMedium] = useState(null);
   const skipResetRef = useRef(true);
   const [errors, setErrors] = useState({
@@ -194,31 +195,44 @@ function QuestionCreater() {
       toast.error("Please fill all required fields");
       return;
     }
+    console.log("IMAGECHECK", image);
 
+    const formData = new FormData();
+
+    // Append all your data to the FormData object
+    formData.append('name', Question.name);
+    formData.append('topic_id', selectedTopic.id);
+    formData.append('marks', Question.marks);
+    formData.append('subject_id', selectedSubject.id);
+    formData.append('selected', false);
+    formData.append('type', Question.type);
+    formData.append('medium', medium?.name);
+
+    // Append the image file if it exists
+    if (image) {
+      formData.append('image', image);
+    }
     fetch("http://localhost:3000/Examination/createQuestion", {
       method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: Question.name,
-        topic_id: selectedTopic.id,
-        marks: Question.marks,
-        subject_id: selectedSubject.id,
-        selected: false,
-        type: Question.type,
-        medium: medium?.name
-      })
+      body: formData
     })
     .then(response => response.json())
     .then((data) => {
       if (data.code === 200) {
         const questionId = data.data.id;
-        fetch("http://localhost:3000/Examination/createAnswer", {
+        const answerData = new FormData();
+
+        // Append all your data to the FormData object
+        answerData.append('question_id', questionId);
+        answerData.append('answer', Question.answer);
+
+        // Append the image file if it exists
+        if (image) {
+          answerData.append('image', answerImage);
+        }
+            fetch("http://localhost:3000/Examination/createAnswer", {
           method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question_id: questionId,
-            answer: Question.answer
-          })
+          body: answerData
         })
         .then(response => response.json())
         .then((data) => {
@@ -272,7 +286,25 @@ function QuestionCreater() {
               setQuestion({...Question, name: event.target.value});
               setErrors({...errors, question: false});
             }}
-            sx={{ width: '100%', mb: 2 }}
+            sx={{ 
+              width: '100%', 
+              mb: 2,
+              backgroundColor: 'background.paper', 
+              borderRadius: 1,
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#7451f8', // Hover border color (same as default)
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#7451f8', // Focused border color
+                },
+              },
+              '& .MuiInputLabel-root': {
+                '&.Mui-focused': {
+                  color: '#7451f8', // Focused label color
+                },
+              },
+            }}
             error={errors.question}
             helperText={errors.question && "This field is required"}
           />
@@ -286,7 +318,25 @@ function QuestionCreater() {
               setQuestion({...Question, marks: event.target.value});
               setErrors({...errors, marks: false});
             }}
-            sx={{ width: '100%', mb: 2 }}
+            sx={{ 
+              width: '100%', 
+              mb: 2,
+              backgroundColor: 'background.paper', 
+              borderRadius: 1,
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#7451f8', // Hover border color (same as default)
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#7451f8', // Focused border color
+                },
+              },
+              '& .MuiInputLabel-root': {
+                '&.Mui-focused': {
+                  color: '#7451f8', // Focused label color
+                },
+              },
+            }}
             error={errors.marks}
             helperText={errors.marks && "This field is required"}
           />
@@ -307,15 +357,37 @@ function QuestionCreater() {
             error={errors.medium}
           />
 
-          <FormControl required sx={{ width: '100%', mb: 2 }} error={errors.type}>
-            <InputLabel>Question Type</InputLabel>
+          <FormControl required sx={{ width: '100%', mb: 2,
+                    '& .MuiOutlinedInput-root': {
+                        '& .MuiSelect-select': {
+                        whiteSpace: 'normal', // Allow text wrapping
+                        wordBreak: 'break-word' // Break long words
+                        }
+                    }
+                }} error={errors.type}>
+            <InputLabel sx={{ 
+                    '&.Mui-focused': {
+                        color: '#7451f8',
+                    },
+                }}>Question Type</InputLabel>
             <Select
+              labelId="question-type-label"
+              label="Question Type"
               value={Question.type || ""}
               onChange={(event) => {
                 setQuestion({...Question, type: event.target.value});
                 setErrors({...errors, type: false});
               }}
-              sx={{ borderRadius: 1 }}
+              sx={{ borderRadius: 1,
+                    backgroundColor: 'background.paper', 
+                    borderRadius: 1,
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#7451f8',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#7451f8',
+                    }
+                  }}
             >
               <MenuItem value="long">Descriptive Questions</MenuItem>
               <MenuItem value="short">Short Questions</MenuItem>
@@ -332,7 +404,25 @@ function QuestionCreater() {
               setQuestion({...Question, answer: event.target.value});
               setErrors({...errors, answer: false});
             }}
-            sx={{ width: '100%', mb: 2 }}
+            sx={{ 
+              width: '100%', 
+              mb: 2,
+              backgroundColor: 'background.paper', 
+              borderRadius: 1,
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#7451f8', // Hover border color (same as default)
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#7451f8', // Focused border color
+                },
+              },
+              '& .MuiInputLabel-root': {
+                '&.Mui-focused': {
+                  color: '#7451f8', // Focused label color
+                },
+              },
+            }}
             error={errors.answer}
             helperText={errors.answer && "This field is required"}
           />
@@ -390,7 +480,11 @@ function QuestionCreater() {
               disableFlag={!selectedChapters}
             />
           </Box>
-           <Box sx={{ 
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+              Image for Question
+            </Typography>
+            <Box sx={{ 
                 width: "97%",
                 p: 2,
                 border: "2px dashed #e0e0e0",
@@ -402,20 +496,63 @@ function QuestionCreater() {
                     borderColor: "#7451f8",
                     backgroundColor: '#f5f5f5'
                 }
-                }}>
+            }}>
                 <Button
                     variant="outlined"
                     component="label"
                     startIcon={<CloudUploadIcon />}
-                    sx={{ mb: 1, color:"#7451f8" }}
+                    sx={{ mb: 1, color: "#7451f8" }}
                 >
                     Upload Image
-                    <input type="file" hidden onChange={(e) => setImage(e.target.files[0])} />
+                    <input 
+                        type="file" 
+                        hidden 
+                        onChange={(e) => setImage(e.target.files[0])} 
+                        accept="image/*"
+                    />
                 </Button>
                 <Typography variant="body2" color="textSecondary">
-                    {image ? image.name : "Drag & drop your image here or click to browse"}
+                    {image ? image.name : "Drag & drop your question image here or click to browse"}
                 </Typography>
             </Box>
+          </Box>
+
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+              Image for Answer
+            </Typography>
+            <Box sx={{ 
+                width: "97%",
+                p: 2,
+                border: "2px dashed #e0e0e0",
+                borderRadius: 2,
+                backgroundColor: '#fafafa',
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                    borderColor: "#7451f8",
+                    backgroundColor: '#f5f5f5'
+                }
+            }}>
+                <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ mb: 1, color: "#7451f8" }}
+                >
+                    Upload Image
+                    <input 
+                        type="file" 
+                        hidden 
+                        onChange={(e) => setAnswerImage(e.target.files[0])} 
+                        accept="image/*"
+                    />
+                </Button>
+                <Typography variant="body2" color="textSecondary">
+                    {answerImage ? answerImage.name : "Drag & drop your answer image here or click to browse"}
+                </Typography>
+            </Box>
+          </Box>
 
            <Box sx={{ 
                 display: 'flex', 

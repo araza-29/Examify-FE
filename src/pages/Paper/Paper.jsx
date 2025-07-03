@@ -1,5 +1,5 @@
 import React from 'react';
-import { PDFViewer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { PDFViewer, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import parse from 'html-react-parser';
 import { Font } from '@react-pdf/renderer';
 
@@ -390,7 +390,7 @@ const PaperPDFEnglish = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                     return (
                                         <View key={idx} style={styles.descriptiveQuestion}>
                                             <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
-                                            <img src={q.image} alt="Question" />
+                                            <Image src={q.image} alt="Question" />
                                         </View>
                                     );
                                 } else {
@@ -415,7 +415,7 @@ const PaperPDFEnglish = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                     {parse(q.name)}
                                                 </Text>
                                             </View>
-                                            <img 
+                                            <Image 
                                                 src="http://localhost:3000/uploads/questions/question-1750894871091.jpg" 
                                                 alt="Question" 
                                                 style={{ width: '200px' }}
@@ -439,7 +439,7 @@ const PaperPDFEnglish = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
                                             />
-                                            <img src={q.image} alt="Question" />
+                                            <Image src={q.image} alt="Question" />
                                         </View>
                                     );
                                 })}
@@ -637,7 +637,7 @@ const PaperPDFUrdu = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                     return (
                                         <View key={idx} style={styles.descriptiveQuestion}>
                                             <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
-                                            <img src={q.image} alt="Question" />
+                                            <Image src={q.image} alt="Question" />
                                         </View>
                                     );
                                 } else {
@@ -662,11 +662,7 @@ const PaperPDFUrdu = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                     {parse(q.name)}
                                                 </Text>
                                             </View>
-                                            <img 
-                                                src="http://localhost:3000/uploads/questions/question-1750894871091.jpg" 
-                                                alt="Question" 
-                                                style={{ width: '200px' }}
-                                            />
+                                            <Image src={q.image} alt="Question" />
                                         </View>
                                     );
                                 }
@@ -686,7 +682,7 @@ const PaperPDFUrdu = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
                                             />
-                                            <img src={q.image} alt="Question" />
+                                            <Image src={q.image} alt="Question" />
                                         </View>
                                     );
                                 })}
