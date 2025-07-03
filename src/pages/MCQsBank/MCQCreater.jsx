@@ -2,6 +2,7 @@ import { TextField, Typography, Button, Box, FormHelperText } from '@mui/materia
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DropDown from '../../components/DropDown/DropDown';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState, useRef } from 'react';
@@ -38,6 +39,7 @@ function MCQCreater() {
     const [Topic, setTopics] = useState([]);
     const [selectedChapters, setSelectedChapters] = useState(null);
     const [selectedTopic, setSelectedTopics] = useState(null);
+    const [image, setImage] = useState(null);
     const [choices, setChoices] = useState([
         { id: 1, name: '' },
         { id: 2, name: '' },
@@ -109,24 +111,30 @@ function MCQCreater() {
             return;
         }
 
+        const formData = new FormData();
+
+        // Append all text/boolean fields
+        formData.append('name', MCQ.name);
+        formData.append('topic_id', selectedTopic.id);
+        formData.append('marks', MCQ.marks);
+        formData.append('subject_id', selectedSubject.id);
+        formData.append('selected', 'false');
+        formData.append('choice1', choices[0].name);
+        formData.append('choice2', choices[1].name);
+        formData.append('choice3', choices[2].name);
+        formData.append('choice4', choices[3].name);
+        formData.append('answer', answer.name);
+        formData.append('medium', medium.name);
+
+        // Append the image file directly if it exists
+        if (image) {
+            formData.append('image', image); // Assuming 'image' is a File object from an input
+        }
+
         fetch("http://localhost:3000/Examination/createMCQ", {
             method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: MCQ.name,
-                topic_id: selectedTopic.id,
-                marks: MCQ.marks,
-                subject_id: selectedSubject.id,
-                selected: false,
-                choice1: choices[0].name,
-                choice2: choices[1].name,
-                choice3: choices[2].name,
-                choice4: choices[3].name,
-                answer: answer.name,
-                medium: medium.name
-            })
+            body: formData
+            // No Content-Type header needed - browser sets it automatically
         })
         .then(response => response.json())
         .then((data) => {
@@ -145,6 +153,23 @@ function MCQCreater() {
 
     const onCancel = () => {
         navigate('/MCQSbank');
+    };
+
+    const handleQuestionImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!file.type.match('image.*')) {
+            toast.error('Please select an image file');
+            return;
+        }
+        
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image size should be less than 2MB');
+            return;
+        }
+        
+        setImage(file);
     };
 
     const skipResetRef = useRef(true);
@@ -457,6 +482,42 @@ function MCQCreater() {
                                 This field is required
                             </FormHelperText>
                         )}
+                    </Box>
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+                            Image for Question
+                        </Typography>
+                        <Box sx={{ 
+                            width: "97%",
+                            p: 2,
+                            border: "2px dashed #e0e0e0",
+                            borderRadius: 2,
+                            backgroundColor: '#fafafa',
+                            textAlign: 'center',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                borderColor: "#7451f8",
+                                backgroundColor: '#f5f5f5'
+                            }
+                        }}>
+                            <Button
+                                variant="outlined"
+                                component="label"
+                                startIcon={<CloudUploadIcon />}
+                                sx={{ mb: 1, color: "#7451f8" }}
+                            >
+                                Upload Image
+                                <input 
+                                    type="file" 
+                                    hidden 
+                                    onChange={handleQuestionImageChange} 
+                                    accept="image/*"
+                                />
+                            </Button>
+                            <Typography variant="body2" color="textSecondary">
+                                {image ? image.name : "Drag & drop your question image here or click to browse"}
+                            </Typography>
+                        </Box>
                     </Box>
 
                     {/* Action Buttons */}

@@ -1,5 +1,6 @@
 import { TextField, Typography, Button, Box, FormHelperText } from '@mui/material';
 import DropDown from '../../components/DropDown/DropDown';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 
@@ -25,6 +26,7 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
     const [selectedSubject, setSelectedSubject] = useState(MCQ.subject_id ? { id: MCQ.subject_id, name: MCQ.subject_name } : null);
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
+    const [image, setImage] = useState({name: MCQ.image});
     const [selectedChapters, setSelectedChapters] = useState(MCQ.chapter_id ? { id: MCQ.chapter_id, name: MCQ.chapter_name } : null);
     const [selectedTopic, setSelectedTopics] = useState(MCQ.topic_id ? { id: MCQ.topic_id, name: MCQ.topic_name } : null);
     const [choices, setChoices] = useState([
@@ -87,26 +89,29 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
             toast.error("Please fill all required fields correctly");
             return;
         }
+        // Append all text/boolean fields
+        const formData = new FormData()
+        formData.append('mcq_id', MCQ.id);
+        formData.append('name', MCQ.name);
+        formData.append('topic_id', selectedTopic.id);
+        formData.append('marks', MCQ.marks);
+        formData.append('subject_id', selectedSubject.id);
+        formData.append('selected', 'false');
+        formData.append('choice1', choices[0].name);
+        formData.append('choice2', choices[1].name);
+        formData.append('choice3', choices[2].name);
+        formData.append('choice4', choices[3].name);
+        formData.append('answer', answer.name);
+        formData.append('medium', medium.name);
+
+        // Append the image file directly if it exists
+        if (image) {
+            formData.append('image', image); // Assuming 'image' is a File object from an input
+        }
 
         fetch("http://localhost:3000/Examination/updateMCQ", {
             method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                mcq_id: editedMCQ.id, 
-                name: editedMCQ.name, 
-                topic_id: selectedTopic.id, 
-                marks: editedMCQ.marks, 
-                subject_id: selectedSubject.id, 
-                selected: false, 
-                choice1: choices[0].name, 
-                choice2: choices[1].name, 
-                choice3: choices[2].name, 
-                choice4: choices[3].name,
-                answer: answer.name,
-                medium: medium.name
-            })
+            body: formData
         })
         .then(response => response.json())
         .then((data) => {
@@ -145,6 +150,22 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
     const isInitialMount = useRef(true);
 
     const skipResetRef = useRef(true);
+    const handleQuestionImageChange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.match('image.*')) {
+                toast.error('Please select an image file');
+                return;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error('Image size should be less than 2MB');
+                return;
+            }
+            
+            setImage(file);
+        };
 
     // 1. Fetch classes on userId change
     useEffect(() => {
@@ -383,9 +404,7 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
             /> */}
             
             {/* Dropdowns */}
-            <Box sx={{ 
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+            <Box sx={{
                 gap: 2,
                 width: '100%',
                 mb: 2
@@ -452,6 +471,39 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                         This field is required
                     </FormHelperText>
                 )}
+            </Box>
+            <Box sx={{ mb: 3 }}>
+                <Box sx={{ 
+                    width: "97%",
+                    p: 2,
+                    border: "2px dashed #e0e0e0",
+                    borderRadius: 2,
+                    backgroundColor: '#fafafa',
+                    textAlign: 'center',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                        borderColor: "#7451f8",
+                        backgroundColor: '#f5f5f5'
+                    }
+                }}>
+                    <Button
+                        variant="outlined"
+                        component="label"
+                        startIcon={<CloudUploadIcon />}
+                        sx={{ mb: 1, color: "#7451f8" }}
+                    >
+                        Upload Image
+                        <input 
+                            type="file" 
+                            hidden 
+                            onChange={handleQuestionImageChange} 
+                            accept="image/*"
+                        />
+                    </Button>
+                    <Typography variant="body2" color="textSecondary">
+                        {image ? image.name : "Drag & drop your question image here or click to browse"}
+                    </Typography>
+                </Box>
             </Box>
             
             {/* Action Buttons */}
