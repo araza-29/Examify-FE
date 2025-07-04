@@ -144,30 +144,31 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     
         // Get the selected questions
         const selectedFromQuestions = Questions.filter((question) => question.selected);
-        const selected = [...selectedFromQuestions, ...SelectQuestion];
-        const totalMarks = selected.reduce((sum, q) => sum + (q.marks || 0), 0);
-        console.log("selectedSectionMarkCheck", Questions)
-        if(selectedSection.marks<totalMarks) {
-            toast.error("You total questions marks exceed assigned section marks")
-            return;
-        }
-        // Store section information and update selected questions
-        setSelectedQuestion((prevSelectedQuestions) => [
-            ...prevSelectedQuestions,
-            ...selected.map((q) => ({ ...q, section: selectedSection.name }))
-        ]);
-    
+        setSelectedQuestion((prevSelectedQuestions) => {
+            const alreadySelectedIds = new Set(prevSelectedQuestions.map(q => q.id));
+            // Only add questions that are not already selected in the paper
+            const newUniqueQuestions = selectedFromQuestions.filter(q => !alreadySelectedIds.has(q.id));
+            // Calculate total marks for this section (already selected + new)
+            const alreadyInSection = prevSelectedQuestions.filter(q => q.section === selectedSection.name);
+            const totalMarks = [...alreadyInSection, ...newUniqueQuestions].reduce((sum, q) => sum + (q.marks || 0), 0);
+            if (totalMarks > selectedSection.marks) {
+                toast.error("You total questions marks exceed assigned section marks");
+                return prevSelectedQuestions;
+            }
+            return [
+                ...prevSelectedQuestions,
+                ...newUniqueQuestions.map(q => ({ ...q, section: selectedSection.name }))
+            ];
+        });
         // Remove selected questions from the available list
         setQuestions((prevQuestions) =>
             prevQuestions.filter((q) => !q.selected)
         );
-        const updatedSelected = selected.map(q => ({
-            ...q,
-            section: selectedSection.name
-        }));
-
+        const updatedSelected = selectedFromQuestions
+            .filter(q => q)
+            .map(q => ({ ...q, section: selectedSection.name }));
         setNewQuestion(updatedSelected);
-        console.log("Updated Selected Questions:", selected);
+        console.log("Updated Selected Questions:", updatedSelected);
         setIsSaved(false)
         handleOpen();
     };

@@ -138,23 +138,28 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             return;
         }
         const selectedFromQuestions = MCQs.filter((question) => question.selected);
-        const selected = [...selectedFromQuestions, ...SelectMCQs];
-        const totalMarks = selected.reduce((sum, q) => sum + (1 || 0), 0);
-        if(selectedSection.marks<totalMarks) {
-            toast.error("You total mcqs marks exceed assigned section marks")
-            return;
-        }
-        setSelectedMCQs((prevSelectedMCQs) => [
-            ...prevSelectedMCQs,
-            ...selected.map((q) => ({ ...q, section: selectedSection.name }))
-        ]);
+        setSelectedMCQs((prevSelectedMCQs) => {
+            const alreadySelectedIds = new Set(prevSelectedMCQs.map(q => q.id));
+            // Only add MCQs that are not already selected in the paper
+            const newUniqueMCQs = selectedFromQuestions.filter(q => !alreadySelectedIds.has(q.id));
+            // Calculate total MCQs for this section (already selected + new)
+            const alreadyInSection = prevSelectedMCQs.filter(q => q.section === selectedSection.name);
+            const totalMCQs = [...alreadyInSection, ...newUniqueMCQs].length;
+            if (totalMCQs > selectedSection.marks) {
+                toast.error("You total mcqs marks exceed assigned section marks");
+                return prevSelectedMCQs;
+            }
+            return [
+                ...prevSelectedMCQs,
+                ...newUniqueMCQs.map(q => ({ ...q, section: selectedSection.name }))
+            ];
+        });
         setMCQs((prevMCQs) =>
             prevMCQs.filter((q) => !q.selected)
         );
-         const updatedSelected = selected.map(q => ({
-            ...q,
-            section: selectedSection.name
-        }));
+        const updatedSelected = selectedFromQuestions
+            .filter(q => q)
+            .map(q => ({ ...q, section: selectedSection.name }));
         setNewMCQ(updatedSelected)
         setIsSaved(false)
         handleOpen();
@@ -221,7 +226,8 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
                         { MCQs.length>0?(
                         <TableBody>
                             {showMCQs()}
-                        </TableBody>):(<></>)
+                        </TableBody>
+                        ):(<></>)
                         }
                     </Table>
                 )}

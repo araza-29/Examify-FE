@@ -603,7 +603,7 @@ else if(exsistingInfo.medium === "Urdu") {
         let fetchedQuestions = []
         if (questionsResponse.code === 200) {
           console.log("Fetched Questions:", questionsResponse.data)
-          fetchedQuestions = questionsResponse.data
+          fetchedQuestions = deduplicateById(questionsResponse.data)
         }
 
         // Step 2: Fetch MCQs
@@ -617,7 +617,7 @@ else if(exsistingInfo.medium === "Urdu") {
         let fetchedMCQs = []
         if (mcqsResponse.code === 200) {
           console.log("Fetched MCQs:", mcqsResponse.data)
-          fetchedMCQs = mcqsResponse.data
+          fetchedMCQs = deduplicateById(mcqsResponse.data)
         }
 
         // Step 3: Fetch Sections
@@ -656,15 +656,15 @@ else if(exsistingInfo.medium === "Urdu") {
               const matchedSection = sectionsWithTracking.find(
                 (section) => Number(section.id) === Number(question.section_id),
               )
-
               return {
                 ...question,
+                section_id: matchedSection ? matchedSection.id : null,
                 section: matchedSection ? matchedSection.name : null,
               }
             })
 
             console.log("Updated Questions with Sections:", updatedQuestions)
-            setQuestions(updatedQuestions)
+            setQuestions(deduplicateById(updatedQuestions))
           }
 
           // Map sections to MCQs
@@ -673,15 +673,15 @@ else if(exsistingInfo.medium === "Urdu") {
               const matchedSection = sectionsWithTracking.find(
                 (section) => Number(section.id) === Number(mcq.section_id),
               )
-
               return {
                 ...mcq,
+                section_id: matchedSection ? matchedSection.id : null,
                 section: matchedSection ? matchedSection.name : null,
               }
             })
 
             console.log("Updated MCQs with Sections:", updatedMCQs)
-            setMCQs(updatedMCQs)
+            setMCQs(deduplicateById(updatedMCQs))
           }
         } else {
           console.log("No sections found in database, preserving auto-generated sections")
@@ -1001,6 +1001,16 @@ else if(exsistingInfo.medium === "Urdu") {
     backgroundColor: "#f0f2f5",
   }
 
+  // --- DEDUPLICATION UTILS ---
+  function deduplicateById(arr) {
+    const seen = new Set();
+    return arr.filter(item => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }
+
   return (
     <div className="home" style={homeStyle}>
       <Box sx={{ width: "100%", height: "100vh", overflow: "hidden" }}>
@@ -1108,7 +1118,7 @@ else if(exsistingInfo.medium === "Urdu") {
                 {console.log("Before mcqs check", exsistingInfo.medium)}
                 <ModalSelectMCQs
                   setMCQs={setMCQs}
-                  SelectedMCQs={selectedMCQ}
+                  SelectedMCQs={[...selectedMCQ]}
                   sections={sectionLetters}
                   setIsSaved={setIsSaved}
                   subject_id={paper.subject_id}
@@ -1121,7 +1131,7 @@ else if(exsistingInfo.medium === "Urdu") {
               <Box sx={{ width: "91.666667%", my: 2 }}>
                 <ModalSelectQuestions
                   setQuestions={setQuestions}
-                  SelectedQuestions={selectedQuestion}
+                  SelectedQuestions={[...selectedQuestion]}
                   sections={sectionLetters}
                   setIsSaved={setIsSaved}
                   subject_id={paper.subject_id}

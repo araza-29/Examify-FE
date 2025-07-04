@@ -5,6 +5,14 @@ import { Font } from '@react-pdf/renderer';
 
 Font.register({
   family: 'TimesNewRoman',
+  src: 'https://db.onlinewebfonts.com/t/32441506567973bb1e65e8c3fbada474.ttf',
+  fontWeight: 'normal',
+});
+
+Font.register({
+  family: 'TimesNewRoman-Bold',
+  src: 'https://db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.ttf',
+  fontWeight: 'bold',
   fonts: [
     {
       src: 'https://db.onlinewebfonts.com/t/32441506567973bb1e65e8c3fbada474.ttf',
@@ -15,6 +23,12 @@ Font.register({
       fontWeight: 'bold',
     },
   ],
+});
+
+Font.register({
+  family: 'MehrNastaleeq',
+  src: 'https://cdn.jsdelivr.net/gh/tariq-abdullah/urdu-web-font-CDN/MehrNastaleeq.ttf',
+  fontWeight: 'normal',
 });
 
 const styles = StyleSheet.create({
@@ -201,30 +215,65 @@ const styles = StyleSheet.create({
     questionImage: {
         width: '200px',
         marginTop: 5
-    }
+    },
+    urduText: {
+        fontFamily: 'MehrNastaleeq',
+        fontSize: 16,
+        direction: 'rtl',
+        textAlign: 'right',
+        lineHeight: 1.5,
+    },
+    urduSectionHeader: {
+        fontFamily: 'MehrNastaleeq',
+        fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginVertical: 8,
+        direction: 'rtl',
+    },
+    urduInstruction: {
+        fontFamily: 'MehrNastaleeq',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'right',
+        marginVertical: 6,
+        direction: 'rtl',
+    },
+    urduMarks: {
+        fontFamily: 'MehrNastaleeq',
+        fontSize: 16,
+        textAlign: 'right',
+        marginVertical: 2,
+        direction: 'rtl',
+    },
+    urduQuestion: {
+        fontFamily: 'MehrNastaleeq',
+        fontSize: 15,
+        textAlign: 'right',
+        marginVertical: 4,
+        direction: 'rtl',
+    },
+    urduChoice: {
+        fontFamily: 'MehrNastaleeq',
+        fontSize: 14,
+        textAlign: 'right',
+        marginVertical: 2,
+        direction: 'rtl',
+    },
 });
 
-const MCQComponent = ({ htmlString, choices, index, imageUrl }) => {
+const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
 
     return (
         <View style={{ marginBottom: 10 }}>
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                <Text style={{ 
-                    fontFamily: "Times-Roman", 
-                    marginRight: 8, 
-                    fontSize: 12,
-                    minWidth: 20
-                }}>
-                    {toRoman(index)}.
+            <View style={{ flexDirection: 'row', marginBottom: 8, justifyContent: isUrdu ? 'flex-end' : 'flex-start' }}>
+                <Text style={isUrdu ? styles.urduQuestion : { fontFamily: "Times-Roman", marginRight: 8, fontSize: 12, minWidth: 20 }}>
+                    {isUrdu ? `${toUrduRoman(index)}.` : `${toRoman(index)}.`}
                 </Text>
                 <View style={{ flex: 1 }}>
-                    <Text style={{ 
-                        fontSize: 12, 
-                        fontFamily: "Times-Roman",
-                        lineHeight: 1.3
-                    }}>
+                    <Text style={isUrdu ? styles.urduQuestion : { fontSize: 12, fontFamily: "Times-Roman", lineHeight: 1.3 }}>
                         {parsedElements}
                     </Text>
                     {imageUrl && (
@@ -236,18 +285,14 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl }) => {
                 </View>
             </View>
 
-            <View style={{ 
-                flexDirection: 'row', 
-                justifyContent: 'space-between',
-                paddingLeft: 28,
-            }}>
+            <View style={{ flexDirection: 'row', justifyContent: isUrdu ? 'flex-end' : 'flex-start', paddingLeft: 28 }}>
                 <View style={{ width: '45%' }}>
-                    <Text style={styles.choice}>• {parsedChoices[0]}</Text>
-                    <Text style={styles.choice}>• {parsedChoices[1]}</Text>
+                    <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[0]}</Text>
+                    <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[1]}</Text>
                 </View>
                 <View style={{ width: '45%' }}>
-                    <Text style={styles.choice}>• {parsedChoices[2]}</Text>
-                    <Text style={styles.choice}>• {parsedChoices[3]}</Text>
+                    <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[2]}</Text>
+                    <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[3]}</Text>
                 </View>
             </View>
         </View>
@@ -259,7 +304,13 @@ function toRoman(num) {
     return romanNumerals[num - 1] || num;
 }
 
+function toUrduRoman(num) {
+    const urduRomans = ['١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '١٠', '١١', '١٢', '١٣', '١٤', '١٥', '١٦', '١٧', '١٨', '١٩', '٢٠'];
+    return urduRomans[num - 1] || num;
+}
+
 const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
+    const getUrduTextStyle = (defaultStyle) => (isUrdu ? [defaultStyle, styles.urduText] : defaultStyle);
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -270,12 +321,10 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                             <Text style={styles.detailText}>Date: {BasicInfo.date}</Text>
                             <Text style={styles.detailText}>Time: {BasicInfo.time}</Text>
                         </View>
-                        
                         <View style={styles.centerDetails}>
                             <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION, {BasicInfo.ExaminationYear}</Text>
                             <Text style={styles.examTitle}>{BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})</Text>
                         </View>
-                        
                         <View style={styles.rightDetails}>
                             <Text style={styles.detailText}>Max. Marks: {BasicInfo.marks}</Text>
                         </View>
@@ -301,17 +350,17 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                         <View key={secIndex}>
                             <View style={styles.sectionHeaderContainer}>
                                 <View style={styles.sectionNameWrapper}>
-                                    <Text style={styles.sectionHeader}>{sec.name}</Text>
-                                    <Text style={styles.sectionHeader}>({sec.type})</Text>
+                                    <Text style={getUrduTextStyle(styles.sectionHeader)}>{sec.name}</Text>
+                                    <Text style={getUrduTextStyle(styles.sectionHeader)}>({sec.type})</Text>
                                 </View>
                             </View>
                             <View style={styles.noteContainer}>
                                 {sec.type.toLowerCase() === 'descriptive questions' ? (
-                                    <Text style={styles.normalNote}>
+                                    <Text style={getUrduTextStyle(styles.normalNote)}>
                                         NOTE: {sec.description}
                                     </Text>
                                 ) : (
-                                    <Text style={styles.noteAsQuestion}>
+                                    <Text style={getUrduTextStyle(styles.noteAsQuestion)}>
                                         Q{questionCounter}. {sec.description}
                                     </Text>
                                 )}
@@ -327,20 +376,11 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                                     return (
                                         <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
                                             <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                                                <Text style={{ 
-                                                    fontFamily: "Times-Roman", 
-                                                    marginRight: 8, 
-                                                    fontSize: 12,
-                                                    minWidth: 20
-                                                }}>
+                                                <Text style={{ fontFamily: "Times-Roman", marginRight: 8, fontSize: 12, minWidth: 20 }}>
                                                     {isDescriptive ? `Q${currentQuestionNumber}.` : `${toRoman(idx + 1)}.`}
                                                 </Text>
                                                 <View style={{ flex: 1 }}>
-                                                    <Text style={{ 
-                                                        fontSize: 12, 
-                                                        fontFamily: "Times-Roman",
-                                                        lineHeight: 1.3
-                                                    }}>
+                                                    <Text style={getUrduTextStyle({ fontSize: 12, fontFamily: "Times-Roman", lineHeight: 1.3 })}>
                                                         {parse(q.name)}
                                                     </Text>
                                                     {q.image && (
@@ -368,6 +408,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
                                                 imageUrl={q.image}
+                                                isUrdu={isUrdu}
                                             />
                                         </View>
                                     );
