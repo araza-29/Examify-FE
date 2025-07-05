@@ -302,7 +302,7 @@ const Home = () => {
   }
   return (
     <div className="home" style={homeStyle}>
-      <Box sx={{ width: '100%', height: '100vh', overflow: 'hidden' }}>
+      <Box sx={{ width: '100%', height: '100vh', overflow: 'hidden', backgroundColor: "white" }}>
         <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%' }}>
           {/* Sidebar or Left Section */}
           <Sidebar style = {{sidebarStyle}} />
@@ -310,10 +310,10 @@ const Home = () => {
             {/* Header Section */}
             <Navbar/>
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center', color: "#7451f8", }} onClick={() => navigate(-1)}>
+              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center', color: "#7451f8", }} onClick={() => navigate("/Home")}>
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
-              <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2, color: "#7451f8", }}>
+              <Typography variant="h3" sx={{ fontFamily: 'Mar', ml: 2, color: "#7451f8", }}>
                 MCQ Bank
               </Typography>
               <Button 

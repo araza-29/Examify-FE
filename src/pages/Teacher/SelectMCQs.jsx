@@ -19,8 +19,8 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
     const [MCQsSection, setMCQsSections] = useState(sections.filter(letter=>letter.type==="Multiple Choice Questions"));
     const theme = useTheme();
 
-    const fetchMCQs = () => {
-        console.log("HelloPello",subjectId, medium);
+    const fetchMCQ = () => {
+        console.log(subjectId);
         fetch("http://localhost:3000/Examination/reviewMCQBySubjectID", {
             method: "POST",
             headers: {
@@ -30,7 +30,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
         })
         .then(response => response.json())
         .then((data) => {
-            console.log('Received data:', data); // Check the structure
+            console.log('Received MCQ data:', data); // Check the structure
             if (data.code === 200) {
                 var q = data.data;
                 if(SelectMCQs!=[]) {
@@ -65,7 +65,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
 
     useEffect(()=> {
         fetchChapters();
-        fetchMCQs();
+        fetchMCQ();
     },[subjectId])
 
     useEffect(()=> {
@@ -89,7 +89,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({subject_id: 3})
+            body: JSON.stringify({subject_id: subject_id})
         })
         .then(response => response.json())
         .then((data) => {
@@ -235,12 +235,22 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             <Divider style={{ color: "black" }} sx={{ my: 2 }}/>
             <Box sx={{ display: 'flex',flexDirection: "row", justifyContent: 'flex-end', mt: 3, gap: 2}}> 
                 <Box sx={{ display: 'flex',flexDirection: "row"}}> 
-                    <Button size="large" onClick={handleOpen} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
+                    <Button size="large" onClick={handleOpen} variant="contained" color="primary" sx={{ background: "#7451f8", 
+                        '&:hover': {
+                            backgroundColor: '#5a3acb',
+                            transform: 'scale(1.02)',
+                            transition: 'all 0.2s ease'
+                        } }}>
                         Cancel
                     </Button>
                 </Box>
                 <Box sx={{ display: 'flex',flexDirection: "row"}}>
-                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
+                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: "#7451f8", 
+                        '&:hover': {
+                            backgroundColor: '#5a3acb',
+                            transform: 'scale(1.02)',
+                            transition: 'all 0.2s ease'
+                        } }}>
                         Done
                     </Button>
                 </Box>

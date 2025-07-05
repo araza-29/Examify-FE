@@ -365,7 +365,7 @@ const PaperInfo = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", width: "100vw" }}>
+    <Box sx={{ display: "flex", height: "100vh", width: "100vw", backgroundColor: "white" }}>
       <Sidebar />
       <Box component="main" sx={{ flex: 6, overflowY: "auto"}}>
         <Navbar/>
@@ -381,11 +381,11 @@ const PaperInfo = () => {
                 alignItems: "center",
                 color: "#7451f8",
               }}
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/Home")}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
             </Button>
-            <Typography variant="h3" sx={{ fontFamily: 'Mar', opacity: 0.75, ml: 2, color: "#7451f8", }}>
+            <Typography variant="h3" sx={{ fontFamily: 'Mar', ml: 2, color: "#7451f8", }}>
               Papers
             </Typography>
           </Box>

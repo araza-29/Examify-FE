@@ -11,6 +11,7 @@ const DashboardCard = ({ title, icon: Icon, num }) => (
   <Box
     sx={{
       backgroundColor: "#fff",
+      border: "1px solid #e0e0e0", // Add this line
       padding: "20px",
       borderRadius: "10px",
       display: "flex",
@@ -22,6 +23,7 @@ const DashboardCard = ({ title, icon: Icon, num }) => (
       transition: "transform 0.3s",
       "&:hover": {
         transform: "scale(1.05)",
+        border: "1px solid #1976d2", // Optional: Change border on hover
       },
     }}
   >
@@ -66,6 +68,7 @@ const Home = () => {
         display: "flex",
         height: "100vh",
         width: "100vw",
+        backgroundColor: "white"
       }}
     >
 
@@ -82,15 +85,15 @@ const Home = () => {
             <Navbar/>
             <Box sx={{padding: 5}}>
                 {roleId === 1 ? (
-                    <Typography variant="h4" sx={{ marginBottom: "20px" }}>
+                    <Typography variant="h4" sx={{ marginBottom: "30px", fontSize: "40px", fontFamily: 'Mar', ml: 2, color: "#7451f8" }}>
                       Admin Dashboard
                     </Typography>
                   ) : roleId === 3 ? (
-                    <Typography variant="h4" sx={{ marginBottom: "20px" }}>
+                    <Typography variant="h4" sx={{ marginBottom: "30px", fontSize: "40px", fontFamily: 'Mar', ml: 2, color: "#7451f8" }}>
                       Examination Dashboard
                     </Typography>
                   ) : roleId === 4 ? (
-                    <Typography variant="h4" sx={{ marginBottom: "20px" }}>
+                    <Typography variant="h4" sx={{ marginBottom: "30px", fontSize: "40px",fontFamily: 'Mar', ml: 2, color: "#7451f8" }}>
                       Teacher Dashboard
                     </Typography>
                   ) : null

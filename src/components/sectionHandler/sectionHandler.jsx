@@ -1,235 +1,295 @@
-import React,{useEffect, useState} from "react"
+import React, { useState, useEffect } from "react";
 import {
-  Card,
   Typography,
   Box,
-  Grid,
   Select,
   MenuItem,
   TextField,
   FormControl,
   Button,
-  CardActions,
   Dialog,
+  IconButton
 } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import toast from 'react-hot-toast';
-import { gridColumnsTotalWidthSelector } from "@mui/x-data-grid";
-export default function SectionHandler ({exsistingInfo, setExsistingInfo, sections, setSections, sectionFlag, setSectionFlag, setIsSaved, isSaved}) {
-    const [editedInfo, setEditedInfo] = useState(exsistingInfo)
-    const [editedSections, setEditedSections] = useState(sections)
-    console.log("SectionHandler", sectionFlag);
-    console.log("SectionsHandler", sections);
 
-    const handleSubmit = () => {
-        const hasEmptySections = editedSections.some(sec => {
-            if (sec.description === "" || sec.marks === 0 || sec.type === "") {
-                toast.error(`${sec.name} isn't assigned values`);
-                return true; // stops further iteration
-            }
-            return false;
-        });
-        if(hasEmptySections) {
-            return;
-        }
-        const MCQS = editedSections.filter((sec,idx )=>{ return sec.type==="Multiple Choice Questions"}).length;
-        if(MCQS > 1) {
-            toast.error(`Only one section can be of MCQ `);
-            return;
-        }
-        const Questions = editedSections.filter((sec,idx )=>{ return sec.type==="Descriptive Questions"}).length;
-        if(Questions === exsistingInfo.sections) {
-            toast.error(`All of the sections can't be Descriptive`);
-            return;
-        }
-        const totalMarks = editedSections.reduce((sum, sec) => sum + Number(sec.marks), 0);
-        console.log("Total Makrs", totalMarks);
-        if(totalMarks!==exsistingInfo.marks) {
-            toast.error(`Total marks of the sections not equal to the marks of subject`);
-            return;
-        }
-        console.log("EditedSections",editedSections)
-        setSections(editedSections);
-        setExsistingInfo(editedInfo)
-        console.log("bEFORE SETTING", isSaved)
-        setIsSaved(false)
-        console.log("After SETTING", isSaved)
-        setSectionFlag(false);
+export default function SectionHandler({
+  exsistingInfo,
+  setExsistingInfo,
+  sections,
+  setSections,
+  sectionFlag,
+  setSectionFlag,
+  setIsSaved,
+  isSaved
+}) {
+  const [editedSections, setEditedSections] = useState(sections);
+
+  const getNextAlphabetLetter = () => {
+    if (editedSections.length === 0) return '"A"';
+    
+    // Get the last section's letter and continue from there
+    const lastSection = editedSections[editedSections.length - 1];
+    const match = lastSection.name.match(/Section\s+"([A-Z])"/);
+    
+    if (match) {
+      const lastLetter = match[1];
+      const nextCharCode = lastLetter.charCodeAt(0) + 1;
+      
+      // Ensure we don't go beyond 'Z'
+      if (nextCharCode > 90) {
+        toast.error("Maximum 26 sections allowed (A-Z)");
+        return null;
+      }
+      
+      return `"${String.fromCharCode(nextCharCode)}"`;
     }
-    useEffect(() => {
-        if (sectionFlag && sections.length > 0) {
-          setEditedSections(sections);
-        }
-      }, [sectionFlag]);
-return(
-    <Dialog
-    open={sectionFlag}
-    onEnter={()=>{toast.success('Successfully toasted!')}}
-    onClose={() => {
+    
+    // Fallback: if no match found, start from 'A'
+    return '"A"';
+  };
+
+  const addNewSection = () => {
+    // Check if we've reached the maximum number of sections (A-Z = 26)
+    if (editedSections.length >= 26) {
+      toast.error("Maximum 26 sections allowed (A-Z)");
+      return;
+    }
+    
+    const nextLetter = getNextAlphabetLetter();
+    if (!nextLetter) return; // Error already shown in getNextAlphabetLetter
+    
+    const newSection = {
+      name: `Section ${nextLetter}`,
+      type: "",
+      description: "",
+      marks: 0
+    };
+    
+    setEditedSections([...editedSections, newSection]);
+  };
+
+  const removeSection = (index) => {
+    const updatedSections = [...editedSections];
+    updatedSections.splice(index, 1);
+    
+    // Reorder section names to maintain consistency with quotes
+    const reorderedSections = updatedSections.map((section, idx) => ({
+      ...section,
+      name: `Section "${String.fromCharCode(65 + idx)}"` // "A", "B", "C", etc.
+    }));
+    
+    setEditedSections(reorderedSections);
+  };
+
+  const handleSubmit = () => {
+    // Filter out sections that have only partial data
+    const validSections = editedSections.filter(sec => {
+      const hasSomeData = sec.type || sec.description || sec.marks > 0;
+      const hasAllData = sec.type && sec.description && sec.marks > 0;
+      return !hasSomeData || hasAllData;
+    });
+
+    // Find any sections with partial data to show error
+    const hasPartialSections = editedSections.some(sec => {
+      const hasSomeData = sec.type || sec.description || sec.marks > 0;
+      const hasAllData = sec.type && sec.description && sec.marks > 0;
+      return hasSomeData && !hasAllData;
+    });
+
+    if (hasPartialSections) {
+      toast.error("Please complete all fields for partially filled sections or remove them");
+      return;
+    }
+
+    if (validSections.length === 0) {
+      toast.error("Please add at least one complete section");
+      return;
+    }
+
+    const MCQS = validSections.filter(sec => sec.type === "Multiple Choice Questions").length;
+    if (MCQS > 1) {
+      toast.error("Only one section can be of MCQ type");
+      return;
+    }
+
+    const totalSectionMarks = validSections.reduce((sum, sec) => sum + Number(sec.marks), 0);
+    if (totalSectionMarks > exsistingInfo.marks) {
+      toast.error(`Combined section marks (${totalSectionMarks}) cannot exceed total subject marks (${exsistingInfo.marks})`);
+      return;
+    }
+
+    setSections(validSections);
+    setExsistingInfo(prev => ({ ...prev, sections: validSections.length }));
+    setIsSaved(false);
     setSectionFlag(false);
-    }}
-    maxWidth="l"
-    sx={{
-    "& .MuiDialog-paper": {
-        borderRadius: "8px",
-        padding: "16px",
-        width: "1000px", // Set the desired fixed width
-        maxWidth: "100%", // Ensures responsiveness
-    },
-    }}
->
-    <Card
-    sx={{
-        padding: "20px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        backgroundColor: "#ffffff",
-        width: "900px",
-        overflowY: "auto",
-        minHeight: "300px",
-        maxWidth: "100%",
-    }}
+    toast.success("Sections saved successfully!");
+  };
+
+  // Sync editedSections with sections prop when dialog opens
+  useEffect(() => {
+    if (sectionFlag) {
+      setEditedSections(sections);
+    }
+  }, [sectionFlag]);
+
+  return (
+    <Dialog
+      open={sectionFlag}
+      onClose={() => setSectionFlag(false)}
+      maxWidth="lg"
+      sx={{
+        "& .MuiDialog-paper": {
+          borderRadius: "8px",
+          padding: "24px",
+          width: "1000px",
+          maxWidth: "100%",
+          backgroundColor: "#ffffff",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        },
+      }}
     >
-    <Box
-        sx={{ 
-            display: "flex", 
-            flexDirection: "column", // Changed from row to column
-            gap: 2 // Reduced gap for better spacing
-        }}
-    >
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-        <Typography
-            sx={{
-            fontSize: "2rem", // Customize font size
-            fontWeight: "bold", // Make the text bold
-            color: "#333", // Text color for main content
-            mb: 1, // Add margin-bottom to separate content
-            }}
-        >
-            Sections Handler
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <Typography variant="h4" sx={{ color: "#7451f8", fontWeight: "bold" }}>
+          Sections Handler
         </Typography>
-            {console.log("BeforeChanged",editedInfo.medium)}
-            {console.log("AfterChanged",editedInfo.medium)}
-        <TextField
-        label="Sections"
-        fullWidth
-        variant="outlined"
-        sx={{ mb: 2 }}
-        value={editedInfo.sections}
-        onChange={(value) =>
-            setEditedInfo({ ...editedInfo, sections: value.target.value })
-        }
-        />
-        </Box>
 
-        {editedSections.map((letter, index)=>(
-            <Box 
-                key={index} 
-                sx={{ 
-                    display: "flex", 
-                    flexDirection: "row", 
-                    alignItems: "center", 
-                    gap: 2,
-                    border: "1px solid #e0e0e0",
-                    padding: 2,
-                    borderRadius: 2
-                }}
-            >
-                <Typography
-                    sx={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                    color: "#333",
-                    mr: 2
-                    }}
-                >
-                    {letter.name}
-                </Typography>
-
-                <FormControl sx={{ minWidth: 200 }}>
-                    <Select
-                    value={letter.type || ''}
-                    onChange={(e) => {
-                        setEditedSections((prevSections) => {
-                            const updatedSections = [...prevSections]; 
-                            updatedSections[index] = { ...updatedSections[index], type: e.target.value };
-                            return updatedSections;
-                          });
-                    }}
-                    displayEmpty
-                    >
-                    <MenuItem value="">Section Type</MenuItem>
-                    <MenuItem value="Short Questions">
-                        Short Questions
-                    </MenuItem>
-                    <MenuItem value="Descriptive Questions">
-                        Descriptive Questions
-                    </MenuItem>
-                    <MenuItem value="Multiple Choice Questions">
-                        Multiple Choice Questions
-                    </MenuItem>
-                    </Select>
-                </FormControl>
-
-                <TextField
-                    label="Description"
-                    variant="outlined"
-                    sx={{ mx: 2, flexGrow: 1 }}
-                    value={letter.description || ''}
-                    onChange={(e) => {
-                        setEditedSections((prevSections) => {
-                            const updatedSections = [...prevSections]; 
-                            updatedSections[index] = { ...updatedSections[index], description: e.target.value };
-                            return updatedSections;
-                          });
-                    }}
-                />
-
-                <TextField
-                    label="Marks"
-                    type="number"
-                    variant="outlined"
-                    sx={{ width: 100 }}
-                    value={letter.marks || ''}
-                    onChange={(e) => {
-                        setEditedSections((prevSections) => {
-                            const updatedSections = [...prevSections]; 
-                            updatedSections[index] = { ...updatedSections[index], marks: e.target.value };
-                            return updatedSections;
-                          });
-                    }}
-                />
-            </Box>
-        ))}
-    </Box>
-
-    <CardActions sx={{ justifyContent: "flex-end", mt: 2 }}>
-        <Button
-            variant="contained"
-            sx={{
-            background:
-                "#7451f8",
-            color: "white",
-            // "&:hover": {
-            //     background:
-            //     "linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)",
-            // },
+        {editedSections.map((section, index) => (
+          <Box 
+            key={index} 
+            sx={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: 2,
+              border: "1px solid #e0e0e0",
+              padding: 2,
+              borderRadius: 2,
+              position: 'relative',
+              '&:hover': {
+                boxShadow: 1
+              }
             }}
-            onClick={handleSubmit}
-        >
-            Save Changes
-        </Button>
-        <Button
-            variant="contained"
-            sx={{
-            ml: 2,
-            backgroundColor: "#7451f8",
+          >
+            <Typography sx={{ 
+              minWidth: '100px', 
+              fontWeight: 'bold',
+              color: '#7451f8'
+            }}>
+              {section.name}
+            </Typography>
 
+            <FormControl sx={{ minWidth: 200 }}>
+              <Select
+                value={section.type || ''}
+                onChange={(e) => {
+                  const updatedSections = [...editedSections];
+                  updatedSections[index].type = e.target.value;
+                  setEditedSections(updatedSections);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">Section Type</MenuItem>
+                <MenuItem value="Short Questions">Short Questions</MenuItem>
+                <MenuItem value="Descriptive Questions">Descriptive Questions</MenuItem>
+                <MenuItem value="Multiple Choice Questions">Multiple Choice Questions</MenuItem>
+              </Select>
+            </FormControl>
+
+            <TextField
+              label="Description"
+              variant="outlined"
+              sx={{ flexGrow: 1 }}
+              value={section.description || ''}
+              onChange={(e) => {
+                const updatedSections = [...editedSections];
+                updatedSections[index].description = e.target.value;
+                setEditedSections(updatedSections);
+              }}
+            />
+
+            <TextField
+              label="Marks"
+              type="number"
+              variant="outlined"
+              sx={{ width: 100 }}
+              value={section.marks || ''}
+              onChange={(e) => {
+                const updatedSections = [...editedSections];
+                updatedSections[index].marks = e.target.value;
+                setEditedSections(updatedSections);
+              }}
+              inputProps={{ min: 0 }}
+            />
+
+            <IconButton
+              onClick={() => removeSection(index)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: 'rgba(0, 0, 0, 0.54)',
+                '&:hover': {
+                  color: 'red',
+                  backgroundColor: 'rgba(255, 0, 0, 0.08)'
+                }
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        ))}
+
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={addNewSection}
+          disabled={editedSections.length >= 26}
+          sx={{
+            mt: 1,
+            backgroundColor: editedSections.length >= 26 ? "#ccc" : "#7451f8",
+            color: "white",
+            '&:hover': {
+              backgroundColor: editedSections.length >= 26 ? "#ccc" : '#5a3acb',
+            },
+            '&:disabled': {
+              backgroundColor: "#ccc",
+              color: "#666"
+            }
+          }}
+        >
+          Add New Section {editedSections.length >= 26 ? '(Max Reached)' : `(${26 - editedSections.length} remaining)`}
+        </Button>
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
+          <Button
+            variant="outlined"
+            sx={{
+              color: "#7451f8",
+              borderColor: "#7451f8",
+              '&:hover': {
+                borderColor: '#5a3acb',
+              }
             }}
             onClick={() => setSectionFlag(false)}
-        >
+          >
             Cancel
-        </Button>
-    </CardActions>
-    </Card>
-</Dialog>
-)
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#7451f8",
+              color: "white",
+              '&:hover': {
+                backgroundColor: '#5a3acb',
+              }
+            }}
+            onClick={handleSubmit}
+          >
+            Save Changes
+          </Button>
+        </Box>
+      </Box>
+    </Dialog>
+  );
 }

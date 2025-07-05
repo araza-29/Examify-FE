@@ -380,7 +380,7 @@ const Home = () => {
   };
   return (
     <div className="home" style={homeStyle}>
-      <Box sx={{ width: "100%", height: "100vh", overflow: "hidden" }}>
+      <Box sx={{ width: "100%", height: "100vh", overflow: "hidden", backgroundColor: "white" }}>
         <Box
           sx={{
             display: "flex",
@@ -414,7 +414,7 @@ const Home = () => {
                   alignItems: "center",
                   color: "#7451f8",
                 }}
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/Home")}
               >
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
@@ -422,7 +422,6 @@ const Home = () => {
                 variant="h3"
                 sx={{
                   fontFamily: "Mar",
-                  opacity: 0.75,
                   ml: 2,
                   color: "#7451f8",
                 }}

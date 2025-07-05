@@ -34,6 +34,7 @@ const DraggableQuestions = ({ section, Questions, SetQuestions, setDeletedQuesti
               padding: 4,
               borderRadius: "4px",
               boxShadow: 1,
+              width: "100%"
             }}
           >
             {Questions.filter((question) => {

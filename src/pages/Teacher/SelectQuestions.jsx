@@ -249,12 +249,22 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             <Divider style={{ color: "black" }} sx={{ my: 2 }}/>
             <Box sx={{ display: 'flex',flexDirection: "row", justifyContent: 'flex-end', mt: 3, gap: 2}}> 
                 <Box sx={{ display: 'flex',flexDirection: "row"}}> 
-                    <Button size="large" onClick={handleClose} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
+                    <Button size="large" onClick={handleClose} variant="contained" color="primary" sx={{ background: "#7451f8", 
+                        '&:hover': {
+                            backgroundColor: '#5a3acb',
+                            transform: 'scale(1.02)',
+                            transition: 'all 0.2s ease'
+                        } }}>
                         Cancel
                     </Button>
                 </Box>
                 <Box sx={{ display: 'flex',flexDirection: "row"}}>
-                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: "#7451f8" }}>
+                    <Button size="large" onClick={handleDone} variant="contained" color="primary" sx={{ background: "#7451f8", 
+                        '&:hover': {
+                            backgroundColor: '#5a3acb',
+                            transform: 'scale(1.02)',
+                            transition: 'all 0.2s ease'
+                        } }}>
                         Done
                     </Button>
                 </Box>

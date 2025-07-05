@@ -1,7 +1,28 @@
 import React from 'react';
-import { PDFViewer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { PDFViewer, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import parse from 'html-react-parser';
 import { Font } from '@react-pdf/renderer';
+
+// Helper function to validate image format for react-pdf
+const isValidImageForPDF = (imageUrl) => {
+    if (!imageUrl) return false;
+    
+    // Check if it's a supported format
+    const supportedFormats = ['.jpg', '.jpeg', '.png'];
+    const url = imageUrl.toLowerCase();
+    
+    return supportedFormats.some(format => url.includes(format));
+};
+
+// Helper function to get image format
+const getImageFormat = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    const url = imageUrl.toLowerCase();
+    if (url.includes('.jpg') || url.includes('.jpeg')) return 'jpeg';
+    if (url.includes('.png')) return 'png';
+    return null;
+};
 
 Font.register({
   family: 'TimesNewRoman',
@@ -204,6 +225,17 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 10,
     },
+    questionImage: {
+        width: 200,
+        height: 100,
+        marginTop: 5,
+        marginBottom: 5,
+    },
+    debugText: {
+        fontSize: 10,
+        fontFamily: 'Times-Roman',
+        marginBottom: 2,
+    },
 });
 
 const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
@@ -211,7 +243,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
         const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
         return romanNumerals[num - 1] || num;
     }
-    function MCQ({ htmlString, choices, index, answer }) {
+    function MCQ({ htmlString, choices, index, answer, imageUrl }) {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
 
@@ -239,14 +271,37 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                 }}>
                     {toRoman(index)}.
                 </Text>
-                <Text style={{ 
-                    fontSize: 12, 
-                    fontFamily: "Times-Roman",
-                    flex: 1,
-                    lineHeight: 1.3
-                }}>
-                    {parsedElements}
-                </Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={{ 
+                        fontSize: 12, 
+                        fontFamily: "Times-Roman",
+                        lineHeight: 1.3
+                    }}>
+                        {parsedElements}
+                    </Text>
+                    {imageUrl && isValidImageForPDF(imageUrl) && (
+                        <>
+                            <Text style={styles.debugText}>
+                                Debug: Attempting to render image: {imageUrl.substring(0, 50)}...
+                            </Text>
+                            <Image 
+                                src={imageUrl} 
+                                style={styles.questionImage}
+                                onError={(error) => {
+                                    console.error('Image load error for:', imageUrl, error);
+                                }}
+                                onLoad={() => {
+                                    console.log('Image loaded successfully:', imageUrl);
+                                }}
+                            />
+                        </>
+                    )}
+                    {imageUrl && !isValidImageForPDF(imageUrl) && (
+                        <Text style={styles.debugText}>
+                            Debug: Invalid image format: {imageUrl}
+                        </Text>
+                    )}
+                </View>
             </View>
 
             {/* Choices in two columns */}
@@ -384,6 +439,18 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                         <View key={idx} style={styles.descriptiveQuestion}>
                                             <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
                                             <Text>Answer: {parse(q.answer)}</Text>
+                                            {q.image && isValidImageForPDF(q.image) && (
+                                                <Image 
+                                                    src={q.image} 
+                                                    style={styles.questionImage}
+                                                    onError={(error) => {
+                                                        console.error('Image load error for:', q.image, error);
+                                                    }}
+                                                    onLoad={() => {
+                                                        console.log('Image loaded successfully:', q.image);
+                                                    }}
+                                                />
+                                            )}
                                         </View>
                                     );
                                 } else {
@@ -400,7 +467,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                 }}>
                                                     {romanIndex}.
                                                 </Text>
-                                                <View sx={{display: "flex", flexDirection: "column", flex: 1}}>
+                                                <View style={{ flex: 1 }}>
                                                     <Text style={{ 
                                                         fontSize: 12, 
                                                         fontFamily: "Times-Roman",
@@ -413,6 +480,18 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                     }}>
                                                         Answer: {parse(q.answer)}
                                                     </Text>
+                                                    {q.image && isValidImageForPDF(q.image) && (
+                                                        <Image 
+                                                            src={q.image} 
+                                                            style={styles.questionImage}
+                                                            onError={(error) => {
+                                                                console.error('Image load error for:', q.image, error);
+                                                            }}
+                                                            onLoad={() => {
+                                                                console.log('Image loaded successfully:', q.image);
+                                                            }}
+                                                        />
+                                                    )}
                                                 </View>
                                             </View>
                                         </View>
@@ -434,6 +513,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
                                                 answer={q.answer}
+                                                imageUrl={q.image}
                                             />
                                         </View>
                                     );

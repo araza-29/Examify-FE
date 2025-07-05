@@ -41,48 +41,34 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
     <Card
       sx={{
         width: "100%",
-        height: 600,
+        height: 450,
         display: "flex",
         flexDirection: "column",
+        borderRadius: '8px',
       }}
     >
-      <CardContent sx={{ flex: 1, overflowY: "auto" }}>
+      <CardContent sx={{ flex: 1 }}>
         <Box display="flex" flexDirection="column" gap={4} justifyContent="center">
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold", color: "#7451f8"  }}>
             Edit Headers Info
           </Typography>
 
-          <Typography variant="subtitle1" gutterBottom>
-            Class
-          </Typography>
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel id="class">Class</InputLabel>
+          <FormControl fullWidth sx={{  }}>
+            <InputLabel id="examination">Examination</InputLabel>
             <Select
-              labelId="class"
-              value={editedInfo.class}
-              onChange={(event) => setEditedInfo({ ...editedInfo, class: event.target.value })}
-              label="Class"
+              labelId="exam"
+              value={editedInfo.examination}
+              onChange={(event) => setEditedInfo({ ...editedInfo, examination: event.target.value })}
+              label="exam"
             >
-              <MenuItem value="IX">IX</MenuItem>
-              <MenuItem value="X">X</MenuItem>
-              <MenuItem value="XI">XI</MenuItem>
-              <MenuItem value="XII">XII</MenuItem>
+              <MenuItem value="MONTHLY">Monthly</MenuItem>
+              <MenuItem value="PRELIMINARY">Preliminary</MenuItem>
+              <MenuItem value="MOCK">Mock</MenuItem>
             </Select>
           </FormControl>
 
-          <TextField
-            label="Instruction"
-            fullWidth
-            variant="outlined"
-            sx={{ mb: 2 }}
-            value={editedInfo.instruction}
-            onChange={(value) => setEditedInfo({ ...editedInfo, instruction: value.target.value })}
-          />
           <Box display="flex" flexWrap="wrap" justifyContent="space-between">
             <Box flexBasis="48%" mb={2}>
-              <Typography variant="subtitle1" gutterBottom>
-                Examination Year
-              </Typography>
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel id="Year">Examination Year</InputLabel>
                 <Select
@@ -109,9 +95,6 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
             </Box>
 
             <Box flexBasis="48%" mb={2}>
-              <Typography variant="subtitle1" gutterBottom>
-                Total Marks
-              </Typography>
               <TextField
                 fullWidth
                 variant="outlined"
@@ -124,45 +107,80 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
           </Box>
 
           <Box display="flex" flexWrap="wrap">
-            <Grid item xs={12} lg={6} pr={{ lg: 3 }} mb={2}>
-              <Typography variant="subtitle1" gutterBottom>
-                Duration
-              </Typography>
-              <TextField fullWidth disabled label="Duration" type="number" value={3} />
+            <Grid item flexBasis="48%" xs={12} lg={6} pr={{ lg: 0.75 }} mb={2}>
+              <TextField 
+                fullWidth 
+                disabled 
+                label="Duration" 
+                type="number" 
+                value={3} 
+              />
             </Grid>
 
-            <Grid item xs={12} lg={6} mb={2}>
-              <Typography variant="subtitle1" gutterBottom>
-                Paper Date
-              </Typography>
-              <TextField fullWidth label="Paper Date" type="date" value={OldData.date} />
+            <Grid item flexBasis="48%" xs={12} lg={10} 
+              sx={{
+                flexGrow: 1,  // Allows expansion to available space
+                paddingLeft: { lg: 3 },  // Left padding only on large screens
+                marginBottom: 2,
+                // Remove right padding/margin to maximize right expansion
+                "& .MuiTextField-root": {  // Target the TextField
+                  width: "100%",  // Ensure full width
+                  "& .MuiInputBase-root": {  // Target the input
+                    paddingRight: "14px",  // Add internal right padding if needed
+                  }
+                }
+              }} mb={2}>
+              <TextField 
+                fullWidth 
+                disabled
+                label="Paper Date" 
+                type="date" 
+                value={OldData.date} 
+              />
             </Grid>
           </Box>
         </Box>
       </CardContent>
-      <CardActions>
-        <Grid sx={{ pt: 0, display: "flex", justifyContent: "flex-end" }}>
-          <Button
-            sx={{
-              backgroundColor: "#7451f8",
-              color: "white",
-              "&:hover": {
-                background: "linear-gradient(90deg, #1976D2 0%, #21CBF3 100%)",
-              },
-            }}
-            onClick={SaveChanges}
-          >
-            Save Changes
-          </Button>
-          <Button
-            sx={{
-              ml: 2,
-              backgroundColor: "#7451f8",
-            }}
-            onClick={() => setEditOpen(false)}
-          >
-            Cancel
-          </Button>
+      <CardActions sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        padding: '16px', 
+        position: 'relative',
+        bottom: '10px' // Lifts the buttons up by 20px
+      }}>
+        <Grid container justifyContent="center" spacing={2}>
+          <Grid item>
+            <Button
+              sx={{
+                backgroundColor: "#7451f8",
+                color: "white",
+                '&:hover': {
+                  backgroundColor: '#5a3acb',
+                  transform: 'scale(1.02)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+              onClick={SaveChanges}
+            >
+              Save Changes
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              sx={{
+                color: "white",
+                backgroundColor: "#7451f8",
+                '&:hover': {
+                  backgroundColor: '#5a3acb',
+                  transform: 'scale(1.02)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+              onClick={() => setEditOpen(false)}
+            >
+              Cancel
+            </Button>
+          </Grid>
         </Grid>
       </CardActions>
     </Card>
@@ -195,7 +213,6 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
       sx={{
         width: "91.666%",
         height: "30%",
-        my: 2,
         bgcolor: "white",
         borderRadius: 2,
         p: 4,
@@ -206,7 +223,31 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
         <Typography variant="h4" sx={{ fontSize: "2rem", fontWeight: "bold", opacity: 0.75 }}>
           Header Info
         </Typography>
-        <FontAwesomeIcon style={{ fontSize: "3rem" }} icon={faPenSquare} onClick={() => setEditOpen(true)} />
+        <Button
+          onClick={() => setEditOpen(true)}
+          variant="outlined"
+          sx={{
+            minWidth: 'auto',
+            padding: '8px',
+            borderRadius: '8px',
+            borderColor: 'rgba(255, 255, 255, 0.7)',
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'white',
+              transform: 'scale(1.05)',
+            },
+            transition: 'all 0.2s ease-in-out',
+          }}
+        >
+          <FontAwesomeIcon 
+            icon={faPenSquare} 
+            style={{ 
+              fontSize: '2rem',
+              transition: 'inherit'
+            }} 
+          />
+        </Button>
       </Box>
 
       <Box>
@@ -270,7 +311,7 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
               <Typography> {OldData.date}</Typography>
             </Box>
           </Grid>
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Box display="flex" alignItems="center" sx={{ fontFamily: '"font-mar", Arial, sans-serif' }}>
               <Box display="flex" flexWrap="wrap" sx={{ pt: "0.27rem" }}>
                 {OldData.departmentNames.map((d) => (
@@ -280,7 +321,7 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
                 ))}
               </Box>
             </Box>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Box>
     </Box>
@@ -1066,7 +1107,12 @@ else if(exsistingInfo.medium === "Urdu") {
                   onClick={() => handleSubmitButton("save")}
                   disabled={isDisabled}
                   color="primary"
-                  sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8" }}
+                  sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8" ,
+                    '&:hover': {
+                        backgroundColor: '#5a3acb',
+                        transform: 'scale(1.02)',
+                        transition: 'all 0.2s ease'
+                    }}}
                 >
                   Save Paper
                 </Button>
@@ -1075,7 +1121,12 @@ else if(exsistingInfo.medium === "Urdu") {
                   onClick={() => handleSubmitButton("Submit")}
                   disabled={isDisabled}
                   color="primary"
-                  sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8" }}
+                  sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8",
+                    '&:hover': {
+                        backgroundColor: '#5a3acb',
+                        transform: 'scale(1.02)',
+                        transition: 'all 0.2s ease'
+                    } }}
                 >
                   Submit Paper
                 </Button>
@@ -1102,19 +1153,23 @@ else if(exsistingInfo.medium === "Urdu") {
                   onClick={() => setSectionFlag(true)}
                   sx={{
                     marginRight: { xs: 0, md: 3 },
-                    marginTop: { xs: 3, lg: 0 },
+                    marginTop: { xs: 1, lg: 0 },
                     width: "110%",
                     color: "white",
                     backgroundColor: "#7451f8",
-                    "&:hover": { backgroundColor: "#303f9f" },
+                    '&:hover': {
+                        backgroundColor: '#5a3acb',
+                        transform: 'scale(1.02)',
+                        transition: 'all 0.2s ease'
+                    }
                   }}
                 >
-                  Section
+                  Section Handler
                   <FontAwesomeIcon style={{ marginLeft: 8 }} />
                 </Button>
               </Box>
 
-              <Box sx={{ width: "91.666667%", my: 2 }}>
+              <Box sx={{ width: "91.666667%" }}>
                 {console.log("Before mcqs check", exsistingInfo.medium)}
                 <ModalSelectMCQs
                   setMCQs={setMCQs}
@@ -1155,26 +1210,19 @@ else if(exsistingInfo.medium === "Urdu") {
 
               {sectionLetters.map((letter, index) => (
                 <Box key={index}>
-                  <Box sx={{ display: "flex", flexDirection: "row", gap: 20 }}>
+                  <Box sx={{ display: "flex", flexDirection: "row" }}>
                     <Typography
                       sx={{
                         fontSize: "2rem",
                         fontWeight: "bold",
                         color: "#7451f8",
-                        mb: 1,
                       }}
                     >
                       {letter.name}
                     </Typography>
-                    <Box sx={{ display: "flex", flexDirection: "row", gap: 30 }}>
-                      <FontAwesomeIcon
-                        style={{ fontSize: "2rem", marginTop: "10px", color: "#7451f8" }}
-                        icon={faTimesCircle}
-                      />
-                    </Box>
                   </Box>
 
-                  <Box sx={{ width: "91.666667%", my: 2 }}>
+                  <Box sx={{ width: "91.666667%", mb: 1 }}>
                     <Typography
                       sx={{
                         fontSize: "1.25rem",
