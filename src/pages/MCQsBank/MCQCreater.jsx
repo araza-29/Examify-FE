@@ -299,7 +299,7 @@ function MCQCreater() {
     const allChoicesFilled = choices.every(choice => choice.name.trim() !== '');
 
     return (
-        <Box sx={{ display: "flex" }}>
+        <Box sx={{ display: "flex", backgroundColor: "white" }}>
             <Box sx={{ flex: 1 }}>
                 <Sidebar />
             </Box>
@@ -340,8 +340,27 @@ function MCQCreater() {
                         value={MCQ.name}
                         onChange={(e) => handleMCQChange('name', e.target.value)}
                         error={errors.name}
+                        InputLabelProps={{ shrink: true }} 
                         helperText={errors.name ? "This field is required" : ""}
-                        sx={{ mb: 2 }}
+                        sx={{ 
+                            width: '100%', 
+                            mb: 2,
+                            backgroundColor: 'background.paper', 
+                            borderRadius: 1,
+                            '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                borderColor: '#7451f8', // Hover border color (same as default)
+                                },
+                                '&.Mui-focused fieldset': {
+                                borderColor: '#7451f8', // Focused border color
+                                },
+                            },
+                            '& .MuiInputLabel-root': {
+                                '&.Mui-focused': {
+                                color: '#7451f8', // Focused label color
+                                },
+                            },
+                        }}
                     />
 
                     {/* Marks */}
@@ -354,8 +373,27 @@ function MCQCreater() {
                         value={MCQ.marks}
                         onChange={(e) => handleMCQChange('marks', e.target.value)}
                         error={errors.marks}
+                        InputLabelProps={{ shrink: true }} 
                         helperText={errors.marks ? "This field is required" : ""}
-                        sx={{ mb: 2 }}
+                         sx={{ 
+                            width: '100%', 
+                            mb: 2,
+                            backgroundColor: 'background.paper', 
+                            borderRadius: 1,
+                            '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                borderColor: '#7451f8', // Hover border color (same as default)
+                                },
+                                '&.Mui-focused fieldset': {
+                                borderColor: '#7451f8', // Focused border color
+                                },
+                            },
+                            '& .MuiInputLabel-root': {
+                                '&.Mui-focused': {
+                                color: '#7451f8', // Focused label color
+                                },
+                            },
+                        }}
                     />
 
                     {/* Medium */}
@@ -388,6 +426,26 @@ function MCQCreater() {
                                 value={box.value}
                                 onChange={(e) => handleChange(box.id, e.target.value)}
                                 error={errors.choices[index]}
+                                InputLabelProps={{ shrink: true }} 
+                                 sx={{ 
+                                    width: '100%', 
+                                    mb: 2,
+                                    backgroundColor: 'background.paper', 
+                                    borderRadius: 1,
+                                    '& .MuiOutlinedInput-root': {
+                                        '&:hover fieldset': {
+                                        borderColor: '#7451f8', // Hover border color (same as default)
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                        borderColor: '#7451f8', // Focused border color
+                                        },
+                                    },
+                                    '& .MuiInputLabel-root': {
+                                        '&.Mui-focused': {
+                                        color: '#7451f8', // Focused label color
+                                        },
+                                    },
+                                }}
                             />
                             {errors.choices[index] && (
                                 <FormHelperText error sx={{ mt: -1 }}>
@@ -544,7 +602,7 @@ function MCQCreater() {
                                 }
                             }}
                         >
-                            Save
+                            Create
                         </Button>
                         <Button 
                             variant="contained" 

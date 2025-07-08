@@ -3,13 +3,16 @@ import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import FullscreenExitOutlinedIcon from "@mui/icons-material/FullscreenExitOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined"; // Import the logout icon
 import { DarkModeContext } from "../../context/darkModeContext";
 import { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 
 const Navbar = () => {
   const { darkMode, dispatch } = useContext(DarkModeContext);
   const [fullscreen, setFullscreen] = useState(false);
-  // let [data] = useState(JSON.parse(localStorage.getItem("adminData"))); // Parse the data string into an object
+  const [name, setName] = useState(localStorage.getItem("name"));
+  const navigate = useNavigate(); // Initialize the navigate function
 
   const toggleFullscreen = () => {
     console.log(fullscreen);
@@ -20,6 +23,18 @@ const Navbar = () => {
       document.documentElement.requestFullscreen();
       setFullscreen(true);
     }
+  };
+
+  const handleLogout = () => {
+    // Clear admin data from localStorage
+    localStorage.removeItem("email");
+    localStorage.removeItem("name");
+    localStorage.removeItem("role");
+    localStorage.removeItem("role_id");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("user_id");
+    // Redirect to login page or home page
+    navigate("/login"); // Change this to your desired logout route
   };
 
   return (
@@ -51,8 +66,7 @@ const Navbar = () => {
             <FullscreenExitOutlinedIcon className="icon" onClick={toggleFullscreen} />
           </div>
           <div className="logo">
-            {/* {data.name} */}
-            Abbas
+            {name}
           </div>
           <div className="item">
             {/* <img
@@ -60,6 +74,11 @@ const Navbar = () => {
               alt=""
               className="avatar"
             /> */}
+          </div>
+          {/* Add the logout button */}
+          <div className="item" onClick={handleLogout} style={{ cursor: "pointer" }}>
+            <LogoutOutlinedIcon className="icon" />
+            Logout
           </div>
         </div>
       </div>

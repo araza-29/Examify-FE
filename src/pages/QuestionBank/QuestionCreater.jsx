@@ -250,7 +250,7 @@ function QuestionCreater() {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", backgroundColor: "white" }}>
       <Box sx={{ flex: 1 }}>
         <Sidebar />
       </Box>
@@ -305,6 +305,7 @@ function QuestionCreater() {
                 },
               },
             }}
+            InputLabelProps={{ shrink: true }} 
             error={errors.question}
             helperText={errors.question && "This field is required"}
           />
@@ -318,6 +319,7 @@ function QuestionCreater() {
               setQuestion({...Question, marks: event.target.value});
               setErrors({...errors, marks: false});
             }}
+            InputLabelProps={{ shrink: true }} 
             sx={{ 
               width: '100%', 
               mb: 2,
@@ -404,6 +406,7 @@ function QuestionCreater() {
               setQuestion({...Question, answer: event.target.value});
               setErrors({...errors, answer: false});
             }}
+            InputLabelProps={{ shrink: true }} 
             sx={{ 
               width: '100%', 
               mb: 2,
@@ -577,7 +580,7 @@ function QuestionCreater() {
                         }
                     }}
                 >
-                    Save
+                    Create
                 </Button>
                 <Button 
                     variant="contained" 

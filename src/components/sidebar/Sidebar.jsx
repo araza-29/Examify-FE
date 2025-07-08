@@ -58,7 +58,7 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="top">
         <Link to="/home" style={{ textDecoration: "none" }}>
-          <span className="logo">Center Dashboard</span>
+          <span className="logo">Center Examify</span>
         </Link>
       </div>
       <hr />
@@ -75,13 +75,13 @@ const Sidebar = () => {
           <p className="title">LISTS</p>
           <Link to="/questionbank" style={{ textDecoration: "none" }}>
             <li>
-              <PersonOutlineIcon className="icon" />
+              <SubjectOutlinedIcon className="icon" />
               <span>Question Bank</span>
             </li> 
           </Link>
           <Link to="/MCQSBank" style={{ textDecoration: "none" }}>
             <li>
-              <PersonOutlineIcon className="icon" />
+              <CheckCircleOutlineOutlinedIcon className="icon" />
               <span>MCQS Bank</span>
             </li> 
           </Link>
@@ -212,7 +212,7 @@ const Sidebar = () => {
           {/* </li> */}
         </ul>
       </div>
-      <div className="bottom">
+      {/* <div className="bottom">
         <div
           className="colorOption"
           onClick={() => dispatch({ type: "LIGHT" })}
@@ -221,7 +221,7 @@ const Sidebar = () => {
           className="colorOption"
           onClick={() => dispatch({ type: "DARK" })}
         ></div>
-      </div>
+      </div> */}
     </div>
   );
 };

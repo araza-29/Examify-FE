@@ -279,7 +279,14 @@ const Home = () => {
       )
     );
   };
-
+  const handleNavigate = () => {
+    if(flag) {
+      setFlag(false)
+    }
+    else {
+      navigate("/Home")
+    }
+  }
   const questionColumns = [
     { field: "id", headerName: "ID", width: 70 },
     // {
@@ -414,7 +421,7 @@ const Home = () => {
                   alignItems: "center",
                   color: "#7451f8",
                 }}
-                onClick={() => navigate("/Home")}
+                onClick={handleNavigate}
               >
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
@@ -428,6 +435,7 @@ const Home = () => {
               >
                 Question Bank
               </Typography>
+              {flag===false?(
               <Button
                 variant="contained"
                 color="primary"
@@ -447,6 +455,7 @@ const Home = () => {
               >
                 Create Question
               </Button>
+              ):(<></>)}
             </Box>
             {/* Content Section
             {!flag ? (

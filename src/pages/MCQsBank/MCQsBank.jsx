@@ -199,7 +199,14 @@ const Home = () => {
   //   console.log("Selected MCQs", MCQs);
   //   console.log("Selected topics", selectedTopic);
   // },[selectedTopic])
-  
+  const handleNavigate = () => {
+    if(flag) {
+      setFlag(false)
+    }
+    else{
+      navigate("/Home")
+    }
+  }
   const handleCreate = () => {
     navigate('/CreateMCQ')
   }
@@ -310,12 +317,13 @@ const Home = () => {
             {/* Header Section */}
             <Navbar/>
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center', color: "#7451f8", }} onClick={() => navigate("/Home")}>
+              <Button variant="text" sx={{ display: 'flex', px: 2, py: 2, fontSize: '1.25rem', alignItems: 'center', color: "#7451f8", }} onClick={handleNavigate}>
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
               <Typography variant="h3" sx={{ fontFamily: 'Mar', ml: 2, color: "#7451f8", }}>
                 MCQ Bank
               </Typography>
+              {flag===false?(
               <Button 
                 variant="contained" 
                 color="primary" 
@@ -336,6 +344,7 @@ const Home = () => {
               >
                 Create MCQ
               </Button>
+              ):(<></>)}
             </Box>
             {/* Content Section */}
             {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo}/> :(

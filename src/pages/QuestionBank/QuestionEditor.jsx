@@ -386,7 +386,26 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 label="Write your question here"
                 value={editedQuestion.name}
                 onChange={handleQuestionChange}
-                sx={{ width: '100%', mb: 2 }}
+                sx={{ 
+                    width: '100%', 
+                    mb: 2,
+                    backgroundColor: 'background.paper', 
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                        borderColor: '#7451f8', // Hover border color (same as default)
+                        },
+                        '&.Mui-focused fieldset': {
+                        borderColor: '#7451f8', // Focused border color
+                        },
+                    },
+                    '& .MuiInputLabel-root': {
+                        '&.Mui-focused': {
+                        color: '#7451f8', // Focused label color
+                        },
+                    },
+                }}
+                InputLabelProps={{ shrink: true }} 
                 error={errors.question.status}
                 helperText={errors.question.status && errors.question.message}
                 data-field="question"
@@ -398,7 +417,26 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 label="Marks"
                 value={editedQuestion.marks}
                 onChange={handleMarksChange}
-                sx={{ width: '100%', mb: 2 }}
+                sx={{ 
+                    width: '100%', 
+                    mb: 2,
+                    backgroundColor: 'background.paper', 
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                        borderColor: '#7451f8', // Hover border color (same as default)
+                        },
+                        '&.Mui-focused fieldset': {
+                        borderColor: '#7451f8', // Focused border color
+                        },
+                    },
+                    '& .MuiInputLabel-root': {
+                        '&.Mui-focused': {
+                        color: '#7451f8', // Focused label color
+                        },
+                    },
+                }}
+                InputLabelProps={{ shrink: true }} 
                 error={errors.marks.status}
                 helperText={errors.marks.status && errors.marks.message}
                 data-field="marks"
@@ -444,10 +482,29 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 label="Answer"
                 value={editedQuestion.answer}
                 onChange={handleAnswerChange}
-                sx={{ width: '100%', mb: 2 }}
+                sx={{ 
+                    width: '100%', 
+                    mb: 2,
+                    backgroundColor: 'background.paper', 
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                        borderColor: '#7451f8', // Hover border color (same as default)
+                        },
+                        '&.Mui-focused fieldset': {
+                        borderColor: '#7451f8', // Focused border color
+                        },
+                    },
+                    '& .MuiInputLabel-root': {
+                        '&.Mui-focused': {
+                        color: '#7451f8', // Focused label color
+                        },
+                    },
+                }}
                 error={errors.answer.status}
                 helperText={errors.answer.status && errors.answer.message}
                 data-field="answer"
+                InputLabelProps={{ shrink: true }} 
             />
 
             <Box>
@@ -604,7 +661,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                         }
                     }}
                 >
-                    Save
+                    Update
                 </Button>
                 <Button
                     variant="contained"
