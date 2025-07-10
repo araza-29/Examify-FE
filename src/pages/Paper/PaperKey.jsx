@@ -6,12 +6,14 @@ import { Font } from '@react-pdf/renderer';
 // Helper function to validate image format for react-pdf
 const isValidImageForPDF = (imageUrl) => {
     if (!imageUrl) return false;
-    
-    // Check if it's a supported format
-    const supportedFormats = ['.jpg', '.jpeg', '.png'];
-    const url = imageUrl.toLowerCase();
-    
-    return supportedFormats.some(format => url.includes(format));
+    // Accept base64 images and URLs with supported extensions
+    return (
+        imageUrl.startsWith('data:image/jpeg;base64,') ||
+        imageUrl.startsWith('data:image/png;base64,') ||
+        imageUrl.toLowerCase().includes('.jpg') ||
+        imageUrl.toLowerCase().includes('.jpeg') ||
+        imageUrl.toLowerCase().includes('.png')
+    );
 };
 
 // Helper function to get image format
@@ -226,10 +228,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     questionImage: {
-        width: 200,
-        height: 100,
-        marginTop: 5,
-        marginBottom: 5,
+        width: '200px',
+        marginTop: 5
     },
     debugText: {
         fontSize: 10,
@@ -281,9 +281,6 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                     </Text>
                     {imageUrl && isValidImageForPDF(imageUrl) && (
                         <>
-                            <Text style={styles.debugText}>
-                                Debug: Attempting to render image: {imageUrl.substring(0, 50)}...
-                            </Text>
                             <Image 
                                 src={imageUrl} 
                                 style={styles.questionImage}
@@ -431,72 +428,37 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                             .filter(q => q.section === sec.name)
                             .map((q, idx) => {
                                 const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
-                                
-                                if (isDescriptive) {
-                                    // For descriptive sections, use regular Q numbering
-                                    const currentQuestionNumber = questionCounter + idx;
-                                    return (
-                                        <View key={idx} style={styles.descriptiveQuestion}>
-                                            <Text>Q{currentQuestionNumber}. {parse(q.name)}</Text>
-                                            <Text>Answer: {parse(q.answer)}</Text>
-                                            {q.image && isValidImageForPDF(q.image) && (
-                                                <Image 
-                                                    src={q.image} 
-                                                    style={styles.questionImage}
-                                                    onError={(error) => {
-                                                        console.error('Image load error for:', q.image, error);
-                                                    }}
-                                                    onLoad={() => {
-                                                        console.log('Image loaded successfully:', q.image);
-                                                    }}
-                                                />
-                                            )}
-                                        </View>
-                                    );
-                                } else {
-                                    // For non-descriptive sections, use Roman numerals starting from i
-                                    const romanIndex = toRoman(idx + 1);
-                                    return (
-                                        <View key={idx} style={styles.question}>
-                                            <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                                                <Text style={{ 
-                                                    fontFamily: "Times-Roman", 
-                                                    marginRight: 8, 
-                                                    fontSize: 12,
-                                                    minWidth: 20
-                                                }}>
-                                                    {romanIndex}.
-                                                </Text>
-                                                <View style={{ flex: 1 }}>
-                                                    <Text style={{ 
-                                                        fontSize: 12, 
-                                                        fontFamily: "Times-Roman",
-                                                    }}>
-                                                        {parse(q.name)}
-                                                    </Text>
-                                                    <Text style={{ 
-                                                        fontSize: 12, 
-                                                        fontFamily: "Times-Roman",
-                                                    }}>
-                                                        Answer: {parse(q.answer)}
-                                                    </Text>
-                                                    {q.image && isValidImageForPDF(q.image) && (
-                                                        <Image 
-                                                            src={q.image} 
-                                                            style={styles.questionImage}
-                                                            onError={(error) => {
-                                                                console.error('Image load error for:', q.image, error);
-                                                            }}
-                                                            onLoad={() => {
-                                                                console.log('Image loaded successfully:', q.image);
-                                                            }}
-                                                        />
-                                                    )}
-                                                </View>
-                                            </View>
-                                        </View>
-                                    );
-                                }
+                                const currentQuestionNumber = isDescriptive ? questionCounter + idx : null;
+                                const romanIndex = toRoman(idx + 1);
+
+                                return (
+                                    <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
+                                        {/* Question number and text */}
+                                        <Text>
+                                            {isDescriptive
+                                                ? `Q${currentQuestionNumber}. ${parse(q.name)}`
+                                                : `${romanIndex}. ${parse(q.name)}`}
+                                        </Text>
+                                        {/* Question image */}
+                                        {q.image && isValidImageForPDF(q.image) && (
+                                            <Image
+                                                src={q.image}
+                                                style={styles.questionImage}
+                                            />
+                                        )}
+                                        {/* Answer text */}
+                                        <Text>
+                                            Answer: {parse(q.original_answer)}
+                                        </Text>
+                                        {/* Answer image */}
+                                        {q.answer && isValidImageForPDF(q.answer) && (
+                                            <Image
+                                                src={q.answer}
+                                                style={styles.questionImage}
+                                            />
+                                        )}
+                                    </View>
+                                );
                             })}
 
                             {/* Render MCQs with continuous numbering */}
@@ -512,7 +474,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
                                                 index={currentQuestionNumber} 
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
-                                                answer={q.answer}
+                                                answer={q.original_answer}
                                                 imageUrl={q.image}
                                             />
                                         </View>
@@ -527,7 +489,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
 };
 
 const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section }) => {
-    console.log("Questions check for answer",htmlQuestions)
+    console.log("Questions check for answer",htmlQuestions, htmlMCQ)
     return (
         <PDFViewer
             showToolbar={false}

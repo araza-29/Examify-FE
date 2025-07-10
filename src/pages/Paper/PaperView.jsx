@@ -134,6 +134,10 @@ const PaperView = () => {
     fetchedOnce.current = true;
     console.log("PaperCheck", paper);
     console.log("PaperIDCheck", paper.id);
+    
+    // Performance marker: Start data fetching
+    performance.mark('paperview-fetch-start');
+    
     setExsistingInfo({
       ...exsistingInfo,
       subject: paper.subject_name,
@@ -146,6 +150,7 @@ const PaperView = () => {
       center: paper.center_name,
       time: paper.time
     })
+    
     Promise.all([
       fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
         method: "POST",
@@ -166,6 +171,13 @@ const PaperView = () => {
       }).then((response) => response.json()),
     ])
       .then(([sectionsResponse, questionsResponse, mcqsResponse]) => {
+        // Performance marker: Data fetched
+        performance.mark('paperview-fetch-end');
+        performance.measure('paperview-data-fetch', 'paperview-fetch-start', 'paperview-fetch-end');
+        
+        // Performance marker: Start processing
+        performance.mark('paperview-process-start');
+        
         if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
           console.log("Fetched Sections:", sectionsResponse.data);
           setSectionLetters(sectionsResponse.data);
@@ -173,6 +185,9 @@ const PaperView = () => {
     
         if (questionsResponse.code === 200) {
           console.log("Fetched Questions:", questionsResponse.data);
+          
+          // Performance marker: Start question processing
+          performance.mark('paperview-questions-process-start');
           
           // Ensure sectionLetters is updated before mapping questions
           setQuestions((prev) => {
@@ -190,9 +205,16 @@ const PaperView = () => {
             console.log("Updated Questions:", updatedQuestions);
             return updatedQuestions;
           });
+          
+          // Performance marker: Questions processed
+          performance.mark('paperview-questions-process-end');
+          performance.measure('paperview-questions-processing', 'paperview-questions-process-start', 'paperview-questions-process-end');
         }
         if (mcqsResponse.code === 200) {
           console.log("Fetched Questions:", mcqsResponse.data);
+          
+          // Performance marker: Start MCQ processing
+          performance.mark('paperview-mcqs-process-start');
           
           // Ensure sectionLetters is updated before mapping questions
           setMCQs((prev) => {
@@ -210,7 +232,19 @@ const PaperView = () => {
             console.log("Updated Questions:", updatedMCQ);
             return updatedMCQ;
           });
+          
+          // Performance marker: MCQs processed
+          performance.mark('paperview-mcqs-process-end');
+          performance.measure('paperview-mcqs-processing', 'paperview-mcqs-process-start', 'paperview-mcqs-process-end');
         }
+        
+        // Performance marker: Processing complete
+        performance.mark('paperview-process-end');
+        performance.measure('paperview-data-processing', 'paperview-process-start', 'paperview-process-end');
+        
+        // Log all performance measurements
+        console.log('Performance Measurements:');
+        console.log(performance.getEntriesByType('measure'));
       })
       .catch((error) => console.error("Error fetching data:", error));
     
@@ -423,6 +457,13 @@ useEffect(() => {
             }}
             >
             <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5 }}>
+                {/* Performance marker: Start PDF rendering */}
+                {(() => {
+                  performance.mark('paperview-pdf-render-start');
+                  console.log('Starting PDF rendering...');
+                  return null;
+                })()}
+                
                 <Paper
                 htmlQuestions={selectedQuestion}
                 htmlMCQ={selectedMCQ}
@@ -435,6 +476,14 @@ useEffect(() => {
                 BasicInfo={exsistingInfo}
                 section={sectionLetters}
                 />
+                
+                {/* Performance marker: End PDF rendering */}
+                {(() => {
+                  performance.mark('paperview-pdf-render-end');
+                  performance.measure('paperview-pdf-rendering', 'paperview-pdf-render-start', 'paperview-pdf-render-end');
+                  console.log('PDF rendering complete');
+                  return null;
+                })()}
             </Box>
             </Box>
         </Box>

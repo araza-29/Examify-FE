@@ -237,14 +237,6 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl }) => {
                     </Text>
                     {imageUrl && (
                         <>
-                            {/* Test with a simple placeholder first */}
-                            <Image 
-                                src="https://via.placeholder.com/200x100/FF0000/FFFFFF?text=Test"
-                                style={styles.questionImage}
-                                onError={(error) => console.error('Test image error:', error)}
-                                onLoad={() => console.log('Test image loaded successfully')}
-                            />
-                            {/* Try the actual image */}
                             <Image 
                                 src={imageUrl} 
                                 style={styles.questionImage}
