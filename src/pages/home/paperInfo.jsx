@@ -15,9 +15,10 @@ import {
   faArrowLeft,
 } from "@fortawesome/free-solid-svg-icons";
 const statusColors = {
-  Approved: "#4CAF50", // Green
-  Submitted: "#FFC107", // Yellow
-  Locked: "#F44336" // Red
+  locked: '#F44336', // Red
+  reviewed: '#2196F3', // Blue
+  completed: '#4CAF50', // Green
+  'Not completed': '#FFC107', // Yellow
 };
 
 const InfoCard = ({ paper, date, subject, className, status }) => {
@@ -256,15 +257,25 @@ const PaperInfo = () => {
     if (!paper) return;
     console.log("Papersid",index);
     if(role === "Examination")
-      navigate("/PaperView", { state: { paper: paper } });
+      navigate("/PaperApprove", { state: { paper: paper } });
     else
       navigate("/PaperEditing", { state: { paper: paper } });
   };
   const handleView = (index) => {
-    navigate("/PaperEditing", { state: { paper: papers[index] } });
+    const paper = papers.find((p) => p.id === index);
+    navigate("/PaperView", { state: { paper: paper } });
   };
   const handleDelete = (index) => {
-    navigate("/PaperEditing", { state: { paper: papers[index] } });
+    const paper = papers.find((p) => p.id === index);
+    fetch(`http://localhost:3000/Examination/deletePaper/${paper.id}`, { 
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Paper deleted", data);
+      setPapers((prevPapers) => prevPapers.filter((p) => p.id !== paper.id));
+    });
   };
  const paperColumns = [
     { field: "id", headerName: "ID", width: 70 },
@@ -310,6 +321,18 @@ const PaperInfo = () => {
       field: "status",
       headerName: "Status",
       width: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          sx={{
+            backgroundColor: statusColors[params.value] || '#bdbdbd',
+            color: '#fff',
+            fontWeight: 500,
+            textTransform: 'capitalize',
+          }}
+        />
+      ),
     },
     {
       field: "action",
@@ -317,11 +340,8 @@ const PaperInfo = () => {
       width: 250,
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center", gap: "50px" }}>
-          <Link
-            to={`/user/${params.row.id}`}
-            style={{ textDecoration: "none" }}
-          >
             <div
+              onClick={() => handleView(params.row.id)}
               style={{
                 padding: "2px 5px",
                 borderRadius: "5px",
@@ -332,21 +352,21 @@ const PaperInfo = () => {
             >
               View
             </div>
-          </Link>
-
-          <div
-            onClick={() => handleEdit(params.row.id)}
-            style={{
-              padding: "2px 5px",
-              borderRadius: "5px",
-              color: "rgb(27, 204, 11)",
-              border: "1px dotted rgba(72, 231, 24, 0.596)",
-              cursor: "pointer",
-            }}
-          >
-            Edit
-          </div>
-
+          {/* Only show Edit if not locked */}
+          {params.row.locked !== 1 && (
+            <div
+              onClick={() => handleEdit(params.row.id)}
+              style={{
+                padding: "2px 5px",
+                borderRadius: "5px",
+                color: "rgb(27, 204, 11)",
+                border: "1px dotted rgba(72, 231, 24, 0.596)",
+                cursor: "pointer",
+              }}
+            >
+              Edit
+            </div>
+          )}
           <div
             onClick={() => handleDelete(params.row.id)}
             style={{

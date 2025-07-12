@@ -513,21 +513,29 @@ const Teacher = () => {
       }
 
       // Generate new sections - PRESERVE EXISTING VALUES
+      const usedNames = new Set(prevSectionLetters.map(sec => sec.name));
       const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => {
         const existingSection = prevSectionLetters[index]
-        
         // If section exists, preserve all its values
         if (existingSection) {
+          usedNames.add(existingSection.name);
           return {
             ...existingSection,
             id: existingSection.id || index,
           }
         }
-        
         // Only create default values for completely new sections
+        // Ensure unique section name
+        let charCode = 65 + index;
+        let name;
+        do {
+          name = `Section "${String.fromCharCode(charCode)}"`;
+          charCode++;
+        } while (usedNames.has(name));
+        usedNames.add(name);
         return {
           id: index,
-          name: `Section "${String.fromCharCode(65 + index)}"`,
+          name,
           type: "",
           description: "",
           marks: 0,
@@ -541,70 +549,45 @@ const Teacher = () => {
     // Urdu alphabet mapping
 else if(exsistingInfo.medium === "Urdu") {
   const urduAlphabet = ['الف', 'ب', 'پ', 'ت', 'ٹ', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ڈ', 'ذ', 'ر', 'ڑ', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ہ', 'ء', 'ی', 'ے'];
-
-    // Function to get Urdu alphabet letter
-    const getUrduLetter = (index) => {
-      if (index < urduAlphabet.length) {
-        return urduAlphabet[index];
-      }
-      // For indices beyond the alphabet, you could implement double letters like الف الف, الف ب, etc.
-      // For now, fallback to the index number
-      return (index + 1).toString();
-    };
-    if (prevSectionLetters.length > 0 && prevSectionLetters.some((sec) => sec.isFromDatabase)) {
-      if (exsistingInfo.sections > prevSectionLetters.length) {
-        const additionalSections = Array.from(
-          { length: exsistingInfo.sections - prevSectionLetters.length },
-          (_, index) => ({
-            id: prevSectionLetters.length + index,
-            name: `حصہ "${getUrduLetter(prevSectionLetters.length + index)}"`, // "Section" in Urdu
-            type: "",
-            description: "",
-            marks: 0,
-            databaseId: null,
-            isFromDatabase: false,
-          }),
-        )
-
-        const updatedSections = [...prevSectionLetters, ...additionalSections]
-        setTimeout(() => categorizeSections(updatedSections), 0)
-        return updatedSections
-      } else if (exsistingInfo.sections < prevSectionLetters.length) {
-        const trimmedSections = prevSectionLetters.slice(0, exsistingInfo.sections)
-        setTimeout(() => categorizeSections(trimmedSections), 0)
-        return trimmedSections
-      }
-      setTimeout(() => categorizeSections(prevSectionLetters), 0)
-      console.log("Sections updated", prevSectionLetters)
-      return prevSectionLetters
+  // Generate new sections - PRESERVE EXISTING VALUES
+  const usedNames = new Set(prevSectionLetters.map(sec => sec.name));
+  const getUrduLetter = (index) => {
+    if (index < urduAlphabet.length) {
+      return urduAlphabet[index];
     }
-
-    // Generate new sections - PRESERVE EXISTING VALUES
-    const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => {
-      const existingSection = prevSectionLetters[index]
-      
-      // If section exists, preserve all its values
-      if (existingSection) {
-        return {
-          ...existingSection,
-          id: existingSection.id || index,
-        }
-      }
-      
-      // Only create default values for completely new sections
+    // For indices beyond the alphabet, fallback to the index number
+    return (index + 1).toString();
+  };
+  const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => {
+    const existingSection = prevSectionLetters[index]
+    if (existingSection) {
+      usedNames.add(existingSection.name);
       return {
-        id: index,
-        name: `حصہ "${getUrduLetter(index)}"`, // "Section" in Urdu with Urdu letter
-        type: "",
-        description: "",
-        marks: 0,
-        databaseId: null,
-        isFromDatabase: false,
+        ...existingSection,
+        id: existingSection.id || index,
       }
-    })
-    setTimeout(() => categorizeSections(newSections), 0)
-    return newSections
-  }
+    }
+    // Ensure unique section name
+    let letterIndex = index;
+    let name;
+    do {
+      name = `حصہ "${getUrduLetter(letterIndex)}"`;
+      letterIndex++;
+    } while (usedNames.has(name));
+    usedNames.add(name);
+    return {
+      id: index,
+      name,
+      type: "",
+      description: "",
+      marks: 0,
+      databaseId: null,
+      isFromDatabase: false,
+    }
+  })
+  setTimeout(() => categorizeSections(newSections), 0)
+  return newSections
+}
   return prevSectionLetters
   })
 }, [exsistingInfo.sections, originalSections, sectionLetters, exsistingInfo.medium])

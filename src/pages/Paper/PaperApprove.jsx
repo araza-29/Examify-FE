@@ -3,8 +3,8 @@ import Navbar from "../../components/navbar/Navbar";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
-import Paper from "../Paper/Paper";
-import PaperKey from "../Paper/PaperKey";
+import Paper from "./Paper";
+import PaperKey from "./PaperKey";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
@@ -43,7 +43,7 @@ import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
 
 
-const PaperView = () => {
+const PaperApprove = () => {
   const location = useLocation();
   const [paper, setPaper] = useState(location.state?.paper || []);
   const fetchedOnce = useRef(false);
@@ -457,12 +457,33 @@ useEffect(() => {
             }}
             >
             <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5 }}>
+                {/* Performance marker: Start PDF rendering */}
+                {(() => {
+                  performance.mark('paperview-pdf-render-start');
+                  console.log('Starting PDF rendering...');
+                  return null;
+                })()}
+                
                 <Paper
                 htmlQuestions={selectedQuestion}
                 htmlMCQ={selectedMCQ}
                 BasicInfo={exsistingInfo}
                 section={sectionLetters}
                 />
+                <PaperKey
+                htmlQuestions={selectedQuestion}
+                htmlMCQ={selectedMCQ}
+                BasicInfo={exsistingInfo}
+                section={sectionLetters}
+                />
+                
+                {/* Performance marker: End PDF rendering */}
+                {(() => {
+                  performance.mark('paperview-pdf-render-end');
+                  performance.measure('paperview-pdf-rendering', 'paperview-pdf-render-start', 'paperview-pdf-render-end');
+                  console.log('PDF rendering complete');
+                  return null;
+                })()}
             </Box>
             </Box>
         </Box>
@@ -471,4 +492,4 @@ useEffect(() => {
   );
 };
 
-export default PaperView;
+export default PaperApprove;

@@ -6,6 +6,7 @@ import CreateQuestion from "./pages/QuestionBank/QuestionCreater";
 import PaperMaking from "./pages/Teacher/PaperMaking";
 import PaperInfo from "./pages/home/paperInfo";
 import PaperView from "./pages/Paper/PaperView";
+import PaperApprove from "./pages/Paper/PaperApprove";
 import Login from "./pages/login/Login";
 import MCQCreater from "./pages/MCQsBank/MCQCreater";
 import PaperEditing from "./pages/Teacher/PaperEditing";
@@ -53,6 +54,7 @@ function App() {
               <Route path="/PaperEditing" element={<PaperEditing />} />
               <Route path="/Papers" element={<PaperInfo />} />
               <Route path="/PaperView" element={<PaperView />} />
+              <Route path="/PaperApprove" element={<PaperApprove />} />
               <Route path="/Login" element={<Login />} />
             </Routes>
           </Box>
