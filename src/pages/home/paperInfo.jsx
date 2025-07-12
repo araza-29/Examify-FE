@@ -267,15 +267,24 @@ const PaperInfo = () => {
   };
   const handleDelete = (index) => {
     const paper = papers.find((p) => p.id === index);
-    fetch(`http://localhost:3000/Examination/deletePaper/${paper.id}`, { 
+    if (!paper) return;
+    if (!window.confirm('Are you sure you want to delete this paper? This action cannot be undone.')) return;
+    fetch(`http://localhost:3000/Examination/deletePaper/${paper.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Paper deleted", data);
-      setPapers((prevPapers) => prevPapers.filter((p) => p.id !== paper.id));
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        if (data && data.success) {
+          setPapers((prevPapers) => prevPapers.filter((p) => p.id !== paper.id));
+          window.alert('Paper deleted successfully.');
+        } else {
+          window.alert('Failed to delete paper.');
+        }
+      })
+      .catch(() => {
+        window.alert('Failed to delete paper.');
+      });
   };
  const paperColumns = [
     { field: "id", headerName: "ID", width: 70 },

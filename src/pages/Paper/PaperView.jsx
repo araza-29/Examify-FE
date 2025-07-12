@@ -41,6 +41,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
+import { pdf } from '@react-pdf/renderer';
+import PDFComponent, { PaperPDF } from "../Paper/PaperKey";
 
 
 const PaperView = () => {
@@ -362,6 +364,32 @@ useEffect(() => {
       toast.error("Paper not saved!")
     }
   }
+  const handleDelete = async () => {
+    if (!paper.id) return;
+    await fetch(`http://localhost:3000/Examination/deletePaper/${paper.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    toast.success('Paper deleted');
+    navigate('/Papers');
+  };
+  const handleDownloadPDF = async () => {
+    const doc = (
+      <PaperPDF
+        BasicInfo={exsistingInfo}
+        htmlQuestions={selectedQuestion}
+        htmlMCQ={selectedMCQ}
+        section={sectionLetters}
+      />
+    );
+    const blob = await pdf(doc).toBlob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Paper_${paper.id || 'download'}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
   
   return (
     <div className="home" style={homeStyle}>
@@ -416,6 +444,14 @@ useEffect(() => {
                 >
                   Paper Editor
                 </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ ml: 2 }}
+                  onClick={handleDownloadPDF}
+                >
+                  Download PDF
+                </Button>
               </Box>
               <Box sx={{gap: 100}}>
                 <Button

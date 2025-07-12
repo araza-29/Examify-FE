@@ -238,6 +238,48 @@ const styles = StyleSheet.create({
     },
 });
 
+function formatTimeRange(startTime, durationHours) {
+  if (!startTime || !durationHours) return "";
+  const parts = startTime.split(":");
+  let hour = parseInt(parts[0], 10);
+  let minute = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+  if (isNaN(hour)) hour = 0;
+  if (isNaN(minute)) minute = 0;
+  if (hour >= 24) hour -= 24;
+  const start = new Date(2000, 0, 1, hour, minute, 0);
+  const end = new Date(start);
+  end.setHours(start.getHours() + Number(durationHours));
+  const format = (date) => {
+    let h = date.getHours();
+    const m = date.getMinutes().toString().padStart(2, "0");
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+  };
+  return `${format(start)} - ${format(end)}`;
+}
+
+const PaperHeader = ({ BasicInfo, styles }) => (
+  <View style={styles.header} fixed>
+    <Text style={styles.instituteName}>{BasicInfo.header}</Text>
+    <View style={styles.examDetailsRow}>
+      <View style={styles.leftDetails}>
+        <Text style={styles.detailText}>Date: {BasicInfo.date}</Text>
+        <Text style={styles.detailText}>
+          Time: {formatTimeRange(BasicInfo.time, BasicInfo.duration)}
+        </Text>
+      </View>
+      <View style={styles.centerDetails}>
+        <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION, {BasicInfo.ExaminationYear}</Text>
+        <Text style={styles.examTitle}>{BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})</Text>
+      </View>
+      <View style={styles.rightDetails}>
+        <Text style={styles.detailText}>Max. Marks: {BasicInfo.marks}</Text>
+      </View>
+    </View>
+  </View>
+);
+
 const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
     function toRoman(num) {
         const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
@@ -342,29 +384,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                {/* Original Header */}
-                <View style={styles.header}>
-                    <Text style={styles.instituteName}>{BasicInfo.header}</Text>    
-                    <View style={styles.examDetailsRow}>
-                        {/* Left side - Date and Time */}
-                        <View style={styles.leftDetails}>
-                            <Text style={styles.detailText}>Date: {BasicInfo.date}</Text>
-                            <Text style={styles.detailText}>Time: {BasicInfo.time}</Text>
-                        </View>
-                        
-                        {/* Center - Examination details */}
-                        <View style={styles.centerDetails}>
-                            <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION, {BasicInfo.ExaminationYear}</Text>
-                            <Text style={styles.examTitle}>{BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})</Text>
-                        </View>
-                        
-                        {/* Right side - Max Marks */}
-                        <View style={styles.rightDetails}>
-                            <Text style={styles.detailText}>Max. Marks: {BasicInfo.marks}</Text>
-                        </View>
-                    </View>
-                </View>
-
+                <PaperHeader BasicInfo={BasicInfo} styles={styles} />
                 {/* Sections */}
                 {section.map((sec, secIndex) => {
                     // Calculate starting question number for this section
@@ -488,22 +508,16 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
     );
 };
 
-const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section }) => {
-    console.log("Questions check for answer",htmlQuestions, htmlMCQ)
-    return (
-        <PDFViewer
-            showToolbar={false}
-            style={{ width: '100%', height: '100vh', border: 'none' }}
-        >
-            <PaperPDF
-                BasicInfo={BasicInfo}
-                htmlContent={htmlContent}
-                htmlMCQ={htmlMCQ}
-                htmlQuestions={htmlQuestions}
-                section={section}
-            />
-        </PDFViewer>
-    );
-};
+const PDFComponent = ({ htmlQuestions, htmlMCQ, BasicInfo, section }) => (
+  <PDFViewer style={{ width: '100%', height: '100vh', border: 'none' }}>
+    <PaperPDF
+      BasicInfo={BasicInfo}
+      htmlQuestions={htmlQuestions}
+      htmlMCQ={htmlMCQ}
+      section={section}
+    />
+  </PDFViewer>
+);
 
+export { PaperPDF };
 export default PDFComponent;

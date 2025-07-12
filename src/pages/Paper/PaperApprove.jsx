@@ -41,6 +41,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
+import { pdf } from '@react-pdf/renderer';
+import PDFComponent, { PaperPDF } from "./PaperKey";
 
 
 const PaperApprove = () => {
@@ -362,6 +364,24 @@ useEffect(() => {
       toast.error("Paper not saved!")
     }
   }
+
+  const handleDownloadPDF = async () => {
+    const doc = (
+      <PaperPDF
+        BasicInfo={exsistingInfo}
+        htmlQuestions={selectedQuestion}
+        htmlMCQ={selectedMCQ}
+        section={sectionLetters}
+      />
+    );
+    const blob = await pdf(doc).toBlob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Paper_${paper.id || 'download'}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
   
   return (
     <div className="home" style={homeStyle}>
@@ -414,8 +434,16 @@ useEffect(() => {
                   variant="h3"
                   sx={{fontSize: "2.5rem", fontWeight: "bold", ml: 2, color: "#7451f8",}}
                 >
-                  Paper Editor
+                  Paper Approve
                 </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ ml: 2 }}
+                  onClick={handleDownloadPDF}
+                >
+                  Download PDF
+                </Button>
               </Box>
               <Box sx={{gap: 100}}>
                 <Button
@@ -464,13 +492,7 @@ useEffect(() => {
                   return null;
                 })()}
                 
-                <Paper
-                htmlQuestions={selectedQuestion}
-                htmlMCQ={selectedMCQ}
-                BasicInfo={exsistingInfo}
-                section={sectionLetters}
-                />
-                <PaperKey
+                <PDFComponent
                 htmlQuestions={selectedQuestion}
                 htmlMCQ={selectedMCQ}
                 BasicInfo={exsistingInfo}

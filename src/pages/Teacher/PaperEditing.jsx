@@ -30,6 +30,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import { ModalSelectQuestions } from "./ModalSelectQuestions"
 import { ModalSelectMCQs } from "./ModalSelectMCQs"
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
   const [editedInfo, setEditedInfo] = useState({ ...OldData })
@@ -1035,6 +1040,28 @@ else if(exsistingInfo.medium === "Urdu") {
     });
   }
 
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  const handleOpenFeedback = async () => {
+    setFeedbackOpen(true);
+    setFeedbackLoading(true);
+    try {
+      const res = await fetch('http://localhost:3000/Examination/reviewFeedbackByPaperID', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paper_id: paper.id })
+      });
+      const data = await res.json();
+      setFeedbacks(data.data || []);
+    } catch (e) {
+      setFeedbacks([]);
+    }
+    setFeedbackLoading(false);
+  };
+  const handleCloseFeedback = () => setFeedbackOpen(false);
+
   return (
     <div className="home" style={homeStyle}>
       <Box sx={{ width: "100%", height: "100vh", overflow: "hidden" }}>
@@ -1112,6 +1139,14 @@ else if(exsistingInfo.medium === "Urdu") {
                     } }}
                 >
                   Submit Paper
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  sx={{ ml: 2 }}
+                  onClick={handleOpenFeedback}
+                >
+                  View Feedback
                 </Button>
               </Box>
             </Box>
@@ -1263,6 +1298,30 @@ else if(exsistingInfo.medium === "Urdu") {
           </Box>
         </Box>
       </Box>
+      <Dialog open={feedbackOpen} onClose={handleCloseFeedback} maxWidth="sm" fullWidth>
+        <DialogTitle>Paper Feedback</DialogTitle>
+        <DialogContent dividers style={{ minHeight: 120, maxHeight: 400 }}>
+          {feedbackLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" height={120}>
+              <CircularProgress />
+            </Box>
+          ) : feedbacks.length === 0 ? (
+            <Typography>No feedback found for this paper.</Typography>
+          ) : (
+            <Box>
+              {feedbacks.map((fb, idx) => (
+                <Box key={idx} mb={2} p={2} border={1} borderColor="#eee" borderRadius={2}>
+                  <Typography variant="body1">{fb.review}</Typography>
+                  <Typography variant="caption" color="text.secondary">User ID: {fb.user_id}</Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseFeedback} color="primary">Close</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }
