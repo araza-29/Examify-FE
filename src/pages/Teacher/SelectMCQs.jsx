@@ -238,9 +238,7 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
                         <TableHead sx={{ backgroundColor: 'indigo.500', color: 'white' }}>
                             <TableCell sx={{ py: 3, pr: 4,}}></TableCell>
                             <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>MCQs</TableCell>
-                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Marks</TableCell>
-                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Duration</TableCell>
-                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Image</TableCell>
+                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'center' }}>Image</TableCell>
                         </TableHead>
                         { MCQs.length>0?(
                         <TableBody>

@@ -328,7 +328,8 @@ useEffect(() => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 paper_id: paper.id,
-                locked: 1
+                locked: 1,
+                completed: 1
             }),
         })
         .then((response) => response.json())
@@ -343,7 +344,8 @@ useEffect(() => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 paper_id: paper.id,
-                locked: 2
+                locked: 0,
+                completed: 0
             }),
         })
         .then((response) => response.json())

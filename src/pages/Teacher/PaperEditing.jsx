@@ -39,6 +39,7 @@ import { hasSectionType } from '../../components/sectionHandler/sectionHandler';
 
 function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
   const [editedInfo, setEditedInfo] = useState({ ...OldData })
+  console.log("CHECKING PINACOLATA", editedInfo.examination, OldData.examination)
   const SaveChanges = () => {
     setOldData({ ...editedInfo })
     setEditOpen(false)
@@ -63,7 +64,7 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
             <InputLabel id="examination">Examination</InputLabel>
             <Select
               labelId="exam"
-              value={editedInfo.examination}
+              value={editedInfo.examination || "MONTHLY"}
               onChange={(event) => setEditedInfo({ ...editedInfo, examination: event.target.value })}
               label="exam"
             >
@@ -607,13 +608,14 @@ else if(exsistingInfo.medium === "Urdu") {
 
     console.log("PaperCheck", paper)
     console.log("PaperIDCheck", paper.id)
+    console.log("Paper type from backend:", paper.type)
 
     setExsistingInfo((prev) => ({
       ...prev,
       subject: paper.subject_name,
       class: paper.class_name,
       ExaminationYear: paper.year,
-      examination: paper.type,
+      examination: paper.type ? paper.type.toUpperCase() : "MONTHLY",
       duration: paper.duration,
       marks: paper.marks,
       date: paper.date,
