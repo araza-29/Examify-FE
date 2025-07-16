@@ -3,6 +3,7 @@ import DropDown from '../../components/DropDown/DropDown';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
+import Dialog from '@mui/material/Dialog';
 
 function QuestionEditor({ Questions, setFlag, setQuestion }) {
     const [userId] = useState(parseInt(localStorage.getItem("userId"), 10));
@@ -10,14 +11,18 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
     const [classes, setClasses] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
     const [editedQuestion, setEditedQuestion] = useState(Questions);
-    const [selectedSubject, setSelectedSubject] = useState({ id: Questions.subject_id, name: Questions.subject_name });
+    const [selectedSubject, setSelectedSubject] = useState(Questions.subject_id ? { id: Questions.subject_id, name: Questions.subject_name }: null);
     const [Chapters, setChapters] = useState([]);
     const [medium, setMedium] = useState({ name: Questions?.medium || null });
     const [Topic, setTopics] = useState([]);
     const [selectedChapters, setSelectedChapters] = useState({ id: Questions.chapter_id, name: Questions.chapter_name });
     const [selectedTopic, setSelectedTopics] = useState({ id: Questions.topic_id, name: Questions.topic_name });
     const [image, setImage] = useState({name: Questions.image});
+    const [previewImage, setPreviewImage] = useState(Questions.image || null);
+    const [openImageModal, setOpenImageModal] = useState(false);
     const [answerImage, setAnswerImage] = useState(null);
+    const [answerPreviewImage, setAnswerPreviewImage] = useState(null);
+    const [answerOpenImageModal, setAnswerOpenImageModal] = useState(false);
     const skipResetRef = useRef(true);
     
     const [errors, setErrors] = useState({
@@ -110,7 +115,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
         .then((data) => {
             if (data.code === 200) {
                 setQuestion({ ...Questions, answer_id: data.data.id, answer: data.data.answer });
-                setAnswerImage({name: data.data.image});
+                setAnswerImage(data.data.image);
                 setEditedQuestion({ ...editedQuestion, answer_id: data.data.id, answer: data.data.answer });
             }
         });
@@ -306,6 +311,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
         }
         
         setImage(file);
+        setPreviewImage(URL.createObjectURL(file));
     };
 
     const handleAnswerImageChange = (e) => {
@@ -323,6 +329,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
         }
         
         setAnswerImage(file);
+        setAnswerPreviewImage(URL.createObjectURL(file));
     };
 
     // Effects
@@ -366,6 +373,39 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
             setTopics([]);
         }
     }, [selectedChapters]);
+
+    useEffect(() => {
+        if (Questions.image && typeof Questions.image === 'string' && Questions.image.startsWith('data:')) {
+            setPreviewImage(Questions.image);
+        }
+    }, [Questions.image]);
+
+    useEffect(() => {
+        if (answerImage && typeof answerImage === 'string' && answerImage.startsWith('data:')) {
+            setAnswerPreviewImage(answerImage);
+        }
+    }, [answerImage]);
+
+    useEffect(() => {
+        if (subject.length && Questions.subject_id) {
+            const found = subject.find(s => s.id === Questions.subject_id);
+            setSelectedSubject(found || null);
+        }
+    }, [subject, Questions.subject_id]);
+
+    useEffect(() => {
+        if (Chapters.length && Questions.chapter_id) {
+            const found = Chapters.find(c => c.id === Questions.chapter_id);
+            setSelectedChapters(found || null);
+        }
+    }, [Chapters, Questions.chapter_id]);
+
+    useEffect(() => {
+        if (Topic.length && Questions.topic_id) {
+            const found = Topic.find(t => t.id === Questions.topic_id);
+            setSelectedTopics(found || null);
+        }
+    }, [Topic, Questions.topic_id]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -601,8 +641,29 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                         />
                     </Button>
                     <Typography variant="body2" color="textSecondary">
-                        {image ? image.name : "Drag & drop your question image here or click to browse"}
+                        {image.name && typeof image === 'object' ? "Question image loaded" :
+                         "Drag & drop your answer image here or click to browse"}
+                         {console.log("YIPPIE!!",image)}
                     </Typography>
+                    {previewImage && (
+                        <Box mt={2}>
+                            <img
+                                src={previewImage}
+                                alt="Preview"
+                                style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}
+                                onClick={() => setOpenImageModal(true)}
+                            />
+                            <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)} maxWidth="md">
+                                <Box p={2} display="flex" justifyContent="center" alignItems="center">
+                                    <img
+                                        src={previewImage}
+                                        alt="Large Preview"
+                                        style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
+                                    />
+                                </Box>
+                            </Dialog>
+                        </Box>
+                    )}
                 </Box>
             </Box>
 
@@ -638,8 +699,29 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                         />
                     </Button>
                     <Typography variant="body2" color="textSecondary">
-                        {answerImage ? answerImage.name : "Drag & drop your answer image here or click to browse"}
+                        {answerImage && typeof answerImage === 'object' ? answerImage.name : 
+                         answerImage && typeof answerImage === 'string' && answerImage.startsWith('data:') ? "Answer image loaded" :
+                         "Drag & drop your answer image here or click to browse"}
                     </Typography>
+                    {answerPreviewImage && (
+                        <Box mt={2}>
+                            <img
+                                src={answerPreviewImage}
+                                alt="Answer Preview"
+                                style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}
+                                onClick={() => setAnswerOpenImageModal(true)}
+                            />
+                            <Dialog open={answerOpenImageModal} onClose={() => setAnswerOpenImageModal(false)} maxWidth="md">
+                                <Box p={2} display="flex" justifyContent="center" alignItems="center">
+                                    <img
+                                        src={answerPreviewImage}
+                                        alt="Large Answer Preview"
+                                        style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
+                                    />
+                                </Box>
+                            </Dialog>
+                        </Box>
+                    )}
                 </Box>
             </Box>
 

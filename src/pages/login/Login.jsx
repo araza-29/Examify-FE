@@ -53,8 +53,6 @@ const Login = () => {
           localStorage.setItem("userId", data.data.id)
           if(role === "1")
             localStorage.setItem("role", "Teacher")
-          else if(role==="2")
-            localStorage.setItem("role", "Adminstrator")
           else if(role==="3")
             localStorage.setItem("role", "Examination")
           toast.success("Login Successful!")
@@ -77,7 +75,7 @@ const Login = () => {
   return (
     <div className="login">
       <header className="header">
-        <h1 className="dashboardHeading">~ Quiz Dashboard ~</h1>
+        <h1 className="dashboardHeading">~ Center Examify ~</h1>
       </header>
       
       <div className="loginFormContainer">
@@ -92,7 +90,6 @@ const Login = () => {
                 onChange={(e) => setRole(e.target.value)}
                 label="Select Role"
               >
-                <MenuItem value="2">Administrator</MenuItem>
                 <MenuItem value="1">Teacher</MenuItem>
                 <MenuItem value="3">Examination</MenuItem>
               </Select>

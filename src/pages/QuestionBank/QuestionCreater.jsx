@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import Dialog from '@mui/material/Dialog';
 
 function QuestionCreater() {
   const navigate = useNavigate();
@@ -28,7 +29,11 @@ function QuestionCreater() {
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
   const [image, setImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [openImageModal, setOpenImageModal] = useState(false);
   const [answerImage, setAnswerImage] = useState(null);
+  const [answerPreviewImage, setAnswerPreviewImage] = useState(null);
+  const [answerOpenImageModal, setAnswerOpenImageModal] = useState(false);
   const [medium, setMedium] = useState(null);
   const skipResetRef = useRef(true);
   const [errors, setErrors] = useState({
@@ -247,6 +252,36 @@ function QuestionCreater() {
 
   const onCancel = () => {
     navigate('/questionbank');
+  };
+
+  const handleQuestionImageChange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.match('image.*')) {
+          toast.error('Please select an image file');
+          return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+          toast.error('Image size should be less than 2MB');
+          return;
+      }
+      setImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+  };
+
+  const handleAnswerImageChange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.match('image.*')) {
+          toast.error('Please select an image file');
+          return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+          toast.error('Image size should be less than 2MB');
+          return;
+      }
+      setAnswerImage(file);
+      setAnswerPreviewImage(URL.createObjectURL(file));
   };
 
   return (
@@ -510,13 +545,32 @@ function QuestionCreater() {
                     <input 
                         type="file" 
                         hidden 
-                        onChange={(e) => setImage(e.target.files[0])} 
+                        onChange={handleQuestionImageChange} 
                         accept="image/*"
                     />
                 </Button>
                 <Typography variant="body2" color="textSecondary">
                     {image ? image.name : "Drag & drop your question image here or click to browse"}
                 </Typography>
+                {previewImage && (
+                    <Box mt={2}>
+                        <img
+                            src={previewImage}
+                            alt="Preview"
+                            style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}
+                            onClick={() => setOpenImageModal(true)}
+                        />
+                        <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)} maxWidth="md">
+                            <Box p={2} display="flex" justifyContent="center" alignItems="center">
+                                <img
+                                    src={previewImage}
+                                    alt="Large Preview"
+                                    style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
+                                />
+                            </Box>
+                        </Dialog>
+                    </Box>
+                )}
             </Box>
           </Box>
 
@@ -547,13 +601,32 @@ function QuestionCreater() {
                     <input 
                         type="file" 
                         hidden 
-                        onChange={(e) => setAnswerImage(e.target.files[0])} 
+                        onChange={handleAnswerImageChange} 
                         accept="image/*"
                     />
                 </Button>
                 <Typography variant="body2" color="textSecondary">
                     {answerImage ? answerImage.name : "Drag & drop your answer image here or click to browse"}
                 </Typography>
+                {answerPreviewImage && (
+                    <Box mt={2}>
+                        <img
+                            src={answerPreviewImage}
+                            alt="Answer Preview"
+                            style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}
+                            onClick={() => setAnswerOpenImageModal(true)}
+                        />
+                        <Dialog open={answerOpenImageModal} onClose={() => setAnswerOpenImageModal(false)} maxWidth="md">
+                            <Box p={2} display="flex" justifyContent="center" alignItems="center">
+                                <img
+                                    src={answerPreviewImage}
+                                    alt="Large Answer Preview"
+                                    style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
+                                />
+                            </Box>
+                        </Dialog>
+                    </Box>
+                )}
             </Box>
           </Box>
 

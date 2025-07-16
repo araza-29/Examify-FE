@@ -3,6 +3,7 @@ import DropDown from '../../components/DropDown/DropDown';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
+import Dialog from '@mui/material/Dialog';
 
 function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
     const [errors, setErrors] = useState({
@@ -27,6 +28,8 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
     const [Chapters, setChapters] = useState([]);
     const [Topic, setTopics] = useState([]);
     const [image, setImage] = useState({name: MCQ.image});
+    const [previewImage, setPreviewImage] = useState(MCQ.image || null);
+    const [openImageModal, setOpenImageModal] = useState(false);
     const [selectedChapters, setSelectedChapters] = useState(MCQ.chapter_id ? { id: MCQ.chapter_id, name: MCQ.chapter_name } : null);
     const [selectedTopic, setSelectedTopics] = useState(MCQ.topic_id ? { id: MCQ.topic_id, name: MCQ.topic_name } : null);
     const [choices, setChoices] = useState([
@@ -151,21 +154,24 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
 
     const skipResetRef = useRef(true);
     const handleQuestionImageChange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (!file.type.match('image.*')) {
-                toast.error('Please select an image file');
-                return;
-            }
-            
-            if (file.size > 2 * 1024 * 1024) {
-                toast.error('Image size should be less than 2MB');
-                return;
-            }
-            
-            setImage(file);
-        };
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.match('image.*')) {
+            toast.error('Please select an image file');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image size should be less than 2MB');
+            return;
+        }
+        setImage(file);
+        setPreviewImage(URL.createObjectURL(file));
+    };
+    useEffect(() => {
+        if (MCQ.image && typeof MCQ.image === 'string' && MCQ.image.startsWith('data:')) {
+            setPreviewImage(MCQ.image);
+        }
+    }, [MCQ.image]);
 
     // 1. Fetch classes on userId change
     useEffect(() => {
@@ -540,8 +546,27 @@ function MCQEditor({ MCQ, setFlag, setMCQ, onSaveMCQ }) {
                         />
                     </Button>
                     <Typography variant="body2" color="textSecondary">
-                        {image ? image.name : "Drag & drop your question image here or click to browse"}
+                        {image.name ? image.name : "Drag & drop your question image here or click to browse"}
                     </Typography>
+                    {previewImage && (
+                        <Box mt={2}>
+                            <img
+                                src={previewImage}
+                                alt="Preview"
+                                style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}
+                                onClick={() => setOpenImageModal(true)}
+                            />
+                            <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)} maxWidth="md">
+                                <Box p={2} display="flex" justifyContent="center" alignItems="center">
+                                    <img
+                                        src={previewImage}
+                                        alt="Large Preview"
+                                        style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
+                                    />
+                                </Box>
+                            </Dialog>
+                        </Box>
+                    )}
                 </Box>
             </Box>
             

@@ -17,6 +17,8 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
     const [selectedTopic, setSelectedTopics] = useState([]);
     const [selectedSection, setSelectedSection] = useState([]);
     const [MCQsSection, setMCQsSections] = useState(sections.filter(letter=>letter.type==="Multiple Choice Questions"));
+    const [openImageModal, setOpenImageModal] = useState(false);
+    const [modalImage, setModalImage] = useState(null);
     const theme = useTheme();
 
     const fetchMCQ = () => {
@@ -186,11 +188,34 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
             <TableCell sx={{py: 3, pr: 4, width: '50%' }}>{MCQs.name}</TableCell>
             <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{MCQs.marks}</TableCell>
             {/*<TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{MCQs.duration}</TableCell>*/}
-            <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '16%'}}>{MCQs.imageUrl ? (<img/>):(<>No Image</>)}</TableCell>
+            <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '16%'}}>
+                {MCQs.image && MCQs.image.startsWith('data:') ? (
+                    <img
+                        src={MCQs.image}
+                        alt="MCQ Preview"
+                        style={{ maxWidth: '60px', maxHeight: '60px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer' }}
+                        onClick={() => { setModalImage(MCQs.image); setOpenImageModal(true); }}
+                    />
+                ) : (
+                    <>No Image</>
+                )}
+            </TableCell>
         </TableRow>
         )
     })
-    }</>;};
+    }
+    {/* Modal for large image preview */}
+    <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)} maxWidth="md">
+        <Box p={2} display="flex" justifyContent="center" alignItems="center">
+            <img
+                src={modalImage}
+                alt="Large Preview"
+                style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
+            />
+        </Box>
+    </Dialog>
+    </>;
+    };
     return (
         <Box sx={{maxWidth: 'container',marginX: 'auto',paddingX: 4,paddingY: 8,paddingTop: 4,}}>
             <Typography variant="h4" sx={{ fontWeight: "bold",color: "#7451f8"  }}>

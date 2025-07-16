@@ -19,6 +19,8 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     const [selectedTopic, setSelectedTopics] = useState([]);
     const [selectedSection, setSelectedSection] = useState([]);
     const [QuestionSection, setQuestionSections] = useState(sections.filter(letter=>letter.type!=="Multiple Choice Questions"));
+    const [openImageModal, setOpenImageModal] = useState(false);
+    const [modalImage, setModalImage] = useState(null);
     const theme = useTheme();
 
     useEffect(()=> {
@@ -201,11 +203,34 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             <TableCell sx={{py: 3, pr: 4, width: '50%' }}>{question.name}</TableCell>
             <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{question.marks}</TableCell>
             {/*<TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{question.duration}</TableCell>*/}
-            <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '16%'}}>{question.imageUrl ? (<img/>):(<>No Image</>)}</TableCell>
+            <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '16%'}}>
+                {question.image && question.image.startsWith('data:') ? (
+                    <img
+                        src={question.image}
+                        alt="Question Preview"
+                        style={{ maxWidth: '60px', maxHeight: '60px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer' }}
+                        onClick={() => { setModalImage(question.image); setOpenImageModal(true); }}
+                    />
+                ) : (
+                    <>No Image</>
+                )}
+            </TableCell>
         </TableRow>
         )
     })
-    }</>;};
+    }
+    {/* Modal for large image preview */}
+    <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)} maxWidth="md">
+        <Box p={2} display="flex" justifyContent="center" alignItems="center">
+            <img
+                src={modalImage}
+                alt="Large Preview"
+                style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
+            />
+        </Box>
+    </Dialog>
+    </>;
+    };
     return (
         <Box sx={{maxWidth: 'container',marginX: 'auto',paddingX: 4,paddingY: 8,paddingTop: 4,}}>
             <Typography variant="h4" sx={{ fontWeight: "bold",color: "#7451f8" }}>
@@ -228,9 +253,8 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                         <TableHead sx={{ backgroundColor: 'indigo.500', color: 'white' }}>
                             <TableCell sx={{ py: 3, pr: 4,}}></TableCell>
                             <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Questions</TableCell>
-                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Marks</TableCell>
-                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Duration</TableCell>
-                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Image</TableCell>
+                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'center' }}>Marks</TableCell>
+                            <TableCell sx={{ py: 3, pr: 4, textAlign: 'center' }}>Image</TableCell>
                         </TableHead>
                         { Questions.length>0?(
                         <TableBody>

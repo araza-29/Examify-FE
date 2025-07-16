@@ -243,9 +243,6 @@ export default function SectionHandler({
             <IconButton
               onClick={() => removeSection(index)}
               sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
                 color: 'rgba(0, 0, 0, 0.54)',
                 '&:hover': {
                   color: 'red',
@@ -276,17 +273,17 @@ export default function SectionHandler({
             }
           }}
         >
-          Add New Section {editedSections.length >= 26 ? '(Max Reached)' : `(${26 - editedSections.length} remaining)`}
+          Add New Section
         </Button>
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
           <Button
-            variant="outlined"
+            variant="conatined"
             sx={{
-              color: "#7451f8",
-              borderColor: "#7451f8",
+              backgroundColor: "#7451f8",
+              color: "white",
               '&:hover': {
-                borderColor: '#5a3acb',
+                backgroundColor: '#5a3acb',
               }
             }}
             onClick={() => setSectionFlag(false)}
