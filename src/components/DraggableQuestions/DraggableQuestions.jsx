@@ -7,12 +7,27 @@ import { Box, Typography } from "@mui/material";
 const DraggableQuestions = ({ section, Questions, SetQuestions, setDeletedQuestions }) => {
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-    console.log(Questions);
-    const newList = Array.from(Questions);
-    const [reorderedItem] = newList.splice(result.source.index, 1);
-    newList.splice(result.destination.index, 0, reorderedItem);
-    console.log("Dragging", newList);
-    SetQuestions(newList);
+
+    // Get all questions for this section
+    const sectionQuestions = Questions.filter(
+      (q) => String(q.section).toLowerCase() === String(section.name).toLowerCase()
+    );
+
+    // Reorder only the section's questions
+    const reorderedSectionQuestions = Array.from(sectionQuestions);
+    const [reorderedItem] = reorderedSectionQuestions.splice(result.source.index, 1);
+    reorderedSectionQuestions.splice(result.destination.index, 0, reorderedItem);
+
+    // Build the new full questions array
+    let sectionIndex = 0;
+    const newQuestions = Questions.map((q) => {
+      if (String(q.section).toLowerCase() === String(section.name).toLowerCase()) {
+        return reorderedSectionQuestions[sectionIndex++];
+      }
+      return q;
+    });
+
+    SetQuestions(newQuestions);
   };
   console.log("Draggable section", section);
   const handleDelete = (id) => {

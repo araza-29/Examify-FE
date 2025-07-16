@@ -19,7 +19,7 @@ export function ModalSelectMCQs({setMCQs, SelectedMCQs, id, sections, setIsSaved
             <FontAwesomeIcon style={{ marginLeft: 8, background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)', color: 'white', borderRadius: '50%' }} />
         </Button>
         <Dialog maxWidth="xl" PaperProps={{ sx: { backgroundColor: 'transparent', boxShadow: 'none', maxHeight: '100vh', overflowY: 'auto', py: 2, borderRadius: 2 }, className: 'scrollable-container' }} open={flag} handler={handleOpen}>
-            <Card sx={{ backgroundColor: 'rgb(240,238,235)', width: '100%' }}>
+            <Card sx={{ width: '100%' }}>
                 <SelectMCQs handleOpen={handleOpen} SelectMCQs={SelectedMCQs} setSelectedMCQs={setMCQs} sections={sections} setIsSaved={setIsSaved} subject_id={subject_id} class_id={class_id} setNewMCQ = {setNewMCQ} medium={medium}></SelectMCQs>
             </Card>
         </Dialog>

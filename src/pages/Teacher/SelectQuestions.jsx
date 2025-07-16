@@ -208,19 +208,13 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
     }</>;};
     return (
         <Box sx={{maxWidth: 'container',marginX: 'auto',paddingX: 4,paddingY: 8,paddingTop: 4,}}>
-            <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily.mar }}>
+            <Typography variant="h4" sx={{ fontWeight: "bold",color: "#7451f8" }}>
                 Select Question for the Paper
             </Typography>
             <Box sx={{display:'flex', maxHeight: 2, marginBottom: 8, marginTop: 3}}>
                 <Box sx={{display:'flex', marginRight: 2, marginLeft: 2, alignItem:'center'}}>
-                    <Typography variant="h5" sx={{marginRight: 1}}>
-                        <FontAwesomeIcon icon={faFilter}/>
-                    </Typography>
-                    <Typography variant="h6" sx={{fontFamily: theme.typography.fontFamily.mar}}>
-                        Filter
-                    </Typography>
                 </Box>
-                <Box sx={{display: "flex", flexDirection: "row", gap: "80px", justifyContent: "flex-start"}}>
+                <Box sx={{display: "flex", flexDirection: "row", gap: "80px",ml: 6, justifyContent: "flex-start"}}>
                     <DropDown name = {"Topics"} data = {Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} width={"300px"}/>
                     
                     <DropDown name = {"Chapters"} data = {Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} width={"300px"}/>
@@ -230,7 +224,7 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
             </Box>
             <Box sx={{ height: '100%', width: '100%', fontSize: '0.875rem', maxHeight: '70vh', overflow: 'scroll' }}>
                 {QuestionFlag ? (<Box sx={{ width: '80vw', mt: 9, fontSize: '3xl' }}>No questions found</Box>):(
-                    <Table sx={{ width: '80vw', transition: 'all 500ms', backgroundColor: 'white', borderRadius: '8px' }}>
+                    <Table sx={{border: 1, borderColor: "silver", width: '80vw', transition: 'all 500ms', backgroundColor: 'white', borderRadius: '8px' }}>
                         <TableHead sx={{ backgroundColor: 'indigo.500', color: 'white' }}>
                             <TableCell sx={{ py: 3, pr: 4,}}></TableCell>
                             <TableCell sx={{ py: 3, pr: 4, textAlign: 'left' }}>Questions</TableCell>

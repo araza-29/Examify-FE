@@ -14,6 +14,11 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import toast from 'react-hot-toast';
 
+// Helper to check if a section of a given type exists
+export function hasSectionType(sections, type) {
+  return sections.some(sec => sec.type === type);
+}
+
 export default function SectionHandler({
   exsistingInfo,
   setExsistingInfo,
@@ -22,7 +27,9 @@ export default function SectionHandler({
   sectionFlag,
   setSectionFlag,
   setIsSaved,
-  isSaved
+  isSaved,
+  deletedSections,
+  setDeletedSections
 }) {
   const [editedSections, setEditedSections] = useState(sections);
 
@@ -72,6 +79,11 @@ export default function SectionHandler({
 
   const removeSection = (index) => {
     const updatedSections = [...editedSections];
+    // Save the databaseId of the section to be deleted, if it exists
+    const removedSection = updatedSections[index];
+    if (removedSection && removedSection.databaseId) {
+      setDeletedSections(prev => [...prev, removedSection.databaseId]);
+    }
     updatedSections.splice(index, 1);
     
     // Reorder section names to maintain consistency with quotes
@@ -190,9 +202,15 @@ export default function SectionHandler({
                 displayEmpty
               >
                 <MenuItem value="">Section Type</MenuItem>
-                <MenuItem value="Short Questions">Short Questions</MenuItem>
-                <MenuItem value="Descriptive Questions">Descriptive Questions</MenuItem>
-                <MenuItem value="Multiple Choice Questions">Multiple Choice Questions</MenuItem>
+                <MenuItem value="Short Questions" disabled={editedSections.some((sec, idx) => sec.type === 'Short Questions' && idx !== index)}>
+                  Short Questions
+                </MenuItem>
+                <MenuItem value="Descriptive Questions" disabled={editedSections.some((sec, idx) => sec.type === 'Descriptive Questions' && idx !== index)}>
+                  Descriptive Questions
+                </MenuItem>
+                <MenuItem value="Multiple Choice Questions" disabled={editedSections.some((sec, idx) => sec.type === 'Multiple Choice Questions' && idx !== index)}>
+                  Multiple Choice Questions
+                </MenuItem>
               </Select>
             </FormControl>
 

@@ -35,6 +35,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
+import { hasSectionType } from '../../components/sectionHandler/sectionHandler';
 
 function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
   const [editedInfo, setEditedInfo] = useState({ ...OldData })
@@ -249,7 +250,8 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
             icon={faPenSquare} 
             style={{ 
               fontSize: '2rem',
-              transition: 'inherit'
+              transition: 'inherit',
+              color: "black"
             }} 
           />
         </Button>
@@ -360,6 +362,7 @@ const Teacher = () => {
   const [newSections, setNewSections] = useState([])
   const [updatedSections, setUpdatedSections] = useState([])
   const [originalSections, setOriginalSections] = useState([])
+  const [deletedSections, setDeletedSections] = useState([])
 
   const [exsistingInfo, setExsistingInfo] = useState({
     header: "THE EDUCATION LINK",
@@ -844,6 +847,30 @@ else if(exsistingInfo.medium === "Urdu") {
           }
         }
       }
+      // --- DELETE REMOVED SECTIONS ---
+      if (deletedSections && deletedSections.length > 0) {
+        for (const sectionId of deletedSections) {
+          try {
+            const response = await fetch(`http://localhost:3000/Examination/deleteSection`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                section_id: sectionId,
+                paper_id: paper.id
+              }),
+            })
+            const result = await response.json()
+            if (result && result.code === 200) {
+              console.log(`✅ Section deleted successfully: ${sectionId}`)
+            } else {
+              console.error(`❌ Failed to delete section: ${sectionId}`, result)
+            }
+          } catch (error) {
+            console.error(`❌ Error deleting section: ${sectionId}`, error)
+          }
+        }
+        setDeletedSections([])
+      }
       if (deletedQuestion !== null && deletedQuestion.length > 0) {
         const questionMapping = deletedQuestion.map(async (q)=>{
            const response = await fetch("http://localhost:3000/Examination/deleteQuestionMapping", {
@@ -1141,9 +1168,14 @@ else if(exsistingInfo.medium === "Urdu") {
                   Submit Paper
                 </Button>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   color="primary"
-                  sx={{ ml: 2 }}
+                  sx={{ px: 2, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8",
+                    '&:hover': {
+                        backgroundColor: '#5a3acb',
+                        transform: 'scale(1.02)',
+                        transition: 'all 0.2s ease'
+                    } }}
                   onClick={handleOpenFeedback}
                 >
                   View Feedback
@@ -1187,32 +1219,37 @@ else if(exsistingInfo.medium === "Urdu") {
                 </Button>
               </Box>
 
-              <Box sx={{ width: "91.666667%" }}>
-                {console.log("Before mcqs check", exsistingInfo.medium)}
-                <ModalSelectMCQs
-                  setMCQs={setMCQs}
-                  SelectedMCQs={[...selectedMCQ]}
-                  sections={sectionLetters}
-                  setIsSaved={setIsSaved}
-                  subject_id={paper.subject_id}
-                  class_id={paper.class_id}
-                  setNewMCQ={setNewMCQ}
-                  medium={exsistingInfo.medium}
-                />
-              </Box>
+              {sectionLetters.some(sec => sec.type === "Multiple Choice Questions") && (
+                <Box sx={{ width: "91.666667%", mb: 2 }}>
+                  <ModalSelectMCQs
+                    setMCQs={setMCQs}
+                    SelectedMCQs={[...selectedMCQ]}
+                    sections={sectionLetters}
+                    setIsSaved={setIsSaved}
+                    subject_id={paper.subject_id}
+                    class_id={paper.class_id}
+                    setNewMCQ={setNewMCQ}
+                    medium={exsistingInfo.medium}
+                    disabled={!hasSectionType(sectionLetters, 'Multiple Choice Questions')}
+                  />
+                </Box>
+              )}
 
-              <Box sx={{ width: "91.666667%", my: 2 }}>
-                <ModalSelectQuestions
-                  setQuestions={setQuestions}
-                  SelectedQuestions={[...selectedQuestion]}
-                  sections={sectionLetters}
-                  setIsSaved={setIsSaved}
-                  subject_id={paper.subject_id}
-                  class_id={paper.class_id}
-                  setNewQuestion={setNewQuestion}
-                  medium={exsistingInfo.medium}
-                />
-              </Box>
+              {sectionLetters.some(sec => sec.type === "Short Questions" || sec.type === "Descriptive Questions") && (
+                <Box sx={{ width: "91.666667%", mb: 2 }}>
+                  <ModalSelectQuestions
+                    setQuestions={setQuestions}
+                    SelectedQuestions={[...selectedQuestion]}
+                    sections={sectionLetters}
+                    setIsSaved={setIsSaved}
+                    subject_id={paper.subject_id}
+                    class_id={paper.class_id}
+                    setNewQuestion={setNewQuestion}
+                    medium={exsistingInfo.medium}
+                    disabled={!(hasSectionType(sectionLetters, 'Short Questions') || hasSectionType(sectionLetters, 'Descriptive Questions'))}
+                  />
+                </Box>
+              )}
 
               <SectionHandler
                 exsistingInfo={exsistingInfo}
@@ -1223,7 +1260,8 @@ else if(exsistingInfo.medium === "Urdu") {
                 setSectionFlag={setSectionFlag}
                 setIsSaved={setIsSaved}
                 isSaved={isSaved}
-                setNewSectionLetters={setNewSectionLetters}
+                deletedSections={deletedSections}
+                setDeletedSections={setDeletedSections}
               />
 
               {sectionLetters.map((letter, index) => (
