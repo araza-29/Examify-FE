@@ -29,7 +29,8 @@ export default function SectionHandler({
   setIsSaved,
   isSaved,
   deletedSections,
-  setDeletedSections
+  setDeletedSections,
+  onSave // <-- new prop
 }) {
   const [editedSections, setEditedSections] = useState(sections);
 
@@ -103,6 +104,17 @@ export default function SectionHandler({
       return !hasSomeData || hasAllData;
     });
 
+    // Preserve databaseId and other properties from original sections
+    const processedSections = validSections.map(sec => {
+      const originalSection = sections.find(orig => orig.name === sec.name);
+      return {
+        ...sec,
+        databaseId: originalSection?.databaseId || sec.databaseId,
+        isFromDatabase: originalSection?.isFromDatabase || sec.isFromDatabase,
+        id: originalSection?.id || sec.id
+      };
+    });
+
     // Find any sections with partial data to show error
     const hasPartialSections = editedSections.some(sec => {
       const hasSomeData = sec.type || sec.description || sec.marks > 0;
@@ -132,10 +144,12 @@ export default function SectionHandler({
       return;
     }
 
-    setSections(validSections);
-    setExsistingInfo(prev => ({ ...prev, sections: validSections.length }));
+    setSections(processedSections);
     setIsSaved(false);
-    setSectionFlag(false);
+    // setSectionFlag(false); // Remove this, parent will handle closing
+    if (onSave) {
+      onSave(processedSections);
+    }
     toast.success("Sections saved successfully!");
   };
 
@@ -306,5 +320,27 @@ export default function SectionHandler({
         </Box>
       </Box>
     </Dialog>
+  );
+}
+
+// Simple Loader component for reuse
+export function Loader() {
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <div style={{
+        border: '6px solid #f3f3f3',
+        borderTop: '6px solid #7451f8',
+        borderRadius: '50%',
+        width: 48,
+        height: 48,
+        animation: 'spin 1s linear infinite'
+      }} />
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </Box>
   );
 }

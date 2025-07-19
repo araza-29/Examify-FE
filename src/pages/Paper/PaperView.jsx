@@ -43,6 +43,7 @@ import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
 import { pdf } from '@react-pdf/renderer';
 import PDFComponent, { PaperPDF } from "../Paper/PaperKey";
+import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 
 const PaperView = () => {
@@ -84,13 +85,11 @@ const PaperView = () => {
   const navigate = useNavigate();
   const [AllowEdit, setAllowEdit] = useState(false);
   const [selectedQuestion, setQuestions] = useState([]);
-  const [isDisabled, setIsDisabled] = useState(false);
   const [selectedMCQ, setMCQs] = useState([]);
   const [sectionLetters, setSectionLetters] = useState([]);
   const [isSaved, setIsSaved] = useState(true);
   const [sectionFlag, setSectionFlag] = useState(false);
   const [sectionsCheck, setSectionsCheck] = useState([]);
-  const [feedbackFlag, setFeedbackFlag] = useState(false);
   let [token] = useState(localStorage.getItem("token"));
   const [exsistingInfo, setExsistingInfo] = useState({
     header: 'THE EDUCATION LINK',
@@ -115,6 +114,7 @@ const PaperView = () => {
     // date: new Date().toISOString().split("T")[0],
     // instruction: "No Instruction just attempt the Paper",
   });
+  const [loading, setLoading] = useState(true);
 
   
   useEffect(() => {
@@ -134,32 +134,19 @@ const PaperView = () => {
   useEffect(()=>{
     if (fetchedOnce.current) return; // Prevents second call
     fetchedOnce.current = true;
-    console.log("PaperCheck", paper);
-    console.log("PaperIDCheck", paper.id);
-    
-    // Performance marker: Start data fetching
-    performance.mark('paperview-fetch-start');
-    
-    setExsistingInfo({
-      ...exsistingInfo,
-      subject: paper.subject_name,
-      class: paper.class_name,
-      ExaminationYear: paper.year,
-      examination: paper.type,
-      duration: paper.duration,
-      marks: paper.marks,
-      date: paper.date,
-      center: paper.center_name,
-      time: paper.time
-    })
-    
+    setLoading(true);
+
+    // Start the timer (2 seconds)
+    const minLoader = new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Start the data fetch
     Promise.all([
       fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paper_id: paper.id }),
       }).then((response) => response.json()),
-    
+
       fetch("http://localhost:3000/Examination/reviewQuestionsWithAnswerByPaperID", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -173,82 +160,45 @@ const PaperView = () => {
       }).then((response) => response.json()),
     ])
       .then(([sectionsResponse, questionsResponse, mcqsResponse]) => {
-        // Performance marker: Data fetched
-        performance.mark('paperview-fetch-end');
-        performance.measure('paperview-data-fetch', 'paperview-fetch-start', 'paperview-fetch-end');
-        
-        // Performance marker: Start processing
-        performance.mark('paperview-process-start');
-        
+        // Process and render the paper IMMEDIATELY
         if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
-          console.log("Fetched Sections:", sectionsResponse.data);
-          setSectionLetters(sectionsResponse.data);
+          const sortedSections = [...sectionsResponse.data].sort((a, b) => a.name.localeCompare(b.name));
+          setSectionLetters(sortedSections);
         }
-    
         if (questionsResponse.code === 200) {
-          console.log("Fetched Questions:", questionsResponse.data);
-          
-          // Performance marker: Start question processing
-          performance.mark('paperview-questions-process-start');
-          
-          // Ensure sectionLetters is updated before mapping questions
           setQuestions((prev) => {
             const updatedQuestions = questionsResponse.data.map((question) => {
               const matchedSection = sectionsResponse.data.find(
                 (section) => Number(section.id) === Number(question.section_id)
               );
-    
               return {
                 ...question,
-                section: matchedSection ? matchedSection.name : null, // Assign the section name if found
+                section: matchedSection ? matchedSection.name : null,
               };
             });
-    
-            console.log("Updated Questions:", updatedQuestions);
             return updatedQuestions;
           });
-          
-          // Performance marker: Questions processed
-          performance.mark('paperview-questions-process-end');
-          performance.measure('paperview-questions-processing', 'paperview-questions-process-start', 'paperview-questions-process-end');
         }
         if (mcqsResponse.code === 200) {
-          console.log("Fetched Questions:", mcqsResponse.data);
-          
-          // Performance marker: Start MCQ processing
-          performance.mark('paperview-mcqs-process-start');
-          
-          // Ensure sectionLetters is updated before mapping questions
           setMCQs((prev) => {
             const updatedMCQ = mcqsResponse.data.map((mcq) => {
               const matchedSection = sectionsResponse.data.find(
                 (section) => Number(section.id) === Number(mcq.section_id)
               );
-    
               return {
                 ...mcq,
-                section: matchedSection ? matchedSection.name : null, // Assign the section name if found
+                section: matchedSection ? matchedSection.name : null,
               };
             });
-    
-            console.log("Updated Questions:", updatedMCQ);
             return updatedMCQ;
           });
-          
-          // Performance marker: MCQs processed
-          performance.mark('paperview-mcqs-process-end');
-          performance.measure('paperview-mcqs-processing', 'paperview-mcqs-process-start', 'paperview-mcqs-process-end');
         }
-        
-        // Performance marker: Processing complete
-        performance.mark('paperview-process-end');
-        performance.measure('paperview-data-processing', 'paperview-process-start', 'paperview-process-end');
-        
-        // Log all performance measurements
-        console.log('Performance Measurements:');
-        console.log(performance.getEntriesByType('measure'));
+        // Wait for the timer to finish before hiding the loader
+        minLoader.then(() => setLoading(false));
       })
-      .catch((error) => console.error("Error fetching data:", error));
+      .catch((error) => {
+        minLoader.then(() => setLoading(false));
+      });
     
   }, [paper]);
 
@@ -312,50 +262,7 @@ useEffect(() => {
   //   alert("Please Login first then you can access this page...");
   //   window.location.href = '/'; // Replace "/login" with the actual login page path
   // };
-  const handleSubmitButton = async (action) => {
-    setIsDisabled(true);
-    setSectionsCheck([]); // Clears previous data
 
-    console.log("Section", sectionLetters);
-    console.log("Existing information:", exsistingInfo);
-    console.log("PaperId", paper);
-    const userID = localStorage.getItem("userId")
-
-    // 🔹 Fetch sections from the database
-    if (action==="approve") {
-        fetch("http://localhost:3000/Examination/updatePaper", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                paper_id: paper.id,
-                locked: 1
-            }),
-        })
-        .then((response) => response.json())
-        .catch((error) => {
-            console.error(`❌ Error creating section ${sec.name}:`, error);
-            return null;
-        })
-    }
-    else if (action==="reject") {
-        fetch("http://localhost:3000/Examination/updatePaper", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                paper_id: paper.id,
-                locked: 2
-            }),
-        })
-        .then((response) => response.json())
-        .catch((error) => {
-            console.error(`❌ Error creating section ${sec.name}:`, error);
-            return null;
-        })
-        setFeedbackFlag(true)
-    }
-    setIsSaved(true);
-    setIsDisabled(false); // ✅ Re-enable button at the end
-};
   const handleBack = () => {
     if(isSaved){
       navigate("/Papers")
@@ -364,15 +271,7 @@ useEffect(() => {
       toast.error("Paper not saved!")
     }
   }
-  const handleDelete = async () => {
-    if (!paper.id) return;
-    await fetch(`http://localhost:3000/Examination/deletePaper/${paper.id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    toast.success('Paper deleted');
-    navigate('/Papers');
-  };
+
   const handleDownloadPDF = async () => {
     const doc = (
       <PaperPDF
@@ -400,7 +299,6 @@ useEffect(() => {
             flexDirection: "column",
             width: "100%",
             height: "100%",
-            
           }}
         >
           {/* Sidebar or Left Section */}
@@ -453,32 +351,11 @@ useEffect(() => {
                   Download PDF
                 </Button>
               </Box>
-              <Box sx={{gap: 100}}>
-                <Button
-                    variant="contained"
-                    onClick={() => handleSubmitButton("reject")}
-                    disabled={isDisabled}
-                    color="primary"
-                    sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", mr: 10 }}
-                >
-                    Reject Paper
-                </Button>
-                <Button
-                    variant="contained"
-                    onClick={() => handleSubmitButton("approve")}
-                    disabled={isDisabled}
-                    color="primary"
-                    sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", mr: 12 }}
-                >
-                    Approve paper
-                </Button>
-              </Box>
-              <Feedback flag ={feedbackFlag} setFlag={setFeedbackFlag} paperID={paper.id} />
             </Box>
 
             {/* Content Section */}
           </Box>
-            
+          
           {/* Paper Viewer Section */}
           {console.log(selectedMCQ)}
           {console.log(selectedQuestion)}
@@ -492,15 +369,30 @@ useEffect(() => {
                 alignItems: "start", // or "center" if you want vertical center
             }}
             >
-            <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5 }}>
-                <Paper
+            <Box sx={{ position: 'relative', width: '80%', display: 'flex', flexDirectoon: 'row', gap:5, minHeight: 400, justifyContent: 'center', alignItems: 'center' }}>
+              <Paper
                 htmlQuestions={selectedQuestion}
                 htmlMCQ={selectedMCQ}
                 BasicInfo={exsistingInfo}
                 section={sectionLetters}
-                />
+              />
+              {loading && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    background: 'rgba(255,255,255,0.8)', // optional: semi-transparent overlay
+                    zIndex: 10,
+                  }}
+                >
+                  <Loader />
+                </Box>
+              )}
             </Box>
-            </Box>
+          </Box>
         </Box>
       </Box>
     </div>

@@ -436,170 +436,95 @@ const Teacher = () => {
 
   // Enhanced sectionsAreEqual function
   const sectionsAreEqual = (section1, section2) => {
-    
-    console.log("SectionCheck1", section1)
-    
-    console.log("SectionCheck2", section2)
+    if (!section1 || !section2) return false;
     return (
       section1.name === section2.name &&
       section1.type === section2.type &&
       section1.description === section2.description &&
-      section1.marks === section2.marks
-    )
-  }
+      Number(section1.marks) === Number(section2.marks)
+    );
+  };
 
   // Function to categorize sections into new, updated, and unchanged
   const categorizeSections = (currentSections) => {
-    const newSectionsArray = []
-    const updatedSectionsArray = []
+    console.log("Categorizing sections:", currentSections);
+    console.log("Original sections:", originalSections);
+    
+    const newSectionsArray = [];
+    const updatedSectionsArray = [];
 
     currentSections.forEach((section) => {
+      console.log("Processing section:", section.name, "databaseId:", section.databaseId);
+      
       if (!section.databaseId) {
         // This is a completely new section
-        newSectionsArray.push(section)
-        console.log("ssection", section)
+        newSectionsArray.push(section);
+        console.log("New section:", section);
       } else {
         // This section exists in database, check if it's modified
-        const originalSection = originalSections.find((orig) => orig.id === section.databaseId)
-        console.log("Equal check", sectionsAreEqual(section, originalSection))
+        const originalSection = originalSections.find((orig) => orig.databaseId === section.databaseId);
+        console.log("Found original section:", originalSection);
+        console.log("Equal check", sectionsAreEqual(section, originalSection));
         if (originalSection && !sectionsAreEqual(section, originalSection)) {
-          console.log("OriginalSection", originalSection, section)
+          console.log("Section modified - OriginalSection", originalSection, "Current:", section);
           // Section has been modified
           updatedSectionsArray.push({
             ...section,
             originalData: originalSection,
-          })
+          });
         }
       }
-    })
+    });
 
-    setNewSections(newSectionsArray)
-    setUpdatedSections(updatedSectionsArray)
+    setNewSections(newSectionsArray);
+    setUpdatedSections(updatedSectionsArray);
 
-    console.log("New Sections:", newSectionsArray)
-    console.log("Updated Sections in categorize:", updatedSectionsArray)
-  }
+    console.log("New Sections:", newSectionsArray);
+    console.log("Updated Sections in categorize:", updatedSectionsArray);
+  };
 
   // Enhanced useEffect for section management
-  useEffect(() => {
-  console.log("Updated Sections Length:", exsistingInfo.sections)
+  // Removed the problematic useEffect that was creating duplicate sections
+  // Sections are now managed entirely by the fetch logic and SectionHandler
 
-  if (exsistingInfo.sections === undefined || exsistingInfo.sections === null) {
-    return
+useEffect(() => {
+  if (sectionLetters && sectionLetters.length > 0 && originalSections.length > 0) {
+    categorizeSections(sectionLetters);
   }
-  
-  console.log("Sections existing", sectionLetters)
-  
-  setSectionLetters((prevSectionLetters) => {
-    // If we have existing sections from database, don't override them during initial load
-    if(exsistingInfo.medium === "English") {
-      if (prevSectionLetters.length > 0 && prevSectionLetters.some((sec) => sec.isFromDatabase)) {
-        if (exsistingInfo.sections > prevSectionLetters.length) {
-          const additionalSections = Array.from(
-            { length: exsistingInfo.sections - prevSectionLetters.length },
-            (_, index) => ({
-              id: prevSectionLetters.length + index,
-              name: `Section "${String.fromCharCode(65 + prevSectionLetters.length + index)}"`,
-              type: "",
-              description: "",
-              marks: 0,
-              databaseId: null,
-              isFromDatabase: false,
-            }),
-          )
+}, [sectionLetters, originalSections]);
 
-          const updatedSections = [...prevSectionLetters, ...additionalSections]
-          setTimeout(() => categorizeSections(updatedSections), 0)
-          return updatedSections
-        } else if (exsistingInfo.sections < prevSectionLetters.length) {
-          const trimmedSections = prevSectionLetters.slice(0, exsistingInfo.sections)
-          setTimeout(() => categorizeSections(trimmedSections), 0)
-          return trimmedSections
+  // Function to create default sections
+  const createDefaultSections = (count, medium) => {
+    if (medium === "English") {
+      return Array.from({ length: count }, (_, index) => ({
+        id: index,
+        name: `Section "${String.fromCharCode(65 + index)}"`,
+        type: "",
+        description: "",
+        marks: 0,
+        databaseId: null,
+        isFromDatabase: false,
+      }));
+    } else if (medium === "Urdu") {
+      const urduAlphabet = ['الف', 'ب', 'پ', 'ت', 'ٹ', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ڈ', 'ذ', 'ر', 'ڑ', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ہ', 'ء', 'ی', 'ے'];
+      const getUrduLetter = (index) => {
+        if (index < urduAlphabet.length) {
+          return urduAlphabet[index];
         }
-        setTimeout(() => categorizeSections(prevSectionLetters), 0)
-        console.log("Sections updated", prevSectionLetters)
-        return prevSectionLetters
-      }
-
-      // Generate new sections - PRESERVE EXISTING VALUES
-      const usedNames = new Set(prevSectionLetters.map(sec => sec.name));
-      const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => {
-        const existingSection = prevSectionLetters[index]
-        // If section exists, preserve all its values
-        if (existingSection) {
-          usedNames.add(existingSection.name);
-          return {
-            ...existingSection,
-            id: existingSection.id || index,
-          }
-        }
-        // Only create default values for completely new sections
-        // Ensure unique section name
-        let charCode = 65 + index;
-        let name;
-        do {
-          name = `Section "${String.fromCharCode(charCode)}"`;
-          charCode++;
-        } while (usedNames.has(name));
-        usedNames.add(name);
-        return {
-          id: index,
-          name,
-          type: "",
-          description: "",
-          marks: 0,
-          databaseId: null,
-          isFromDatabase: false,
-        }
-      })
-      setTimeout(() => categorizeSections(newSections), 0)
-      return newSections
+        return (index + 1).toString();
+      };
+      return Array.from({ length: count }, (_, index) => ({
+        id: index,
+        name: `حصہ "${getUrduLetter(index)}"`,
+        type: "",
+        description: "",
+        marks: 0,
+        databaseId: null,
+        isFromDatabase: false,
+      }));
     }
-    // Urdu alphabet mapping
-else if(exsistingInfo.medium === "Urdu") {
-  const urduAlphabet = ['الف', 'ب', 'پ', 'ت', 'ٹ', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ڈ', 'ذ', 'ر', 'ڑ', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ہ', 'ء', 'ی', 'ے'];
-  // Generate new sections - PRESERVE EXISTING VALUES
-  const usedNames = new Set(prevSectionLetters.map(sec => sec.name));
-  const getUrduLetter = (index) => {
-    if (index < urduAlphabet.length) {
-      return urduAlphabet[index];
-    }
-    // For indices beyond the alphabet, fallback to the index number
-    return (index + 1).toString();
+    return [];
   };
-  const newSections = Array.from({ length: exsistingInfo.sections }, (_, index) => {
-    const existingSection = prevSectionLetters[index]
-    if (existingSection) {
-      usedNames.add(existingSection.name);
-      return {
-        ...existingSection,
-        id: existingSection.id || index,
-      }
-    }
-    // Ensure unique section name
-    let letterIndex = index;
-    let name;
-    do {
-      name = `حصہ "${getUrduLetter(letterIndex)}"`;
-      letterIndex++;
-    } while (usedNames.has(name));
-    usedNames.add(name);
-    return {
-      id: index,
-      name,
-      type: "",
-      description: "",
-      marks: 0,
-      databaseId: null,
-      isFromDatabase: false,
-    }
-  })
-  setTimeout(() => categorizeSections(newSections), 0)
-  return newSections
-}
-  return prevSectionLetters
-  })
-}, [exsistingInfo.sections, originalSections, sectionLetters, exsistingInfo.medium])
 
   // Enhanced fetch sections logic
   useEffect(() => {
@@ -669,19 +594,21 @@ else if(exsistingInfo.medium === "Urdu") {
             return a.name.localeCompare(b.name)
           })
 
+          // When fetching sections from the backend, set both id and databaseId
           const sectionsWithTracking = sortedSections.map((section) => ({
             ...section,
             databaseId: section.id,
+            id: section.id, // Ensure both are set
             isFromDatabase: true,
-          }))
+          }));
 
           setSectionLetters(sectionsWithTracking)
-          setOriginalSections(sectionsWithTracking)
+          setOriginalSections(JSON.parse(JSON.stringify(sectionsWithTracking)))
           setOldSectionLetters(sectionsWithTracking)
 
           setExsistingInfo((prev) => ({
             ...prev,
-            sections: prev.sections || sectionsWithTracking.length,
+            sections: sectionsWithTracking.length,
           }))
 
           // Map sections to questions
@@ -718,9 +645,20 @@ else if(exsistingInfo.medium === "Urdu") {
             setMCQs(deduplicateById(updatedMCQs))
           }
         } else {
-          console.log("No sections found in database, preserving auto-generated sections")
+          console.log("No sections found in database, creating default sections")
           setOriginalSections([])
           setOldSectionLetters([])
+          
+          // Create default sections based on medium
+          const defaultSections = createDefaultSections(3, exsistingInfo.medium);
+          console.log("Created default sections:", defaultSections);
+          setSectionLetters(defaultSections);
+          
+          // Set sections count to match the default sections created
+          setExsistingInfo((prev) => ({
+            ...prev,
+            sections: defaultSections.length,
+          }))
         }
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -819,22 +757,32 @@ else if(exsistingInfo.medium === "Urdu") {
       }
 
       // 2. Update existing sections
+      console.log("=== SECTION UPDATE DEBUG ===");
+      console.log("updatedSections length:", updatedSections.length);
+      console.log("updatedSections:", updatedSections);
+      console.log("newSections length:", newSections.length);
+      console.log("newSections:", newSections);
+      
       if (updatedSections.length > 0) {
-        console.log("Updating existing sections...")
+        console.log("Updating existing sections...", updatedSections)
 
         for (const sec of updatedSections) {
+          console.log("Updating section:", sec.name, "with databaseId:", sec.databaseId);
           try {
+            const updateData = {
+              section_id: sec.databaseId,
+              section: sec.name,
+              type: sec.type,
+              description: sec.description,
+              marks: sec.marks,
+              paper_id: paper.id
+            };
+            console.log("Sending update data:", updateData);
+            
             const response = await fetch("http://localhost:3000/Examination/updateSections", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                section_id: sec.databaseId,
-                section: sec.name,
-                type: sec.type,
-                description: sec.description,
-                marks: sec.marks,
-                paper_id: paper.id
-              }),
+              body: JSON.stringify(updateData),
             })
 
             const result = await response.json()
@@ -1014,9 +962,7 @@ else if(exsistingInfo.medium === "Urdu") {
       // Clear the tracking arrays after successful operations
 
       // Update original sections to current state for future comparisons
-      setTimeout(() => {
-        setOriginalSections([...sectionLetters])
-      }, 100)
+      setOriginalSections(JSON.parse(JSON.stringify(sectionLetters)));
 
       toast.success(`Paper ${action}ed!`)
       setIsSaved(true)
@@ -1090,6 +1036,14 @@ else if(exsistingInfo.medium === "Urdu") {
     setFeedbackLoading(false);
   };
   const handleCloseFeedback = () => setFeedbackOpen(false);
+
+  const handleSectionHandlerSave = (sections) => {
+    setSectionLetters(sections);
+    // Update the sections count to match the actual number of sections
+    setExsistingInfo(prev => ({ ...prev, sections: sections.length }));
+    categorizeSections(sections);
+    setSectionFlag(false);
+  };
 
   return (
     <div className="home" style={homeStyle}>
@@ -1264,6 +1218,7 @@ else if(exsistingInfo.medium === "Urdu") {
                 isSaved={isSaved}
                 deletedSections={deletedSections}
                 setDeletedSections={setDeletedSections}
+                onSave={handleSectionHandlerSave}
               />
 
               {sectionLetters.map((letter, index) => (

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { PDFViewer, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import parse from 'html-react-parser';
 import { Font } from '@react-pdf/renderer';
+import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 Font.register({
   family: 'TimesNewRoman',
@@ -428,14 +429,10 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
     );
 };
 
-const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section }) => {
-    console.log('PDF Data:', {
-        BasicInfo,
-        htmlQuestions,
-        htmlMCQ,
-        section
-    });
-
+const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section, loading }) => {
+    if (loading) {
+        return <Loader />;
+    }
     return (
         <PDFViewer
             showToolbar={false}

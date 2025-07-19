@@ -8,7 +8,6 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import Dialog from '@mui/material/Dialog';
 
 function MCQCreater() {
     const navigate = useNavigate();
@@ -41,8 +40,6 @@ function MCQCreater() {
     const [selectedChapters, setSelectedChapters] = useState(null);
     const [selectedTopic, setSelectedTopics] = useState(null);
     const [image, setImage] = useState(null);
-    const [previewImage, setPreviewImage] = useState(null);
-    const [openImageModal, setOpenImageModal] = useState(false);
     const [choices, setChoices] = useState([
         { id: 1, name: '' },
         { id: 2, name: '' },
@@ -173,7 +170,6 @@ function MCQCreater() {
         }
         
         setImage(file);
-        setPreviewImage(URL.createObjectURL(file));
     };
 
     const skipResetRef = useRef(true);
@@ -580,25 +576,6 @@ function MCQCreater() {
                                 {image ? image.name : "Drag & drop your question image here or click to browse"}
                             </Typography>
                         </Box>
-                        {previewImage && (
-                            <Box mt={2}>
-                                <img
-                                    src={previewImage}
-                                    alt="Preview"
-                                    style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}
-                                    onClick={() => setOpenImageModal(true)}
-                                />
-                                <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)} maxWidth="md">
-                                    <Box p={2} display="flex" justifyContent="center" alignItems="center">
-                                        <img
-                                            src={previewImage}
-                                            alt="Large Preview"
-                                            style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 8, border: '1px solid #ccc' }}
-                                        />
-                                    </Box>
-                                </Dialog>
-                            </Box>
-                        )}
                     </Box>
 
                     {/* Action Buttons */}

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { PDFViewer, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import parse from 'html-react-parser';
 import { Font } from '@react-pdf/renderer';
+import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 // Helper function to validate image format for react-pdf
 const isValidImageForPDF = (imageUrl) => {
@@ -280,7 +281,8 @@ const PaperHeader = ({ BasicInfo, styles }) => (
   </View>
 );
 
-const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
+const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading }) => {
+    if (loading) return <Loader />;
     function toRoman(num) {
         const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
         return romanNumerals[num - 1] || num;
@@ -508,16 +510,21 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section }) => {
     );
 };
 
-const PDFComponent = ({ htmlQuestions, htmlMCQ, BasicInfo, section }) => (
-  <PDFViewer style={{ width: '100%', height: '100vh', border: 'none' }}>
-    <PaperPDF
-      BasicInfo={BasicInfo}
-      htmlQuestions={htmlQuestions}
-      htmlMCQ={htmlMCQ}
-      section={section}
-    />
-  </PDFViewer>
-);
+const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section, loading }) => {
+    if (loading) return <Loader />;
+    return (
+        <PDFViewer style={{ width: '100%', height: '100vh', border: 'none' }}>
+            <PaperPDF
+                BasicInfo={BasicInfo}
+                htmlQuestions={htmlQuestions}
+                htmlMCQ={htmlMCQ}
+                section={section}
+                isUrdu={false}
+                loading={loading}
+            />
+        </PDFViewer>
+    );
+};
 
 export { PaperPDF };
 export default PDFComponent;

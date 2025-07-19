@@ -43,6 +43,7 @@ import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
 import { pdf } from '@react-pdf/renderer';
 import PDFComponent, { PaperPDF } from "./PaperKey";
+import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 
 const PaperApprove = () => {
@@ -115,6 +116,7 @@ const PaperApprove = () => {
     // date: new Date().toISOString().split("T")[0],
     // instruction: "No Instruction just attempt the Paper",
   });
+  const [loading, setLoading] = useState(true);
 
   
   useEffect(() => {
@@ -134,6 +136,7 @@ const PaperApprove = () => {
   useEffect(()=>{
     if (fetchedOnce.current) return; // Prevents second call
     fetchedOnce.current = true;
+    setLoading(true);
     console.log("PaperCheck", paper);
     console.log("PaperIDCheck", paper.id);
     
@@ -181,8 +184,8 @@ const PaperApprove = () => {
         performance.mark('paperview-process-start');
         
         if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
-          console.log("Fetched Sections:", sectionsResponse.data);
-          setSectionLetters(sectionsResponse.data);
+          const sortedSections = [...sectionsResponse.data].sort((a, b) => a.name.localeCompare(b.name));
+          setSectionLetters(sortedSections);
         }
     
         if (questionsResponse.code === 200) {
@@ -247,8 +250,14 @@ const PaperApprove = () => {
         // Log all performance measurements
         console.log('Performance Measurements:');
         console.log(performance.getEntriesByType('measure'));
+        setLoading(false);
+        // setPdfReady will be handled in PDFComponent after PDF is rendered
       })
-      .catch((error) => console.error("Error fetching data:", error));
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+        // setPdfReady will be handled in PDFComponent after PDF is rendered
+      });
     
   }, [paper]);
 
@@ -394,7 +403,6 @@ useEffect(() => {
             flexDirection: "column",
             width: "100%",
             height: "100%",
-            
           }}
         >
           {/* Sidebar or Left Section */}
@@ -472,7 +480,7 @@ useEffect(() => {
 
             {/* Content Section */}
           </Box>
-            
+          
           {/* Paper Viewer Section */}
           {console.log(selectedMCQ)}
           {console.log(selectedQuestion)}
@@ -486,30 +494,16 @@ useEffect(() => {
                 alignItems: "start", // or "center" if you want vertical center
             }}
             >
-            <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5 }}>
-                {/* Performance marker: Start PDF rendering */}
-                {(() => {
-                  performance.mark('paperview-pdf-render-start');
-                  console.log('Starting PDF rendering...');
-                  return null;
-                })()}
-                
-                <PDFComponent
+            <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5, justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+              <PDFComponent
                 htmlQuestions={selectedQuestion}
                 htmlMCQ={selectedMCQ}
                 BasicInfo={exsistingInfo}
                 section={sectionLetters}
-                />
-                
-                {/* Performance marker: End PDF rendering */}
-                {(() => {
-                  performance.mark('paperview-pdf-render-end');
-                  performance.measure('paperview-pdf-rendering', 'paperview-pdf-render-start', 'paperview-pdf-render-end');
-                  console.log('PDF rendering complete');
-                  return null;
-                })()}
+                loading={loading}
+              />
             </Box>
-            </Box>
+          </Box>
         </Box>
       </Box>
     </div>
