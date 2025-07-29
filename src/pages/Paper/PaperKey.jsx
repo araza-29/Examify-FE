@@ -1,32 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { PDFViewer, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import parse from 'html-react-parser';
 import { Font } from '@react-pdf/renderer';
 import { Loader } from '../../components/sectionHandler/sectionHandler';
 
-// Helper function to validate image format for react-pdf
-const isValidImageForPDF = (imageUrl) => {
-    if (!imageUrl) return false;
-    // Accept base64 images and URLs with supported extensions
-    return (
-        imageUrl.startsWith('data:image/jpeg;base64,') ||
-        imageUrl.startsWith('data:image/png;base64,') ||
-        imageUrl.toLowerCase().includes('.jpg') ||
-        imageUrl.toLowerCase().includes('.jpeg') ||
-        imageUrl.toLowerCase().includes('.png')
-    );
-};
-
-// Helper function to get image format
-const getImageFormat = (imageUrl) => {
-    if (!imageUrl) return null;
-    
-    const url = imageUrl.toLowerCase();
-    if (url.includes('.jpg') || url.includes('.jpeg')) return 'jpeg';
-    if (url.includes('.png')) return 'png';
-    return null;
-};
-
+// Register fonts
 Font.register({
   family: 'TimesNewRoman',
   fonts: [
@@ -41,10 +19,15 @@ Font.register({
   ],
 });
 
+Font.register({
+  family: 'JameelNooriNastaleeq',
+  src: '/fonts/jameel-noori-nastaleeq-kasheeda/Jameel Noori Nastaleeq Kasheeda/Jameel Noori Nastaleeq Kasheeda.ttf'
+});
+
 const styles = StyleSheet.create({
     page: {
         padding: 30,
-        fontFamily: 'Times-Roman',
+        fontFamily: 'TimesNewRoman',
     },
     header: {
         textAlign: 'center',
@@ -55,7 +38,8 @@ const styles = StyleSheet.create({
     },
     instituteName: {
         fontSize: 18,
-        fontFamily: 'Times-Bold',
+        fontFamily: 'TimesNewRoman',
+        fontWeight: 'bold',
         marginBottom: 10,
         textAlign: 'center',
         textTransform: 'uppercase',
@@ -83,59 +67,16 @@ const styles = StyleSheet.create({
     },
     detailText: {
         fontSize: 12,
-        fontFamily: 'Times-Roman',
+        fontFamily: 'TimesNewRoman',
         marginBottom: 2,
     },
     examTitle: {
         fontSize: 12,
-        fontFamily: 'Times-Bold',
+        fontFamily: 'TimesNewRoman',
+        fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 2,
         textTransform: 'uppercase'
-    },
-    timeDetails: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        fontSize: 12,
-        fontFamily: 'Times-Roman',
-    },
-    leftColumn: {
-        position: 'relative',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    date: {
-        position: 'absolute',
-        left: 10,
-        fontSize: 12,
-        fontFamily: 'Times-Roman',
-    },
-    rightGroup: {
-        position: 'absolute',
-        right: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    Time: {
-        fontSize: 12,
-        fontFamily: 'Times-Roman',
-        marginRight: 10,
-    },
-    marks: {
-        fontSize: 12,
-        fontFamily: 'Times-Roman',
-    },
-    subjectText: {
-        fontSize: 12,
-        fontFamily: 'Times-Roman',
-        marginBottom: 3,
-    },
-    maxMarksText: {
-        fontSize: 12,
-        fontFamily: 'Times-Bold',
     },
     sectionHeaderContainer: {
         flexDirection: 'row',
@@ -149,27 +90,19 @@ const styles = StyleSheet.create({
     },
     sectionHeader: {
         paddingTop: 10,
-        fontFamily: 'Times-Bold',
+        fontFamily: 'TimesNewRoman',
+        fontWeight: 'bold',
         textDecorationLine: 'underline',
         fontSize: 16,
         textAlign: 'center',
-        textTransform: 'uppercase',
-        textDecoration: 'underline'
+        textTransform: 'uppercase'
     },
-    sectionSubheader: {
-        textAlign: 'center',
-        fontFamily: 'Times-Roman',
-        fontSize: 10,
-        marginBottom: 5,
-    },
-    // Updated question style for continuous numbering
     question: {
         marginBottom: 5,
         fontSize: 12,
-        fontFamily: 'Times-Roman',
+        fontFamily: 'TimesNewRoman',
     },
-    // New style for notes as questions (non-descriptive sections)
-    noteContainer:{
+    noteContainer: {
         paddingTop: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -177,56 +110,35 @@ const styles = StyleSheet.create({
     noteAsQuestion: {
         marginBottom: 8,
         fontSize: 12,
-        fontFamily: 'Times-Bold',
+        fontFamily: 'TimesNewRoman',
         fontWeight: 'bold',
         flex: 5
     },
     sectionMarks: {
         marginBottom: 8,
-        fontFamily: 'Times-Roman',
+        fontFamily: 'TimesNewRoman',
         fontSize: 14,
         flex: 1
     },
-    // New style for normal notes (descriptive sections)
     normalNote: {
         marginBottom: 8,
         fontSize: 12,
-        fontFamily: 'Times-Bold',
+        fontFamily: 'TimesNewRoman',
         fontWeight: 'bold',
         textAlign: 'left',
         flex: 5
     },
-    // Style for descriptive questions with continuous numbering
     descriptiveQuestion: {
         marginBottom: 5,
         fontSize: 12,
-        fontFamily: 'Times-Roman',
+        fontFamily: 'TimesNewRoman',
         display: "flex",
         flexDirection: "column"
     },
     choice: {
         marginLeft: 10,
         fontSize: 10,
-        fontFamily: 'Times-Roman',
-    },
-    leftRightRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 5,
-        fontSize: 10,
-        fontFamily: 'Times-Roman',
-    },
-    leftText: {
-        textAlign: 'left',
-    },
-    rightText: {
-        textAlign: 'right',
-    },
-    divider: {
-        borderBottomWidth: 1,
-        borderBottomColor: 'black',
-        width: '100%',
-        marginBottom: 10,
+        fontFamily: 'TimesNewRoman',
     },
     questionImage: {
         width: '200px',
@@ -234,9 +146,54 @@ const styles = StyleSheet.create({
     },
     debugText: {
         fontSize: 10,
-        fontFamily: 'Times-Roman',
+        fontFamily: 'TimesNewRoman',
         marginBottom: 2,
     },
+    // Urdu specific styles
+    urduText: {
+        fontFamily: 'JameelNooriNastaleeq',
+        fontSize: 16,
+        direction: 'rtl',
+        textAlign: 'right',
+        lineHeight: 1.5,
+    },
+    urduSectionHeader: {
+        fontFamily: 'JameelNooriNastaleeq',
+        fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginVertical: 8,
+        direction: 'rtl',
+    },
+    urduInstruction: {
+        fontFamily: 'JameelNooriNastaleeq',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'right',
+        marginVertical: 6,
+        direction: 'rtl',
+    },
+    urduMarks: {
+        fontFamily: 'JameelNooriNastaleeq',
+        fontSize: 16,
+        textAlign: 'right',
+        marginVertical: 2,
+        direction: 'rtl',
+    },
+    urduQuestion: {
+        fontFamily: 'JameelNooriNastaleeq',
+        fontSize: 15,
+        textAlign: 'right',
+        marginVertical: 4,
+        direction: 'rtl',
+    },
+    urduChoice: {
+        fontFamily: 'JameelNooriNastaleeq',
+        fontSize: 14,
+        textAlign: 'right',
+        marginVertical: 2,
+        direction: 'rtl',
+    }
 });
 
 function formatTimeRange(startTime, durationHours) {
@@ -260,165 +217,145 @@ function formatTimeRange(startTime, durationHours) {
   return `${format(start)} - ${format(end)}`;
 }
 
-const PaperHeader = ({ BasicInfo, styles }) => (
+function toRoman(num) {
+    const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
+    return romanNumerals[num - 1] || num;
+}
+
+function toUrduRoman(num) {
+    const urduRomans = ['١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '١٠', '١١', '١٢', '١٣', '١٤', '١٥', '١٦', '١٧', '١٨', '١٩', '٢٠'];
+    return urduRomans[num - 1] || num;
+}
+
+const PaperHeader = ({ BasicInfo, styles, isUrdu }) => (
   <View style={styles.header} fixed>
-    <Text style={styles.instituteName}>{BasicInfo.header}</Text>
+    <Text style={isUrdu ? [styles.instituteName, styles.urduText] : styles.instituteName}>
+      {BasicInfo.header}
+    </Text>
     <View style={styles.examDetailsRow}>
       <View style={styles.leftDetails}>
-        <Text style={styles.detailText}>Date: {BasicInfo.date}</Text>
-        <Text style={styles.detailText}>
-          Time: {formatTimeRange(BasicInfo.time, BasicInfo.duration)}
+        <Text style={isUrdu ? [styles.detailText, styles.urduText] : styles.detailText}>
+          {isUrdu ? 'تاریخ:' : 'Date:'} {BasicInfo.date}
+        </Text>
+        <Text style={isUrdu ? [styles.detailText, styles.urduText] : styles.detailText}>
+          {isUrdu ? 'وقت:' : 'Time:'} {formatTimeRange(BasicInfo.time, BasicInfo.duration)}
         </Text>
       </View>
       <View style={styles.centerDetails}>
-        <Text style={styles.examTitle}>{BasicInfo.examination} EXAMINATION, {BasicInfo.ExaminationYear}</Text>
-        <Text style={styles.examTitle}>{BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})</Text>
+        <Text style={isUrdu ? [styles.examTitle, styles.urduText] : styles.examTitle}>
+          {BasicInfo.examination} {isUrdu ? 'امتحان,' : 'EXAMINATION,'} {BasicInfo.ExaminationYear}
+        </Text>
+        <Text style={isUrdu ? [styles.examTitle, styles.urduText] : styles.examTitle}>
+          {BasicInfo.subject} - {BasicInfo.class} ({BasicInfo.center})
+        </Text>
       </View>
       <View style={styles.rightDetails}>
-        <Text style={styles.detailText}>Max. Marks: {BasicInfo.marks}</Text>
+        <Text style={isUrdu ? [styles.detailText, styles.urduText] : styles.detailText}>
+          {isUrdu ? 'زیادہ سے زیادہ نمبر:' : 'Max. Marks:'} {BasicInfo.marks}
+        </Text>
       </View>
     </View>
   </View>
 );
 
-const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading }) => {
-    if (loading) return <Loader />;
-    function toRoman(num) {
-        const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
-        return romanNumerals[num - 1] || num;
-    }
-    function MCQ({ htmlString, choices, index, answer, imageUrl }) {
+const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
 
-    console.log("Choice:", choices[0]);
-    console.log("Answer:", answer);
-    console.log("Equal?", choices[0] === answer);
     const getChoiceStyle = (choice) => ({
         fontSize: 11,
-        fontFamily: "Times-Roman",
+        fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
         marginBottom: 2,
         lineHeight: 1.3,
         color: choice === answer ? 'green' : 'black',
         fontWeight: choice === answer ? 'bold' : 'normal',
-        backgroundColor: choice === answer ? '#d1ffd6' : 'transparent'
+        backgroundColor: choice === answer ? '#d1ffd6' : 'transparent',
+        textAlign: isUrdu ? 'right' : 'left',
+        direction: isUrdu ? 'rtl' : 'ltr'
     });
+
     return (
         <View style={{ marginBottom: 10 }}>
-            {/* Question header */}
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                <Text style={{ 
-                    fontFamily: "Times-Roman", 
+            <View style={{ 
+                flexDirection: 'row', 
+                marginBottom: 8,
+                justifyContent: isUrdu ? 'flex-end' : 'flex-start'
+            }}>
+                <Text style={isUrdu ? styles.urduQuestion : { 
+                    fontFamily: "TimesNewRoman", 
                     marginRight: 8, 
                     fontSize: 12,
                     minWidth: 20
                 }}>
-                    {toRoman(index)}.
+                    {isUrdu ? `${toUrduRoman(index)}.` : `${toRoman(index)}.`}
                 </Text>
                 <View style={{ flex: 1 }}>
-                    <Text style={{ 
+                    <Text style={isUrdu ? styles.urduQuestion : { 
                         fontSize: 12, 
-                        fontFamily: "Times-Roman",
+                        fontFamily: "TimesNewRoman",
                         lineHeight: 1.3
                     }}>
                         {parsedElements}
                     </Text>
-                    {imageUrl && isValidImageForPDF(imageUrl) && (
-                        <>
-                            <Image 
-                                src={imageUrl} 
-                                style={styles.questionImage}
-                                onError={(error) => {
-                                    console.error('Image load error for:', imageUrl, error);
-                                }}
-                                onLoad={() => {
-                                    console.log('Image loaded successfully:', imageUrl);
-                                }}
-                            />
-                        </>
-                    )}
-                    {imageUrl && !isValidImageForPDF(imageUrl) && (
-                        <Text style={styles.debugText}>
-                            Debug: Invalid image format: {imageUrl}
-                        </Text>
+                    {imageUrl && (
+                        <Image 
+                            src={imageUrl} 
+                            style={styles.questionImage}
+                        />
                     )}
                 </View>
             </View>
 
-            {/* Choices in two columns */}
             <View style={{ 
                 flexDirection: 'row', 
-                justifyContent: 'space-between',
-                paddingLeft: 28, // Align with question text
+                justifyContent: isUrdu ? 'flex-end' : 'flex-start',
+                paddingLeft: 28,
             }}>
-                {/* Left column */}
-                <View style={{ 
-                    width: '100%',
-                    alignItems: 'flex-start'
-                }}>
+                <View style={{ width: isUrdu ? '100%' : '45%' }}>
                     <Text style={getChoiceStyle(choices[0])}>
                         • {parsedChoices[0]}
                     </Text>
-                    
                     <Text style={getChoiceStyle(choices[1])}>
                         • {parsedChoices[1]}
                     </Text>
                 </View>
-
-                {/* Right column */}
-                <View style={{ 
-                    width: '45%',
-                    alignItems: 'flex-start'
-                }}>
-                    <Text style={getChoiceStyle(choices[2])}>
-                        • {parsedChoices[2]}
-                    </Text>
-                    
-                    <Text style={getChoiceStyle(choices[3])}>
-                        • {parsedChoices[3]}
-                    </Text>
-                </View>
+                {!isUrdu && (
+                    <View style={{ width: '45%' }}>
+                        <Text style={getChoiceStyle(choices[2])}>
+                            • {parsedChoices[2]}
+                        </Text>
+                        <Text style={getChoiceStyle(choices[3])}>
+                            • {parsedChoices[3]}
+                        </Text>
+                    </View>
+                )}
             </View>
         </View>
     );
-}
+};
+
+const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading }) => {
+    if (loading) return <Loader />;
+    
+    const getUrduTextStyle = (defaultStyle) => (isUrdu ? [defaultStyle, styles.urduText] : defaultStyle);
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                <PaperHeader BasicInfo={BasicInfo} styles={styles} />
-                {/* Sections */}
+                <PaperHeader BasicInfo={BasicInfo} styles={styles} isUrdu={isUrdu} />
+                
                 {section.map((sec, secIndex) => {
-                    // Calculate starting question number for this section
                     let questionCounter = 1;
                     
-                    // For non-descriptive sections, count all previous questions and notes as questions
-                    if (sec.type.toLowerCase() !== 'descriptive questions') {
-                        for (let i = 0; i < secIndex; i++) {
-                            const prevSection = section[i];
-                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
-                            
-                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
-                                // For previous descriptive sections, count questions normally
-                                questionCounter += prevQuestions + prevMCQs;
-                            } else {
-                                // For previous non-descriptive sections, count questions + 1 for note
-                                questionCounter += prevQuestions + prevMCQs + 1;
-                            }
-                        }
-                    } else {
-                        // For descriptive sections, count all previous questions and notes as questions
-                        for (let i = 0; i < secIndex; i++) {
-                            const prevSection = section[i];
-                            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-                            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
-                            
-                            if (prevSection.type.toLowerCase() === 'descriptive questions') {
-                                questionCounter += prevQuestions + prevMCQs;
-                            } else {
-                                questionCounter += prevQuestions + prevMCQs + 1; // +1 for note as question
-                            }
+                    for (let i = 0; i < secIndex; i++) {
+                        const prevSection = section[i];
+                        const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
+                        const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
+                        
+                        if (prevSection.type.toLowerCase() === 'descriptive questions') {
+                            questionCounter += prevQuestions + prevMCQs;
+                        } else {
+                            questionCounter += prevQuestions + prevMCQs + 1;
                         }
                     }
 
@@ -426,69 +363,95 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                         <View key={secIndex}>
                             <View style={styles.sectionHeaderContainer}>
                                 <View style={styles.sectionNameWrapper}>
-                                    <Text style={styles.sectionHeader}>{sec.name}</Text>
-                                    <Text style={styles.sectionHeader}>({sec.type})</Text>
+                                    <Text style={getUrduTextStyle(styles.sectionHeader)}>{sec.name}</Text>
+                                    <Text style={getUrduTextStyle(styles.sectionHeader)}>({sec.type})</Text>
                                 </View>
                             </View>
                             <View style={styles.noteContainer}>
-                                {/* Handle notes based on section type */}
                                 {sec.type.toLowerCase() === 'descriptive questions' ? (
-                                    /* Normal note for descriptive sections */
-                                    <Text style={styles.normalNote}>
-                                        NOTE: {sec.description}
+                                    <Text style={getUrduTextStyle(styles.normalNote)}>
+                                        {isUrdu ? 'نوٹ:' : 'NOTE:'} {sec.description}
                                     </Text>
                                 ) : (
-                                    /* Note as question for non-descriptive sections */
-                                    <Text style={styles.noteAsQuestion}>
-                                        Q{questionCounter}. {sec.description}
+                                    <Text style={getUrduTextStyle(styles.noteAsQuestion)}>
+                                        {isUrdu ? 'سوال' : 'Q'}{questionCounter}. {sec.description}
                                     </Text>
                                 )}
-                                <Text style={styles.sectionMarks}>({sec.marks} Marks)</Text>
+                                <Text style={isUrdu ? [styles.sectionMarks, styles.urduText] : styles.sectionMarks}>
+                                    ({sec.marks} {isUrdu ? 'نمبر' : 'Marks'})
+                                </Text>
                             </View>
-                            {/* Render questions with continuous numbering */}
-                        {htmlQuestions
-                            .filter(q => q.section === sec.name)
-                            .map((q, idx) => {
-                                const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
-                                const currentQuestionNumber = isDescriptive ? questionCounter + idx : null;
-                                const romanIndex = toRoman(idx + 1);
 
-                                return (
-                                    <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
-                                        {/* Question number and text */}
-                                        <Text>
-                                            {isDescriptive
-                                                ? `Q${currentQuestionNumber}. ${parse(q.name)}`
-                                                : `${romanIndex}. ${parse(q.name)}`}
-                                        </Text>
-                                        {/* Question image */}
-                                        {q.image && isValidImageForPDF(q.image) && (
-                                            <Image
-                                                src={q.image}
-                                                style={styles.questionImage}
-                                            />
-                                        )}
-                                        {/* Answer text */}
-                                        <Text>
-                                            Answer: {parse(q.original_answer)}
-                                        </Text>
-                                        {/* Answer image */}
-                                        {q.answer && isValidImageForPDF(q.answer) && (
-                                            <Image
-                                                src={q.answer}
-                                                style={styles.questionImage}
-                                            />
-                                        )}
-                                    </View>
-                                );
-                            })}
+                            {htmlQuestions
+                                .filter(q => q.section === sec.name)
+                                .map((q, idx) => {
+                                    const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
+                                    const currentQuestionNumber = questionCounter + idx;
+                                    
+                                    return (
+                                        <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
+                                            <View style={{ 
+                                                flexDirection: 'row', 
+                                                marginBottom: 5,
+                                                justifyContent: isUrdu ? 'flex-end' : 'flex-start'
+                                            }}>
+                                                <Text style={isUrdu ? styles.urduQuestion : { 
+                                                    fontFamily: "TimesNewRoman", 
+                                                    marginRight: 8, 
+                                                    fontSize: 12,
+                                                    minWidth: 20
+                                                }}>
+                                                    {isDescriptive ? 
+                                                        (isUrdu ? `سوال${currentQuestionNumber}.` : `Q${currentQuestionNumber}.`) 
+                                                        : 
+                                                        (isUrdu ? `${toUrduRoman(idx + 1)}.` : `${toRoman(idx + 1)}.`)
+                                                    }
+                                                </Text>
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={isUrdu ? styles.urduQuestion : { 
+                                                        fontSize: 12, 
+                                                        fontFamily: "TimesNewRoman",
+                                                        lineHeight: 1.3
+                                                    }}>
+                                                        {parse(q.name)}
+                                                    </Text>
+                                                    {q.image && (
+                                                        <Image 
+                                                            src={q.image} 
+                                                            style={styles.questionImage}
+                                                        />
+                                                    )}
+                                                </View>
+                                            </View>
+                                            <View style={{ 
+                                                flexDirection: 'row',
+                                                justifyContent: isUrdu ? 'flex-end' : 'flex-start',
+                                                marginTop: 5
+                                            }}>
+                                                <Text style={isUrdu ? styles.urduQuestion : { 
+                                                    fontSize: 12, 
+                                                    fontFamily: "TimesNewRoman",
+                                                    color: 'green',
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    {isUrdu ? 'جواب:' : 'Answer:'} {parse(q.original_answer)}
+                                                </Text>
+                                            </View>
+                                            {q.answer && (
+                                                <Image 
+                                                    src={q.answer} 
+                                                    style={styles.questionImage}
+                                                />
+                                            )}
+                                        </View>
+                                    );
+                                })}
 
-                            {/* Render MCQs with continuous numbering */}
                             {htmlMCQ
                                 .filter(q => q.section === sec.name)
                                 .map((q, idx) => {
                                     const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
-                                    const currentQuestionNumber = 1
+                                    const currentQuestionNumber = questionCounter + questionsInThisSection + idx;
                                     
                                     return (
                                         <View key={idx}>
@@ -498,6 +461,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
                                                 answer={q.original_answer}
                                                 imageUrl={q.image}
+                                                isUrdu={isUrdu}
                                             />
                                         </View>
                                     );
@@ -512,6 +476,8 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
 
 const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section, loading }) => {
     if (loading) return <Loader />;
+    const isUrdu = BasicInfo.medium === "Urdu";
+    
     return (
         <PDFViewer style={{ width: '100%', height: '100vh', border: 'none' }}>
             <PaperPDF
@@ -519,7 +485,7 @@ const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section,
                 htmlQuestions={htmlQuestions}
                 htmlMCQ={htmlMCQ}
                 section={section}
-                isUrdu={false}
+                isUrdu={isUrdu}
                 loading={loading}
             />
         </PDFViewer>

@@ -3,8 +3,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
-import Paper from "../Paper/Paper";
-import PaperKey from "../Paper/PaperKey";
+import Paper, { PaperPDF } from "../Paper/Paper";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";
@@ -42,7 +41,6 @@ import {
 import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
 import { pdf } from '@react-pdf/renderer';
-import PDFComponent, { PaperPDF } from "../Paper/PaperKey";
 import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 
@@ -137,7 +135,7 @@ const PaperView = () => {
     setLoading(true);
 
     // Start the timer (2 seconds)
-    const minLoader = new Promise(resolve => setTimeout(resolve, 3000));
+    const minLoader = new Promise(resolve => setTimeout(resolve, 10000));
 
     // Start the data fetch
     Promise.all([
@@ -375,6 +373,7 @@ useEffect(() => {
                 htmlMCQ={selectedMCQ}
                 BasicInfo={exsistingInfo}
                 section={sectionLetters}
+                webPreview={true}
               />
               {loading && (
                 <Box

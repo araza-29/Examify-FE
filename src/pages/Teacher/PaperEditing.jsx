@@ -126,14 +126,13 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
 
             <Grid item flexBasis="48%" xs={12} lg={10} 
               sx={{
-                flexGrow: 1,  // Allows expansion to available space
-                paddingLeft: { lg: 3 },  // Left padding only on large screens
+                flexGrow: 1,
+                paddingLeft: { lg: 3 },
                 marginBottom: 2,
-                // Remove right padding/margin to maximize right expansion
-                "& .MuiTextField-root": {  // Target the TextField
-                  width: "100%",  // Ensure full width
-                  "& .MuiInputBase-root": {  // Target the input
-                    paddingRight: "14px",  // Add internal right padding if needed
+                "& .MuiTextField-root": {
+                  width: "100%",
+                  "& .MuiInputBase-root": {
+                    paddingRight: "14px",
                   }
                 }
               }} mb={2}>
@@ -153,7 +152,7 @@ function PaperHeaderEditInfo({ OldData, setOldData, setEditOpen }) {
         justifyContent: 'center', 
         padding: '16px', 
         position: 'relative',
-        bottom: '10px' // Lifts the buttons up by 20px
+        bottom: '10px'
       }}>
         <Grid container justifyContent="center" spacing={2}>
           <Grid item>
@@ -319,17 +318,6 @@ function PaperHeaderInfo({ OldData, setOldData, setEditOpen }) {
               <Typography> {OldData.date}</Typography>
             </Box>
           </Grid>
-          {/* <Grid item xs={12}>
-            <Box display="flex" alignItems="center" sx={{ fontFamily: '"font-mar", Arial, sans-serif' }}>
-              <Box display="flex" flexWrap="wrap" sx={{ pt: "0.27rem" }}>
-                {OldData.departmentNames.map((d) => (
-                  <Tag key={d} sx={{ backgroundColor: "#7451f8" }}>
-                    {d}
-                  </Tag>
-                ))}
-              </Box>
-            </Box>
-          </Grid> */}
         </Grid>
       </Box>
     </Box>
@@ -380,120 +368,7 @@ const Teacher = () => {
     medium: "English"
   })
 
-  function convertTo12HourRange(timeStr, durationHours) {
-    // Fix "24" hour by converting it to 0 and adding a day if needed
-    let [hour, minute, second] = timeStr.split(":").map(Number);
-    if (hour >= 24) {
-      hour = hour - 24;
-    }
-
-    const start = new Date();
-    start.setHours(hour, minute, 0, 0);
-
-    const end = new Date(start);
-    end.setHours(start.getHours() + Number(durationHours));
-
-    const formatTime = (date) => {
-      const h = date.getHours() % 12 || 12;
-      const m = date.getMinutes().toString().padStart(2, "0");
-      const ampm = date.getHours() >= 12 ? "PM" : "AM";
-      return `${h}:${m}${ampm}`;
-    };
-
-    return `${formatTime(start)} to ${formatTime(end)}`;
-  }
-
-  // Prevent page refresh without saving
-  useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      console.log("IsSaved", isSaved)
-      if (!isSaved || isDisabled) {
-        event.preventDefault()
-        event.returnValue = "Are you sure?"
-      }
-    }
-    window.addEventListener("beforeunload", handleBeforeUnload)
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload)
-    }
-  }, [isSaved])
-
-  // Filter questions based on section changes
-  useEffect(() => {
-    setQuestions((prevQuestions) =>
-      prevQuestions.filter(
-        (q) =>
-          !sectionLetters.some((section) => section.name === q.section && section.type === "Multiple Choice Questions"),
-      ),
-    )
-    setMCQs((prevMCQs) =>
-      prevMCQs.filter(
-        (q) =>
-          !sectionLetters.some((section) => section.name === q.section && section.type === "Descriptive Questions"),
-      ),
-    )
-  }, [sectionLetters])
-
-  // Enhanced sectionsAreEqual function
-  const sectionsAreEqual = (section1, section2) => {
-    if (!section1 || !section2) return false;
-    return (
-      section1.name === section2.name &&
-      section1.type === section2.type &&
-      section1.description === section2.description &&
-      Number(section1.marks) === Number(section2.marks)
-    );
-  };
-
-  // Function to categorize sections into new, updated, and unchanged
-  const categorizeSections = (currentSections) => {
-    console.log("Categorizing sections:", currentSections);
-    console.log("Original sections:", originalSections);
-    
-    const newSectionsArray = [];
-    const updatedSectionsArray = [];
-
-    currentSections.forEach((section) => {
-      console.log("Processing section:", section.name, "databaseId:", section.databaseId);
-      
-      if (!section.databaseId) {
-        // This is a completely new section
-        newSectionsArray.push(section);
-        console.log("New section:", section);
-      } else {
-        // This section exists in database, check if it's modified
-        const originalSection = originalSections.find((orig) => orig.databaseId === section.databaseId);
-        console.log("Found original section:", originalSection);
-        console.log("Equal check", sectionsAreEqual(section, originalSection));
-        if (originalSection && !sectionsAreEqual(section, originalSection)) {
-          console.log("Section modified - OriginalSection", originalSection, "Current:", section);
-          // Section has been modified
-          updatedSectionsArray.push({
-            ...section,
-            originalData: originalSection,
-          });
-        }
-      }
-    });
-
-    setNewSections(newSectionsArray);
-    setUpdatedSections(updatedSectionsArray);
-
-    console.log("New Sections:", newSectionsArray);
-    console.log("Updated Sections in categorize:", updatedSectionsArray);
-  };
-
-  // Enhanced useEffect for section management
-  // Removed the problematic useEffect that was creating duplicate sections
-  // Sections are now managed entirely by the fetch logic and SectionHandler
-
-useEffect(() => {
-  if (sectionLetters && sectionLetters.length > 0 && originalSections.length > 0) {
-    categorizeSections(sectionLetters);
-  }
-}, [sectionLetters, originalSections]);
-
-  // Function to create default sections
+  // Function to create default sections based on medium
   const createDefaultSections = (count, medium) => {
     if (medium === "English") {
       return Array.from({ length: count }, (_, index) => ({
@@ -526,14 +401,100 @@ useEffect(() => {
     return [];
   };
 
+  function convertTo12HourRange(timeStr, durationHours) {
+    let [hour, minute, second] = timeStr.split(":").map(Number);
+    if (hour >= 24) {
+      hour = hour - 24;
+    }
+
+    const start = new Date();
+    start.setHours(hour, minute, 0, 0);
+
+    const end = new Date(start);
+    end.setHours(start.getHours() + Number(durationHours));
+
+    const formatTime = (date) => {
+      const h = date.getHours() % 12 || 12;
+      const m = date.getMinutes().toString().padStart(2, "0");
+      const ampm = date.getHours() >= 12 ? "PM" : "AM";
+      return `${h}:${m} ${ampm}`;
+    };
+
+    return `${formatTime(start)} to ${formatTime(end)}`;
+  }
+
+  // Prevent page refresh without saving
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!isSaved || isDisabled) {
+        event.preventDefault()
+        event.returnValue = "Are you sure?"
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
+  }, [isSaved])
+
+  // Filter questions based on section changes
+  useEffect(() => {
+    setQuestions((prevQuestions) =>
+      prevQuestions.filter(
+        (q) =>
+          !sectionLetters.some((section) => section.name === q.section && section.type === "Multiple Choice Questions"),
+      ),
+    )
+    setMCQs((prevMCQs) =>
+      prevMCQs.filter(
+        (q) =>
+          !sectionLetters.some((section) => section.name === q.section && section.type === "Descriptive Questions"),
+      ),
+    )
+  }, [sectionLetters])
+
+  const sectionsAreEqual = (section1, section2) => {
+    if (!section1 || !section2) return false;
+    return (
+      section1.name === section2.name &&
+      section1.type === section2.type &&
+      section1.description === section2.description &&
+      Number(section1.marks) === Number(section2.marks)
+    );
+  };
+
+  const categorizeSections = (currentSections) => {
+    const newSectionsArray = [];
+    const updatedSectionsArray = [];
+
+    currentSections.forEach((section) => {
+      if (!section.databaseId) {
+        newSectionsArray.push(section);
+      } else {
+        const originalSection = originalSections.find((orig) => orig.databaseId === section.databaseId);
+        if (originalSection && !sectionsAreEqual(section, originalSection)) {
+          updatedSectionsArray.push({
+            ...section,
+            originalData: originalSection,
+          });
+        }
+      }
+    });
+
+    setNewSections(newSectionsArray);
+    setUpdatedSections(updatedSectionsArray);
+  };
+
+  useEffect(() => {
+    if (sectionLetters && sectionLetters.length > 0 && originalSections.length > 0) {
+      categorizeSections(sectionLetters);
+    }
+  }, [sectionLetters, originalSections]);
+
   // Enhanced fetch sections logic
   useEffect(() => {
     if (fetchedOnce.current) return
     fetchedOnce.current = true
-
-    console.log("PaperCheck", paper)
-    console.log("PaperIDCheck", paper.id)
-    console.log("Paper type from backend:", paper.type)
 
     setExsistingInfo((prev) => ({
       ...prev,
@@ -552,7 +513,6 @@ useEffect(() => {
     const fetchDataSequentially = async () => {
       try {
         // Step 1: Fetch Questions
-        console.log("Step 1: Fetching Questions...")
         const questionsResponse = await fetch("http://localhost:3000/Examination/reviewQuestionsByPaperID", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -561,12 +521,10 @@ useEffect(() => {
 
         let fetchedQuestions = []
         if (questionsResponse.code === 200) {
-          console.log("Fetched Questions:", questionsResponse.data)
-          fetchedQuestions = deduplicateById(questionsResponse.data)
+          fetchedQuestions = questionsResponse.data
         }
 
         // Step 2: Fetch MCQs
-        console.log("Step 2: Fetching MCQs...")
         const mcqsResponse = await fetch("http://localhost:3000/Examination/reviewMCQsByPaperID", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -575,12 +533,10 @@ useEffect(() => {
 
         let fetchedMCQs = []
         if (mcqsResponse.code === 200) {
-          console.log("Fetched MCQs:", mcqsResponse.data)
-          fetchedMCQs = deduplicateById(mcqsResponse.data)
+          fetchedMCQs = mcqsResponse.data
         }
 
         // Step 3: Fetch Sections
-        console.log("Step 3: Fetching Sections...")
         const sectionsResponse = await fetch("http://localhost:3000/Examination/reviewSectionByPaperID", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -588,17 +544,14 @@ useEffect(() => {
         }).then((response) => response.json())
 
         if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
-          console.log("Fetched Sections:", sectionsResponse.data)
-
           const sortedSections = sectionsResponse.data.sort((a, b) => {
             return a.name.localeCompare(b.name)
           })
 
-          // When fetching sections from the backend, set both id and databaseId
           const sectionsWithTracking = sortedSections.map((section) => ({
             ...section,
             databaseId: section.id,
-            id: section.id, // Ensure both are set
+            id: section.id,
             isFromDatabase: true,
           }));
 
@@ -611,7 +564,6 @@ useEffect(() => {
             sections: sectionsWithTracking.length,
           }))
 
-          // Map sections to questions
           if (fetchedQuestions.length > 0) {
             const updatedQuestions = fetchedQuestions.map((question) => {
               const matchedSection = sectionsWithTracking.find(
@@ -623,12 +575,9 @@ useEffect(() => {
                 section: matchedSection ? matchedSection.name : null,
               }
             })
-
-            console.log("Updated Questions with Sections:", updatedQuestions)
-            setQuestions(deduplicateById(updatedQuestions))
+            setQuestions(updatedQuestions)
           }
 
-          // Map sections to MCQs
           if (fetchedMCQs.length > 0) {
             const updatedMCQs = fetchedMCQs.map((mcq) => {
               const matchedSection = sectionsWithTracking.find(
@@ -640,21 +589,15 @@ useEffect(() => {
                 section: matchedSection ? matchedSection.name : null,
               }
             })
-
-            console.log("Updated MCQs with Sections:", updatedMCQs)
-            setMCQs(deduplicateById(updatedMCQs))
+            setMCQs(updatedMCQs)
           }
         } else {
-          console.log("No sections found in database, creating default sections")
           setOriginalSections([])
           setOldSectionLetters([])
           
-          // Create default sections based on medium
-          const defaultSections = createDefaultSections(3, exsistingInfo.medium);
-          console.log("Created default sections:", defaultSections);
+          const defaultSections = createDefaultSections(3, paper.medium || "English");
           setSectionLetters(defaultSections);
           
-          // Set sections count to match the default sections created
           setExsistingInfo((prev) => ({
             ...prev,
             sections: defaultSections.length,
@@ -668,19 +611,11 @@ useEffect(() => {
     fetchDataSequentially()
   }, [])
 
-  // FIXED Enhanced submit handler
   const handleSubmitButton = async (action) => {
     setIsDisabled(true)
     setSectionsCheck([])
 
-    console.log("Current Sections:", sectionLetters)
-    console.log("New Sections to Create:", newSections)
-    console.log("Updated Sections:", updatedSections)
-    console.log("Existing information:", exsistingInfo)
-    console.log("PaperId", paper)
-
     try {
-      // Handle paper completion if submitting
       if (action === "Submit") {
         var totalMarks = selectedQuestion.reduce((sum, question) => {
           return sum + Number(question.marks)
@@ -695,7 +630,6 @@ useEffect(() => {
           return
         }
 
-        // Update paper completion status
         await fetch("http://localhost:3000/Examination/updatePaper", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -706,12 +640,9 @@ useEffect(() => {
         })
       }
 
-      // 1. Create new sections and store their database IDs
-      const sectionIdMapping = new Map() // Map original section ID to database ID
+      const sectionIdMapping = new Map()
 
       if (newSections.length > 0) {
-        console.log("Creating new sections...")
-
         for (const sec of newSections) {
           try {
             const response = await fetch("http://localhost:3000/Examination/createSection", {
@@ -728,19 +659,14 @@ useEffect(() => {
 
             const result = await response.json()
             if (result && result.data && result.data.id) {
-              // Store the mapping between original section and new database ID
               sectionIdMapping.set(sec.name, result.data.id)
-              console.log(`✅ Section ${sec.name} created with ID: ${result.data.id}`)
               setNewSections([])
-            } else {
-              console.error(`❌ Failed to create section ${sec.name}:`, result)
             }
           } catch (error) {
-            console.error(`❌ Error creating section ${sec.name}:`, error)
+            console.error(`Error creating section ${sec.name}:`, error)
           }
         }
 
-        // Update section letters with new database IDs
         setSectionLetters((prevSections) => {
           return prevSections.map((section) => {
             const newDatabaseId = sectionIdMapping.get(section.name)
@@ -756,18 +682,8 @@ useEffect(() => {
         })
       }
 
-      // 2. Update existing sections
-      console.log("=== SECTION UPDATE DEBUG ===");
-      console.log("updatedSections length:", updatedSections.length);
-      console.log("updatedSections:", updatedSections);
-      console.log("newSections length:", newSections.length);
-      console.log("newSections:", newSections);
-      
       if (updatedSections.length > 0) {
-        console.log("Updating existing sections...", updatedSections)
-
         for (const sec of updatedSections) {
-          console.log("Updating section:", sec.name, "with databaseId:", sec.databaseId);
           try {
             const updateData = {
               section_id: sec.databaseId,
@@ -777,7 +693,6 @@ useEffect(() => {
               marks: sec.marks,
               paper_id: paper.id
             };
-            console.log("Sending update data:", updateData);
             
             const response = await fetch("http://localhost:3000/Examination/updateSections", {
               method: "POST",
@@ -787,17 +702,14 @@ useEffect(() => {
 
             const result = await response.json()
             if (result && result.code === 200) {
-              console.log(`✅ Section ${sec.name} updated successfully`)
               setUpdatedSections([])
-            } else {
-              console.error(`❌ Failed to update section ${sec.name}:`, result)
             }
           } catch (error) {
-            console.error(`❌ Error updating section ${sec.name}:`, error)
+            console.error(`Error updating section ${sec.name}:`, error)
           }
         }
       }
-      // --- DELETE REMOVED SECTIONS ---
+
       if (deletedSections && deletedSections.length > 0) {
         for (const sectionId of deletedSections) {
           try {
@@ -811,16 +723,15 @@ useEffect(() => {
             })
             const result = await response.json()
             if (result && result.code === 200) {
-              console.log(`✅ Section deleted successfully: ${sectionId}`)
-            } else {
-              console.error(`❌ Failed to delete section: ${sectionId}`, result)
+              console.log(`Section deleted successfully: ${sectionId}`)
             }
           } catch (error) {
-            console.error(`❌ Error deleting section: ${sectionId}`, error)
+            console.error(`Error deleting section: ${sectionId}`, error)
           }
         }
         setDeletedSections([])
       }
+
       if (deletedQuestion !== null && deletedQuestion.length > 0) {
         const questionMapping = deletedQuestion.map(async (q)=>{
            const response = await fetch("http://localhost:3000/Examination/deleteQuestionMapping", {
@@ -834,13 +745,11 @@ useEffect(() => {
 
             const data = await response.json()
             if (data.code === 200) {
-              console.log("✅ Question Mapping deleted successfully!", q.id)
               setDeletedQuestion([])
-            } else {
-              console.error("❌ Failed to create question mapping:", data)
             }
         })
       }
+
       if (deletedMCQ !== null && deletedMCQ.length > 0) {
         const questionMapping = deletedMCQ.map(async (q)=>{
            const response = await fetch("http://localhost:3000/Examination/deleteMCQMapping", {
@@ -854,23 +763,15 @@ useEffect(() => {
 
             const data = await response.json()
             if (data.code === 200) {
-              console.log("✅ MCQ Mapping deleted successfully!", q.id)
               setDeletedMCQ([])
-            } else {
-              console.error("❌ Failed to create question mapping:", data)
             }
         })
       }
-      // 3. FIXED: Handle question mappings with proper section ID resolution
-      console.log("Creating question mappings...", newQuestion)
-      if (newQuestion !== null && newQuestion.length > 0) {
-        console.log("Creating question mappings...", newQuestion)
 
+      if (newQuestion !== null && newQuestion.length > 0) {
         const questionMappingPromises = newQuestion.map(async (q) => {
-          // Find section - check both database ID and name mapping
           let foundSection = sectionLetters.find((sec) => sec.name === q.section)
 
-          // If section was newly created, use the mapped database ID
           if (!foundSection?.databaseId && sectionIdMapping.has(q.section)) {
             foundSection = {
               ...foundSection,
@@ -879,7 +780,7 @@ useEffect(() => {
           }
 
           if (!foundSection?.databaseId) {
-            console.error(`❌ No section found for question ${q.id} with section ${q.section}`)
+            console.error(`No section found for question ${q.id} with section ${q.section}`)
             return
           }
 
@@ -890,35 +791,26 @@ useEffect(() => {
               body: JSON.stringify({
                 paper_id: paper.id,
                 question_id: q.id,
-                section_id: foundSection.databaseId, // Use databaseId instead of id
+                section_id: foundSection.databaseId,
               }),
             })
 
             const data = await response.json()
             if (data.code === 200) {
-              console.log("✅ Question Mapping Created successfully!", q.id)
               setNewQuestion([])
-            } else {
-              console.error("❌ Failed to create question mapping:", data)
             }
           } catch (error) {
-            console.error("❌ Error creating question mapping:", error)
+            console.error("Error creating question mapping:", error)
           }
         })
 
         await Promise.all(questionMappingPromises)
       }
 
-      // 4. FIXED: Handle MCQ mappings with proper section ID resolution
-      console.log("Creating MCQ mappings...", newMCQ)
       if (newMCQ !== null && newMCQ.length > 0) {
-        console.log("Creating MCQ mappings...", newMCQ)
-
         const mcqMappingPromises = newMCQ.map(async (q) => {
-          // Find section - check both database ID and name mapping
           let foundSection = sectionLetters.find((sec) => sec.name === q.section)
 
-          // If section was newly created, use the mapped database ID
           if (!foundSection?.databaseId && sectionIdMapping.has(q.section)) {
             foundSection = {
               ...foundSection,
@@ -927,7 +819,7 @@ useEffect(() => {
           }
 
           if (!foundSection?.databaseId) {
-            console.error(`❌ No section found for MCQ ${q.id} with section ${q.section}`)
+            console.error(`No section found for MCQ ${q.id} with section ${q.section}`)
             return
           }
 
@@ -938,36 +830,27 @@ useEffect(() => {
               body: JSON.stringify({
                 paper_id: paper.id,
                 mcqs_id: q.id,
-                section_id: foundSection.databaseId, // Use databaseId instead of id
+                section_id: foundSection.databaseId,
               }),
             })
 
             const data = await response.json()
             if (data.code === 200) {
-              console.log("✅ MCQ Mapping Created successfully!", q.id)
               setNewMCQ(null)
-            } else {
-              console.error("❌ Failed to create MCQ mapping:", data)
             }
           } catch (error) {
-            console.error("❌ Error creating MCQ mapping:", error)
+            console.error("Error creating MCQ mapping:", error)
           }
         })
 
         await Promise.all(mcqMappingPromises)
       }
 
-      console.log("✅ All operations completed successfully!")
-
-      // Clear the tracking arrays after successful operations
-
-      // Update original sections to current state for future comparisons
       setOriginalSections(JSON.parse(JSON.stringify(sectionLetters)));
-
       toast.success(`Paper ${action}ed!`)
       setIsSaved(true)
     } catch (error) {
-      console.error("❌ Error in handleSubmitButton:", error)
+      console.error("Error in handleSubmitButton:", error)
       toast.error("An error occurred while processing sections")
     } finally {
       setIsDisabled(false)
@@ -984,7 +867,6 @@ useEffect(() => {
 
   const marksTotal = (section, type) => {
     var sum = 0
-    console.log("selectedQuestion", selectedQuestion)
     if (type === "Multiple Choice Questions") {
       selectedMCQ.forEach((q) => {
         if (q.section == section) sum = sum + 1
@@ -994,7 +876,6 @@ useEffect(() => {
         if (q.section == section) sum = sum + q.marks
       })
     }
-    console.log(sum)
     return sum
   }
 
@@ -1005,7 +886,6 @@ useEffect(() => {
     backgroundColor: "#f0f2f5",
   }
 
-  // --- DEDUPLICATION UTILS ---
   function deduplicateById(arr) {
     const seen = new Set();
     return arr.filter(item => {
@@ -1035,11 +915,11 @@ useEffect(() => {
     }
     setFeedbackLoading(false);
   };
+
   const handleCloseFeedback = () => setFeedbackOpen(false);
 
   const handleSectionHandlerSave = (sections) => {
     setSectionLetters(sections);
-    // Update the sections count to match the actual number of sections
     setExsistingInfo(prev => ({ ...prev, sections: sections.length }));
     categorizeSections(sections);
     setSectionFlag(false);
@@ -1219,6 +1099,7 @@ useEffect(() => {
                 deletedSections={deletedSections}
                 setDeletedSections={setDeletedSections}
                 onSave={handleSectionHandlerSave}
+                medium={exsistingInfo.medium}
               />
 
               {sectionLetters.map((letter, index) => (
@@ -1289,6 +1170,7 @@ useEffect(() => {
               htmlMCQ={selectedMCQ}
               BasicInfo={exsistingInfo}
               section={sectionLetters}
+              isUrdu={exsistingInfo.medium === "Urdu"}
             />
           </Box>
         </Box>
