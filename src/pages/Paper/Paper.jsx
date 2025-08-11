@@ -504,10 +504,6 @@ const Paper = ({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview
   if (loading) return <Loader />;
   const isUrdu = BasicInfo.medium === "Urdu";
   
-  if (webPreview) {
-    return <PaperWebPreview BasicInfo={BasicInfo} htmlQuestions={htmlQuestions} htmlMCQ={htmlMCQ} section={section} />;
-  }
-  
   return (
     <PDFViewer showToolbar={false} style={{ width: '100%', height: '100vh', border: 'none' }}>
       <PaperPDF

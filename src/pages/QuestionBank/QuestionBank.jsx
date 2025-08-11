@@ -20,6 +20,7 @@ import {
   FormControl,
   Button,
   CardActions,
+  FormHelperText
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -98,8 +99,8 @@ const Home = () => {
 
   useEffect(() => {
     console.log("Class", selectedClasses);
-    if (selectedClasses !== null) {
-      // fetchSubjects();
+    if (selectedClasses !== null && selectedClasses.length !== 0) {
+      fetchSubjects();
       setQuestions(
         allQuestions.filter((item) => {
           return item.class_id === selectedClasses.id;
@@ -110,7 +111,7 @@ const Home = () => {
 
   useEffect(() => {
     console.log("Subject", selectedSubject);
-    if (selectedSubject !== null) {
+    if (selectedSubject !== null && selectedSubject.length !== 0) {
       fetchChapters();
       setQuestions(
         allQuestions.filter((item) => {
@@ -121,7 +122,7 @@ const Home = () => {
   }, [selectedSubject]);
 
   useEffect(() => {
-    if (selectedChapters !== null) {
+    if (selectedChapters !== null && selectedChapters.length !== 0) {
       fetchTopics();
       setQuestions(
         Questions.filter((item) => {
@@ -133,7 +134,7 @@ const Home = () => {
   }, [selectedChapters]);
 
   useEffect(() => {
-    if (selectedTopic !== null) {
+    if (selectedTopic !== null && selectedTopic.length !== 0  ) {
       setQuestions(
         Questions.filter((item) => {
           return item.topic_id === selectedTopic.id;
@@ -167,76 +168,76 @@ const Home = () => {
       });
   };
 
-  // const fetchSubjects = () => {
-  //   console.log("UserID", userID);
-  //   fetch("http://localhost:3000/Examination/reviewSubjectsByClassID", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({ class_id: selectedClasses.id }),
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       console.log("Subjects data", data);
-  //       if (data.code === 200) {
-  //         setSubjects(data.data);
-  //         setSelectedSubject(null);
-  //       } else {
-  //         console.log("Chapter data not found");
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching chapters:", error);
-  //     });
-  // };
+  const fetchSubjects = () => {
+    console.log("From fetchSubject UserID", userID);
+    fetch("http://localhost:3000/Examination/reviewSubjectsByClassID", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ class_id: selectedClasses.id }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Subjects data", data);
+        if (data.code === 200) {
+          setSubjects(data.data);
+          setSelectedSubject(null);
+        } else {
+          console.log("Chapter data not found");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching chapters:", error);
+      });
+  };
 
-  // const fetchChapters = () => {
-  //   fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({ subject_id: selectedSubject.id }),
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       console.log("Chapter data", data);
-  //       if (data.code === 200) {
-  //         setChapters(data.data);
-  //         setSelectedChapters(null);
-  //       } else {
-  //         console.log("Chapter data not found");
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching chapters:", error);
-  //     });
-  // };
-  // const fetchTopics = () => {
-  //   if (selectedChapters.id) {
-  //     fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ chapter_id: selectedChapters.id }),
-  //     })
-  //       .then((response) => response.json())
-  //       .then((data) => {
-  //         console.log("Topic data", data);
-  //         if (data.code === 200) {
-  //           setTopics(data.data);
-  //           setSelectedTopics(null);
-  //         } else {
-  //           console.log("Topics data not found");
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching topics:", error);
-  //       });
-  //   }
-  // };
+  const fetchChapters = () => {
+    fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ subject_id: selectedSubject.id }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Chapter data", data);
+        if (data.code === 200) {
+          setChapters(data.data);
+          setSelectedChapters(null);
+        } else {
+          console.log("Chapter data not found");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching chapters:", error);
+      });
+  };
+  const fetchTopics = () => {
+    if (selectedChapters.id) {
+      fetch("http://localhost:3000/Examination/reviewTopicsByChapterId", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chapter_id: selectedChapters.id }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Topic data", data);
+          if (data.code === 200) {
+            setTopics(data.data);
+            setSelectedTopics(null);
+          } else {
+            console.log("Topics data not found");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching topics:", error);
+        });
+    }
+  };
   const fetchQuestion = () => {
     fetch(
       "http://localhost:3000/Examination/reviewEveryDetailsQuestionsByUserID",
@@ -484,13 +485,13 @@ const Home = () => {
               </Button>
               ):(<></>)}
             </Box>
-            {/* Content Section
             {!flag ? (
               <Box
                 sx={{
+                  ml: 3,
                   display: "flex", // Enables flexbox
                   flexDirection: "row", // Aligns children horizontally
-                  gap: "8px", // Reduce space between the boxes
+                  gap: "60px", // Reduce space between the boxes
                   justifyContent: "flex-start", // Aligns boxes to the start of the container
                   alignItems: "center", // Vertically aligns items in the center
                 }}
@@ -503,6 +504,7 @@ const Home = () => {
                     setSelectedData={setSelectedClasses}
                     width={250}
                   />
+                  <FormHelperText> </FormHelperText>
                 </Box>
                 <Box>
                   <DropDown
@@ -511,6 +513,8 @@ const Home = () => {
                     selectedData={selectedSubject}
                     setSelectedData={setSelectedSubject}
                     width={250}
+                    disableFlag={true}
+                    disabled={selectedClasses}
                   />
                 </Box>
                 <Box>
@@ -520,21 +524,25 @@ const Home = () => {
                     selectedData={selectedChapters}
                     setSelectedData={setSelectedChapters}
                     width={250}
+                    disableFlag={true}
+                    disabled={selectedSubject}
                   />
                 </Box>
                 <Box>
                   <DropDown
                     name="Topics"
-                    data={Topic}
+                    data={topic}
                     selectedData={selectedTopic}
                     setSelectedData={setSelectedTopics}
                     width={250}
+                    disableFlag={true}
+                    disabled={selectedChapters}
                   />
                 </Box>
               </Box>
             ) : (
               <></>
-            )} */}
+            )}
             <Box
               sx={{
                 flex: 1,

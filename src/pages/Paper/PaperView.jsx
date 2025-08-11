@@ -91,13 +91,9 @@ const PaperView = () => {
   let [token] = useState(localStorage.getItem("token"));
   const [exsistingInfo, setExsistingInfo] = useState({
     header: 'THE EDUCATION LINK',
-    examination: 'PRELIMINARY',
-    subject: 'COMPUTER-X (JINNAH)',
     ExaminationYear: '2024-25',
     sections: 3,
     duration: '3',
-    time: "6:00PM to 9:00PM",
-    date: '01-12-2024',
     marks: 60,
     instruction: 'Attempt any 8 questions from this section. All questions carry equal marks.',
     // header: "FAST NUCES".toUpperCase(),
