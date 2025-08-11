@@ -10,6 +10,7 @@ import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import MCQinfo from "./MCQInfo";
+import toast from "react-hot-toast"
 import DropDown from "../../components/DropDown/DropDown"
 import { DataGrid, GridToolbar, getGridSingleSelectOperators } from "@mui/x-data-grid";
 
@@ -213,6 +214,29 @@ const Home = () => {
   const handleEdit = (mcq) => {
     setMCQInfo(mcq);
     setFlag(true)
+  }
+  const handleDelete = (id) => {
+    console.log("Tried to deleted")
+    fetch(`http://localhost:3000/Examination/deleteMCQ/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Deleted MCQ", id);
+        if (data.code === 200) {
+          console.log("MCQ deleted successfully")
+          setMCQs((prevMCQS)=>prevMCQS.filter((item) => item.id !== id));
+          toast.success("MCQ deleted successfully")
+        } else {
+          console.log("MCQ not deleted");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting question:", error);
+      });
   }
   const fetchSubjects = () => {
     console.log("UserID", userId)

@@ -7,7 +7,7 @@ import { Loader } from '../../components/sectionHandler/sectionHandler';
 // Register fonts
 try {
   Font.register({
-    family: 'JameelNooriNastaleeq',
+    family: 'TimesNewRoman',
     src: '/fonts/jameel-noori-nastaleeq-kasheeda.ttf',
   });
   console.log('Urdu font registered successfully');
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailText: {
-    fontSize: 12,
+    fontSize: 15,
     fontFamily: 'TimesNewRoman',
     marginBottom: 2,
   },
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase'
   },
   urduSectionHeader: {
-    fontFamily: 'JameelNooriNastaleeq',
+    fontFamily: 'TimesNewRoman',
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     flex: 5
   },
   urduNoteAsQuestion: {
-    fontFamily: 'JameelNooriNastaleeq',
+    fontFamily: 'TimesNewRoman',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     flex: 5
   },
   urduNormalNote: {
-    fontFamily: 'JameelNooriNastaleeq',
+    fontFamily: 'TimesNewRoman',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
@@ -154,9 +154,10 @@ const styles = StyleSheet.create({
     flex: 1
   },
   urduSectionMarks: {
-    fontFamily: 'JameelNooriNastaleeq',
+    fontFamily: 'TimesNewRoman',
     fontSize: 16,
     marginBottom: 8,
+    marginLeft: 10,
     flex: 1,
     direction: 'rtl',
     textAlign: 'left', // Align to left for marks position
@@ -176,24 +177,25 @@ const styles = StyleSheet.create({
   },
   questionImage: {
     width: 200,
-    marginTop: 5
+    marginTop: 5,
+    textAlign: 'center'
   },
   urduText: {
-    fontFamily: 'JameelNooriNastaleeq',
+    fontFamily: 'TimesNewRoman',
     fontSize: 16,
     direction: 'rtl',
     textAlign: 'right',
     lineHeight: 1.5,
   },
   urduQuestion: {
-    fontFamily: 'JameelNooriNastaleeq',
+    fontFamily: 'TimesNewRoman',
     fontSize: 15,
     textAlign: 'right',
     marginVertical: 4,
     direction: 'rtl',
   },
   urduChoice: {
-    fontFamily: 'JameelNooriNastaleeq',
+    fontFamily: 'TimesNewRoman',
     fontSize: 14,
     textAlign: 'right',
     marginVertical: 2,
@@ -381,8 +383,9 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                   <Text style={isUrdu ? styles.urduSectionHeader : styles.sectionHeader}>
                     {sec.name}
                   </Text>
-                  <Text style={isUrdu ? styles.urduSectionHeader : styles.sectionHeader}>
-                    ({sec.type})
+                  <Text>
+                    {console.log("Check check",sec)}
+                    ({sec.displayType})
                   </Text>
                 </View>
               </View>
@@ -393,7 +396,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                   // For Urdu: Marks on left, question text on right
                   <>
                     <Text style={styles.urduSectionMarks}>
-                      {"   کل نشانات    :    ("  + sec.marks + ")"}
+                      {"   کل نشانات : ("+ sec.marks +")"}
                     </Text>
                     {sec.type.toLowerCase() === 'descriptive questions' ? (
                       <Text style={styles.urduNormalNote}>
@@ -497,6 +500,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
 };
 
 const Paper = ({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview }) => {
+  console.log("Paper component rendered with BasicInfo:", BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview);
   if (loading) return <Loader />;
   const isUrdu = BasicInfo.medium === "Urdu";
   

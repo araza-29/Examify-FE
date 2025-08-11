@@ -30,14 +30,47 @@ export default function SectionHandler({
   isSaved,
   deletedSections,
   setDeletedSections,
-  onSave // <-- new prop
+  onSave,
+  medium
 }) {
   const [editedSections, setEditedSections] = useState(sections);
+  const [displayValues, setDisplayValues] = useState({});
+
+  const getSectionTypeName = (type) => {
+    if (medium === 'Urdu') {
+      switch (type) {
+        case 'Short Questions':
+          return 'مختصر سوالات کے جوابات';
+        case 'Descriptive Questions':
+          return 'تفصیلی سوالات کے جوابات';
+        case 'Multiple Choice Questions':
+          return 'کثیر الانتخابی سوالات';
+        default:
+          return type;
+      }
+    }
+    return type;
+  };
+
+  const getSectionTypeValue = (displayName) => {
+    if (medium === 'Urdu') {
+      switch (displayName) {
+        case 'مختصر سوالات کے جوابات':
+          return 'Short Questions';
+        case 'تفصیلی سوالات کے جوابات':
+          return 'Descriptive Questions';
+        case 'کثیر الانتخابی سوالات':
+          return 'Multiple Choice Questions';
+        default:
+          return displayName;
+      }
+    }
+    return displayName;
+  };
 
   const getNextAlphabetLetter = () => {
     if (editedSections.length === 0) return '"A"';
     
-    // Get the last section's letter and continue from there
     const lastSection = editedSections[editedSections.length - 1];
     const match = lastSection.name.match(/Section\s+"([A-Z])"/);
     
@@ -45,7 +78,6 @@ export default function SectionHandler({
       const lastLetter = match[1];
       const nextCharCode = lastLetter.charCodeAt(0) + 1;
       
-      // Ensure we don't go beyond 'Z'
       if (nextCharCode > 90) {
         toast.error("Maximum 26 sections allowed (A-Z)");
         return null;
@@ -54,19 +86,17 @@ export default function SectionHandler({
       return `"${String.fromCharCode(nextCharCode)}"`;
     }
     
-    // Fallback: if no match found, start from 'A'
     return '"A"';
   };
 
   const addNewSection = () => {
-    // Check if we've reached the maximum number of sections (A-Z = 26)
     if (editedSections.length >= 26) {
       toast.error("Maximum 26 sections allowed (A-Z)");
       return;
     }
     
     const nextLetter = getNextAlphabetLetter();
-    if (!nextLetter) return; // Error already shown in getNextAlphabetLetter
+    if (!nextLetter) return;
     
     const newSection = {
       name: `Section ${nextLetter}`,
@@ -80,31 +110,33 @@ export default function SectionHandler({
 
   const removeSection = (index) => {
     const updatedSections = [...editedSections];
-    // Save the databaseId of the section to be deleted, if it exists
     const removedSection = updatedSections[index];
     if (removedSection && removedSection.databaseId) {
       setDeletedSections(prev => [...prev, removedSection.databaseId]);
     }
     updatedSections.splice(index, 1);
     
-    // Reorder section names to maintain consistency with quotes
     const reorderedSections = updatedSections.map((section, idx) => ({
       ...section,
-      name: `Section "${String.fromCharCode(65 + idx)}"` // "A", "B", "C", etc.
+      name: `Section "${String.fromCharCode(65 + idx)}"`
     }));
     
     setEditedSections(reorderedSections);
+    
+    setDisplayValues(prev => {
+      const newValues = {...prev};
+      delete newValues[index];
+      return newValues;
+    });
   };
 
   const handleSubmit = () => {
-    // Filter out sections that have only partial data
     const validSections = editedSections.filter(sec => {
       const hasSomeData = sec.type || sec.description || sec.marks > 0;
       const hasAllData = sec.type && sec.description && sec.marks > 0;
       return !hasSomeData || hasAllData;
     });
 
-    // Preserve databaseId and other properties from original sections
     const processedSections = validSections.map(sec => {
       const originalSection = sections.find(orig => orig.name === sec.name);
       return {
@@ -115,7 +147,6 @@ export default function SectionHandler({
       };
     });
 
-    // Find any sections with partial data to show error
     const hasPartialSections = editedSections.some(sec => {
       const hasSomeData = sec.type || sec.description || sec.marks > 0;
       const hasAllData = sec.type && sec.description && sec.marks > 0;
@@ -146,25 +177,34 @@ export default function SectionHandler({
 
     setSections(processedSections);
     setIsSaved(false);
-    // setSectionFlag(false); // Remove this, parent will handle closing
     if (onSave) {
       onSave(processedSections);
     }
     toast.success("Sections saved successfully!");
   };
 
-  // Sync editedSections with sections prop when dialog opens
   useEffect(() => {
     if (sectionFlag) {
       setEditedSections(sections);
+      
+      const initialDisplayValues = {};
+      
+      sections.forEach((section, index) => {
+        if (section.type) {
+          initialDisplayValues[index] = getSectionTypeName(section.type);
+        }
+      });
+      
+      setDisplayValues(initialDisplayValues);
     }
-  }, [sectionFlag]);
+  }, [sectionFlag, medium]);
 
   return (
     <Dialog
       open={sectionFlag}
       onClose={() => setSectionFlag(false)}
       maxWidth="lg"
+      dir={medium === 'Urdu' ? 'rtl' : 'ltr'}
       sx={{
         "& .MuiDialog-paper": {
           borderRadius: "8px",
@@ -207,23 +247,52 @@ export default function SectionHandler({
 
             <FormControl sx={{ minWidth: 200 }}>
               <Select
-                value={section.type || ''}
+                value={displayValues[index] || ''}
                 onChange={(e) => {
                   const updatedSections = [...editedSections];
-                  updatedSections[index].type = e.target.value;
+                  const englishType = getSectionTypeValue(e.target.value);
+                  updatedSections[index].type = englishType;
+                  updatedSections[index].displayType = e.target.value;
                   setEditedSections(updatedSections);
+                  setDisplayValues(prev => ({
+                    ...prev,
+                    [index]: e.target.value
+                  }));
                 }}
                 displayEmpty
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return 'Section Type';
+                  }
+                  return selected;
+                }}
               >
-                <MenuItem value="">Section Type</MenuItem>
-                <MenuItem value="Short Questions" disabled={editedSections.some((sec, idx) => sec.type === 'Short Questions' && idx !== index)}>
-                  Short Questions
+                <MenuItem value="">
+                  Section Type
                 </MenuItem>
-                <MenuItem value="Descriptive Questions" disabled={editedSections.some((sec, idx) => sec.type === 'Descriptive Questions' && idx !== index)}>
-                  Descriptive Questions
+                <MenuItem 
+                  value={medium === 'Urdu' ? 'مختصر سوالات کے جوابات' : 'Short Questions'} 
+                  disabled={editedSections.some((sec, idx) => 
+                    sec.type === 'Short Questions' && idx !== index
+                  )}
+                >
+                  {medium === 'Urdu' ? 'مختصر سوالات کے جوابات' : 'Short Questions'}
                 </MenuItem>
-                <MenuItem value="Multiple Choice Questions" disabled={editedSections.some((sec, idx) => sec.type === 'Multiple Choice Questions' && idx !== index)}>
-                  Multiple Choice Questions
+                <MenuItem 
+                  value={medium === 'Urdu' ? 'تفصیلی سوالات کے جوابات' : 'Descriptive Questions'} 
+                  disabled={editedSections.some((sec, idx) => 
+                    sec.type === 'Descriptive Questions' && idx !== index
+                  )}
+                >
+                  {medium === 'Urdu' ? 'تفصیلی سوالات کے جوابات' : 'Descriptive Questions'}
+                </MenuItem>
+                <MenuItem 
+                  value={medium === 'Urdu' ? 'کثیر الانتخابی سوالات' : 'Multiple Choice Questions'} 
+                  disabled={editedSections.some((sec, idx) => 
+                    sec.type === 'Multiple Choice Questions' && idx !== index
+                  )}
+                >
+                  {medium === 'Urdu' ? 'کثیر الانتخابی سوالات' : 'Multiple Choice Questions'}
                 </MenuItem>
               </Select>
             </FormControl>

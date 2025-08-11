@@ -6,6 +6,7 @@ import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import { DataGrid, GridToolbar, getGridSingleSelectOperators } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast"
 import {
   Card,
   Typography,
@@ -279,6 +280,32 @@ const Home = () => {
       )
     );
   };
+
+  const handleDelete = (id) => {
+    console.log("Tried to deleted")
+    fetch(`http://localhost:3000/Examination/deleteQuestion/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Deleted Questions", id);
+        if (data.code === 200) {
+          console.log("Questions deleted successfully")
+          setQuestions((prevQuestions) =>
+            prevQuestions.filter((item) => item.id !== id)
+          );
+          toast.success("Question deleted successfully")
+        } else {
+          console.log("Question not deleted");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting question:", error);
+      });
+  }
   const handleNavigate = () => {
     if(flag) {
       setFlag(false)
