@@ -6,7 +6,7 @@ import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from 'react-router-dom';
-import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, TextField, FormControl, Button, CardActions} from '@mui/material';
+import {Card, Typography, Box, Grid, CardContent, Select, MenuItem, InputLabel, TextField, FormControl, Button, CardActions, FormHelperText} from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenSquare, faCalendar, faClock, faClipboard, faSchoolCircleXmark, faSchool, faXmarkCircle, faArrowLeft, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import MCQinfo from "./MCQInfo";
@@ -58,10 +58,12 @@ const Home = () => {
   const [userId, setUserId] = useState(parseInt(localStorage.getItem("userId"), 10));
   const [MCQs, setMCQs] = useState([]);
   const [MCQInfo, setMCQInfo] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [Chapters, setChapters] = useState([]);
   const [allMCQs, setAllMCQs] = useState([]);
   const [Topic, setTopics] = useState([]);
+  const [selectedClasses, setSelectedClasses] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedChapters, setSelectedChapters] = useState(null);
   const [selectedTopic, setSelectedTopics] = useState(null);
@@ -74,7 +76,7 @@ const Home = () => {
         // },
         {
           field: "name",
-          headerName: "Question",
+          headerName: "MCQs",
           width: 230,
         },
         {
@@ -166,40 +168,58 @@ const Home = () => {
         //   },
         // },
       ];
-  useEffect(()=> {
-    fetchSubjects();
+  useEffect(() => {
+    fetchClasses();
     fetchMCQ();
-  },[userId])
-  // useEffect(()=> {
-  //   console.log("Subject", selectedSubject)
-  //   if(selectedSubject !== null) {
-  //     fetchChapters();
-  //     setMCQs(allMCQs.filter((item)=> {
-  //       return(item.subject_id === selectedSubject.id) 
-  //   }))
-  //   }
-  // },[selectedSubject])
+  }, [userId]);
 
-  // useEffect(()=> {
-  //   if(selectedChapters !== null) {
-  //       fetchTopics();
-  //       setMCQs(allMCQs.filter((item)=> {
-  //           return(item.chapter_id === selectedChapters.id) 
-  //       }))
-  //   }
-  //   console.log("Selected MCQs", MCQs);
-  //   console.log("Selectedchapters", selectedChapters);
-  // },[selectedChapters])
+  useEffect(() => {
+    console.log("Class", selectedClasses);
+    if (selectedClasses !== null && selectedClasses.length !== 0) {
+      fetchSubjects();
+      setMCQs(
+        allMCQs.filter((item) => {
+          return item.class_id === selectedClasses.id;
+        })
+      );
+    }
+  }, [selectedClasses]);
 
-  // useEffect(()=> {
-  //   if(selectedTopic !== null) {
-  //       setMCQs(allMCQs.filter((item)=> {
-  //           return(item.topic_id === selectedTopic.id) 
-  //       }))
-  //   }
-  //   console.log("Selected MCQs", MCQs);
-  //   console.log("Selected topics", selectedTopic);
-  // },[selectedTopic])
+  useEffect(() => {
+    console.log("Subject", selectedSubject);
+    if (selectedSubject !== null && selectedSubject.length !== 0) {
+      fetchChapters();
+      setMCQs(
+        allMCQs.filter((item) => {
+          return item.subject_id === selectedSubject.id;
+        })
+      );
+    }
+  }, [selectedSubject]);
+
+  useEffect(() => {
+    if (selectedChapters !== null && selectedChapters.length !== 0) {
+      fetchTopics();
+      setMCQs(
+        MCQs.filter((item) => {
+          return item.chapter_id === selectedChapters.id;
+        })
+      );
+    }
+    console.log("Selectedchapters", selectedChapters);
+  }, [selectedChapters]);
+
+  useEffect(() => {
+    if (selectedTopic !== null && selectedTopic.length !== 0  ) {
+      setMCQs(
+        MCQs.filter((item) => {
+          return item.topic_id === selectedTopic.id;
+        })
+      );
+    }
+    console.log("Selected topics", selectedTopic);
+  }, [selectedTopic]);
+
   const handleNavigate = () => {
     if(flag) {
       setFlag(false)
@@ -238,28 +258,51 @@ const Home = () => {
         console.error("Error deleting question:", error);
       });
   }
-  const fetchSubjects = () => {
-    console.log("UserID", userId)
-    fetch("http://localhost:3000/Examination/reviewSubjectsByUserID",{
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({user_id: userId})
+  const fetchClasses = () => {
+    console.log("UserID", userId);
+    fetch("http://localhost:3000/Examination/reviewClassesByUserID", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: userId }),
     })
-    .then(response => response.json())
-    .then((data) => {
-        console.log("Subjects data", data);
-        if(data.code === 200) {
-            setSubjects(data.data);
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Classes data", data);
+        if (data.code === 200) {
+          setClasses(data.data);
+          setSelectedClasses(null);
+        } else {
+          console.log("Class data not found");
         }
-        else {
-            console.log("Chapter data not found");
-        }
-    }).catch((error) => {
+      })
+      .catch((error) => {
         console.error("Error fetching chapters:", error);
+      });
+  };
+  const fetchSubjects = () => {
+    fetch("http://localhost:3000/Examination/reviewSubjectsByClassID", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ class_id: selectedClasses.id }),
     })
-  }
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Subjects data", data);
+        if (data.code === 200) {
+          setSubjects(data.data);
+          setSelectedSubject(null);
+        } else {
+          console.log("Chapter data not found");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching chapters:", error);
+      });
+  };
   const fetchChapters = () => {
     console.log("subjectId", selectedSubject)
     fetch("http://localhost:3000/Examination/reviewChaptersBySubjectId",{
@@ -274,6 +317,7 @@ const Home = () => {
         console.log("Chapter data", data);
         if(data.code === 200) {
             setChapters(data.data);
+            setSelectedChapters(null);
         }
         else {
             console.log("Chapter data not found");
@@ -296,6 +340,7 @@ const Home = () => {
             console.log("Topic data", data);
             if(data.code === 200) {
                 setTopics(data.data);
+                setSelectedTopics(null);
             }
             else {
                 console.log("Topics data not found");
@@ -370,17 +415,75 @@ const Home = () => {
               </Button>
               ):(<></>)}
             </Box>
+            {!flag ? (
+                <Box
+                  sx={{
+                    ml: 3,
+                    display: "flex", // Enables flexbox
+                    flexDirection: "row", // Aligns children horizontally
+                    gap: "60px", // Reduce space between the boxes
+                    justifyContent: "flex-start", // Aligns boxes to the start of the container
+                    alignItems: "center", // Vertically aligns items in the center
+                  }}
+                >
+                  <Box>
+                    <DropDown
+                      name="Class"
+                      data={classes}
+                      selectedData={selectedClasses}
+                      setSelectedData={setSelectedClasses}
+                      width={250}
+                    />
+                  </Box>
+                  <Box>
+                    <DropDown
+                      name="Subjects"
+                      data={subjects}
+                      selectedData={selectedSubject}
+                      setSelectedData={setSelectedSubject}
+                      width={250}
+                      disableFlag={true}
+                      disabled={selectedClasses}
+                    />
+                  </Box>
+                  <Box>
+                    <DropDown
+                      name="Chapters"
+                      data={Chapters}
+                      selectedData={selectedChapters}
+                      setSelectedData={setSelectedChapters}
+                      width={250}
+                      disableFlag={true}
+                      disabled={selectedSubject}
+                    />
+                  </Box>
+                  <Box>
+                    <DropDown
+                      name="Topics"
+                      data={Topic}
+                      selectedData={selectedTopic}
+                      setSelectedData={setSelectedTopics}
+                      width={250}
+                      disableFlag={true}
+                      disabled={selectedChapters}
+                    />
+                  </Box>
+                </Box>
+              ) : (
+                <></>
+              )}
             {/* Content Section */}
             {flag === true ? <MCQEditor MCQ={MCQInfo} setFlag={setFlag} setMCQ={setMCQInfo}/> :(
               <Box
                 sx={{
-                  display: 'flex',          // Enables flexbox
-                  flexDirection: 'row',      // Aligns children horizontally
-                  gap: '8px',                // Reduce space between the boxes
-                  justifyContent: 'flex-start', // Aligns boxes to the start of the container
-                  alignItems: 'center', 
-                  padding: 4,   
-                  height: "100%"  // Vertically aligns items in the center
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: '8px',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  px: 2,               // Theme spacing value (16px if using default theme)
+                  py: 0,               // 0 padding on top/bottom
+                  height: "100%"
                 }}
               >
                 <DataGrid
@@ -393,15 +496,6 @@ const Home = () => {
                     Toolbar: GridToolbar,
                   }}
                 />
-                {/* <Box>
-                  <DropDown name="Subjects" data={subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} />
-                </Box>
-                <Box>
-                  <DropDown name="Chapters" data={Chapters} selectedData={selectedChapters} setSelectedData={setSelectedChapters} />
-                </Box>
-                <Box>
-                  <DropDown name="Topics" data={Topic} selectedData={selectedTopic} setSelectedData={setSelectedTopics} />
-                </Box> */}
               </Box>
               )}
             {/* <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 2 }}>
@@ -412,8 +506,6 @@ const Home = () => {
         </Box>
       </Box>
     </div>
-
-
   );
 };
 

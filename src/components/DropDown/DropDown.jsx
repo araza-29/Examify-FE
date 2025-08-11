@@ -57,9 +57,9 @@ const SearchableDropDown = ({data, selectedData,error = false, setSelectedData, 
                         </MenuItem>
                     ))}
                 </Select>
-                {isDisabled && (
+                {/* {isDisabled && (
                     <FormHelperText>No options available</FormHelperText>
-                )}
+                )} */}
             </FormControl>
         </div>
     );

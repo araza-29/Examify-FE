@@ -504,7 +504,6 @@ const Home = () => {
                     setSelectedData={setSelectedClasses}
                     width={250}
                   />
-                  <FormHelperText> </FormHelperText>
                 </Box>
                 <Box>
                   <DropDown
@@ -548,7 +547,7 @@ const Home = () => {
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
-                padding: 2,
+                px: 2,
               }}
             >
               {console.log("1Selected QUestions", Questions)}
