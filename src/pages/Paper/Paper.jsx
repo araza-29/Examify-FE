@@ -68,8 +68,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailText: {
-    fontSize: 15,
+    fontSize: 12,
     fontFamily: 'TimesNewRoman',
+    fontWeight: 'bold',
     marginBottom: 2,
   },
   examTitle: {
@@ -93,14 +94,32 @@ const styles = StyleSheet.create({
   sectionHeader: {
     paddingTop: 10,
     fontWeight: 'bold',
-    textDecorationLine: 'underline',
+    textDecoration: 'underline',  // Use 'textDecoration' instead of 'textDecorationLine'
     fontSize: 16,
+    textDecorationThickness: 10,
+    textAlign: 'center',
+    textTransform: 'uppercase'
+  },
+  sectionHeaderType: {
+    paddingTop: 10,
+    fontWeight: 'bold',
+    textDecoration: 'underline',  // Use 'textDecoration' here too
+    fontSize: 14,
+    textDecorationThickness: 20,
     textAlign: 'center',
     textTransform: 'uppercase'
   },
   urduSectionHeader: {
     fontFamily: 'TimesNewRoman',
     fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 8,
+    direction: 'rtl',
+  },
+  urduSectionHeaderType: {
+    fontFamily: 'TimesNewRoman',
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 8,
@@ -119,7 +138,7 @@ const styles = StyleSheet.create({
   },
   noteAsQuestion: {
     marginBottom: 8,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
     flex: 5
   },
@@ -151,6 +170,7 @@ const styles = StyleSheet.create({
   sectionMarks: {
     marginBottom: 8,
     fontSize: 14,
+    fontWeight: 'bold',
     flex: 1
   },
   urduSectionMarks: {
@@ -165,7 +185,7 @@ const styles = StyleSheet.create({
   },
   question: {
     marginBottom: 5,
-    fontSize: 12,
+    fontSize: 20,
   },
   descriptiveQuestion: {
     marginBottom: 5,
@@ -173,12 +193,14 @@ const styles = StyleSheet.create({
   },
   choice: {
     marginLeft: 10,
-    fontSize: 10,
+    fontSize: 15,
   },
   questionImage: {
-    width: 200,
-    marginTop: 5,
-    textAlign: 'center'
+      width: '400px',
+      marginTop: 5,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      display: 'block'
   },
   urduText: {
     fontFamily: 'TimesNewRoman',
@@ -218,14 +240,14 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
           fontFamily: "TimesNewRoman", 
           marginRight: isUrdu ? 0 : 8,
           marginLeft: isUrdu ? 8 : 0,
-          fontSize: 12, 
+          fontSize: 15, 
           minWidth: 20 
         }}>
           {`${toRoman(index)}.`}
         </Text>
         <View style={{ flex: 1 }}>
           <Text style={isUrdu ? styles.urduQuestion : { 
-            fontSize: 12, 
+            fontSize: 15, 
             fontFamily: "TimesNewRoman", 
             lineHeight: 1.3 
           }}>
@@ -362,17 +384,17 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
         <PaperHeader BasicInfo={BasicInfo} />
         
         {section.map((sec, secIndex) => {
-          let questionCounter = 1;
-          
+          // Calculate the starting question number for this section
+          let sectionQuestionNumber = 1;
           for (let i = 0; i < secIndex; i++) {
             const prevSection = section[i];
-            const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-            const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
-            
             if (prevSection.type.toLowerCase() === 'descriptive questions') {
-              questionCounter += prevQuestions + prevMCQs;
+              const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
+              sectionQuestionNumber += prevQuestions;
             } else {
-              questionCounter += prevQuestions + prevMCQs + 1;
+              // For MCQ and Short Answer sections, we only increment by 1
+              // since the internal questions use Roman numerals
+              sectionQuestionNumber += 1;
             }
           }
 
@@ -383,17 +405,14 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                   <Text style={isUrdu ? styles.urduSectionHeader : styles.sectionHeader}>
                     {sec.name}
                   </Text>
-                  <Text>
-                    {console.log("Check check",sec)}
+                  <Text style={isUrdu ? styles.urduSectionHeaderType : styles.sectionHeaderType}>
                     ({sec.displayType})
                   </Text>
                 </View>
               </View>
               
-              {/* Updated note container to swap positions for Urdu */}
               <View style={isUrdu ? styles.urduNoteContainer : styles.noteContainer}>
                 {isUrdu ? (
-                  // For Urdu: Marks on left, question text on right
                   <>
                     <Text style={styles.urduSectionMarks}>
                       {"   کل نشانات : ("+ sec.marks +")"}
@@ -404,12 +423,11 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                       </Text>
                     ) : (
                       <Text style={styles.urduNoteAsQuestion}>
-                        سوال نمبر {questionCounter}. {sec.description}
+                        سوال نمبر {sectionQuestionNumber}. {sec.description}
                       </Text>
                     )}
                   </>
                 ) : (
-                  // For English: Question text on left, marks on right
                   <>
                     {sec.type.toLowerCase() === 'descriptive questions' ? (
                       <Text style={styles.normalNote}>
@@ -417,7 +435,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                       </Text>
                     ) : (
                       <Text style={styles.noteAsQuestion}>
-                        Q{questionCounter}. {sec.description}
+                        Q{sectionQuestionNumber}. {sec.description}
                       </Text>
                     )}
                     <Text style={styles.sectionMarks}>
@@ -431,7 +449,6 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                 .filter(q => q.section === sec.name)
                 .map((q, idx) => {
                   const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
-                  const currentQuestionNumber = questionCounter + idx;
                   
                   return (
                     <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
@@ -444,18 +461,18 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                           fontFamily: "TimesNewRoman",
                           marginRight: isUrdu ? 0 : 8,
                           marginLeft: isUrdu ? 8 : 0,
-                          fontSize: 12, 
+                          fontSize: 15, 
                           minWidth: 20 
                         }}>
                           {isDescriptive ? 
-                            `Q${currentQuestionNumber}.`
+                            `Q${sectionQuestionNumber + idx}.` // Continue numbering for descriptive
                             : 
-                            `${toRoman(idx + 1)}.`
+                            `${toRoman(idx + 1)}.` // Use Roman for others
                           }
                         </Text>
                         <View style={{ flex: 1 }}>
                           <Text style={isUrdu ? styles.urduQuestion : { 
-                            fontSize: 12, 
+                            fontSize: 15, 
                             fontFamily: "TimesNewRoman",
                             lineHeight: 1.3
                           }}>
@@ -476,13 +493,10 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
               {htmlMCQ
                 .filter(q => q.section === sec.name)
                 .map((q, idx) => {
-                  const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
-                  const currentQuestionNumber = questionCounter + questionsInThisSection + idx;
-                  
                   return (
                     <View key={idx}>
                       <MCQComponent 
-                        index={currentQuestionNumber} 
+                        index={idx + 1} // Use Roman numerals starting from i
                         htmlString={q.name} 
                         choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
                         imageUrl={q.image}

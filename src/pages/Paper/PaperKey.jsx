@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontFamily: 'TimesNewRoman',
         marginBottom: 2,
+        fontWeight: 'bold',
     },
     examTitle: {
         fontSize: 12,
@@ -97,9 +98,18 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         textTransform: 'uppercase'
     },
+    sectionHeaderType: {
+        paddingTop: 10,
+        fontWeight: 'bold',
+        textDecoration: 'underline',  // Use 'textDecoration' here too
+        fontSize: 14,
+        textDecorationThickness: 20,
+        textAlign: 'center',
+        textTransform: 'uppercase'
+    },
     question: {
         marginBottom: 5,
-        fontSize: 12,
+        fontSize: 20,
         fontFamily: 'TimesNewRoman',
     },
     noteContainer: {
@@ -109,7 +119,7 @@ const styles = StyleSheet.create({
     },
     noteAsQuestion: {
         marginBottom: 8,
-        fontSize: 12,
+        fontSize: 13,
         fontFamily: 'TimesNewRoman',
         fontWeight: 'bold',
         flex: 5
@@ -118,6 +128,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         fontFamily: 'TimesNewRoman',
         fontSize: 14,
+        fontWeight: 'bold',
         flex: 1
     },
     normalNote: {
@@ -137,12 +148,15 @@ const styles = StyleSheet.create({
     },
     choice: {
         marginLeft: 10,
-        fontSize: 10,
+        fontSize: 15,
         fontFamily: 'TimesNewRoman',
     },
     questionImage: {
-        width: '200px',
-        marginTop: 5
+        width: '400px',
+        marginTop: 5,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        display: 'block'
     },
     debugText: {
         fontSize: 10,
@@ -160,6 +174,14 @@ const styles = StyleSheet.create({
     urduSectionHeader: {
         fontFamily: 'JameelNooriNastaleeq',
         fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginVertical: 8,
+        direction: 'rtl',
+    },
+    urduSectionHeaderType: {
+        fontFamily: 'TimesNewRoman',
+        fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 8,
@@ -261,15 +283,17 @@ const PaperHeader = ({ BasicInfo, styles, isUrdu }) => (
 const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
-
+    console.log("Parsed Choices:", parsedChoices, answer);
     const getChoiceStyle = (choice) => ({
-        fontSize: 11,
+        fontSize: 15,
         fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
         marginBottom: 2,
         lineHeight: 1.3,
         color: choice === answer ? 'green' : 'black',
+        textDecorationLine: choice === answer ? 'underline' : 'none',
+        textDecorationColor: choice === answer ? 'green' : 'transparent',
+        textDecorationThickness: choice === answer ? '2px' : '0',
         fontWeight: choice === answer ? 'bold' : 'normal',
-        backgroundColor: choice === answer ? '#d1ffd6' : 'transparent',
         textAlign: isUrdu ? 'right' : 'left',
         direction: isUrdu ? 'rtl' : 'ltr'
     });
@@ -284,14 +308,14 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                 <Text style={isUrdu ? styles.urduQuestion : { 
                     fontFamily: "TimesNewRoman", 
                     marginRight: 8, 
-                    fontSize: 12,
+                    fontSize: 15,
                     minWidth: 20
                 }}>
                     {isUrdu ? `${toUrduRoman(index)}.` : `${toRoman(index)}.`}
                 </Text>
                 <View style={{ flex: 1 }}>
                     <Text style={isUrdu ? styles.urduQuestion : { 
-                        fontSize: 12, 
+                        fontSize: 15, 
                         fontFamily: "TimesNewRoman",
                         lineHeight: 1.3
                     }}>
@@ -364,7 +388,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                             <View style={styles.sectionHeaderContainer}>
                                 <View style={styles.sectionNameWrapper}>
                                     <Text style={getUrduTextStyle(styles.sectionHeader)}>{sec.name}</Text>
-                                    <Text style={getUrduTextStyle(styles.sectionHeader)}>({sec.type})</Text>
+                                    <Text style={getUrduTextStyle(styles.sectionHeaderType)}>({sec.type})</Text>
                                 </View>
                             </View>
                             <View style={styles.noteContainer}>
@@ -398,7 +422,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                 <Text style={isUrdu ? styles.urduQuestion : { 
                                                     fontFamily: "TimesNewRoman", 
                                                     marginRight: 8, 
-                                                    fontSize: 12,
+                                                    fontSize: 15,
                                                     minWidth: 20
                                                 }}>
                                                     {isDescriptive ? 
@@ -409,7 +433,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                 </Text>
                                                 <View style={{ flex: 1 }}>
                                                     <Text style={isUrdu ? styles.urduQuestion : { 
-                                                        fontSize: 12, 
+                                                        fontSize: 15, 
                                                         fontFamily: "TimesNewRoman",
                                                         lineHeight: 1.3
                                                     }}>
@@ -429,7 +453,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                 marginTop: 5
                                             }}>
                                                 <Text style={isUrdu ? styles.urduQuestion : { 
-                                                    fontSize: 12, 
+                                                    fontSize: 15, 
                                                     fontFamily: "TimesNewRoman",
                                                     color: 'green',
                                                     fontWeight: 'bold'
@@ -452,14 +476,14 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                 .map((q, idx) => {
                                     const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
                                     const currentQuestionNumber = questionCounter + questionsInThisSection + idx;
-                                    
+                                    console.log("MCQS CHECK", q)
                                     return (
                                         <View key={idx}>
                                             <MCQ 
                                                 index={currentQuestionNumber} 
                                                 htmlString={q.name} 
                                                 choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
-                                                answer={q.original_answer}
+                                                answer={q.answer}
                                                 imageUrl={q.image}
                                                 isUrdu={isUrdu}
                                             />

@@ -376,6 +376,7 @@ const Teacher = () => {
         name: `Section "${String.fromCharCode(65 + index)}"`,
         type: "",
         description: "",
+        displayType: "",
         marks: 0,
         databaseId: null,
         isFromDatabase: false,
@@ -393,6 +394,7 @@ const Teacher = () => {
         name: `حصہ "${getUrduLetter(index)}"`,
         type: "",
         description: "",
+        displayType: "",
         marks: 0,
         databaseId: null,
         isFromDatabase: false,
@@ -542,7 +544,7 @@ const Teacher = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ paper_id: paper.id }),
         }).then((response) => response.json())
-
+        console.log("Sections Response", sectionsResponse)
         if (sectionsResponse.code === 200 && sectionsResponse.data.length !== 0) {
           const sortedSections = sectionsResponse.data.sort((a, b) => {
             return a.name.localeCompare(b.name)
@@ -645,6 +647,7 @@ const Teacher = () => {
       if (newSections.length > 0) {
         for (const sec of newSections) {
           try {
+            console.log(`Creating section ${sec.name} with type ${sec.type}`)
             const response = await fetch("http://localhost:3000/Examination/createSection", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -653,6 +656,7 @@ const Teacher = () => {
                 paper_id: paper.id,
                 type: sec.type,
                 description: sec.description,
+                displayType: sec.displayType,
                 marks: sec.marks,
               }),
             })
@@ -690,6 +694,7 @@ const Teacher = () => {
               section: sec.name,
               type: sec.type,
               description: sec.description,
+              displayType: sec.displayType,
               marks: sec.marks,
               paper_id: paper.id
             };

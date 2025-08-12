@@ -47,6 +47,7 @@ import { Loader } from '../../components/sectionHandler/sectionHandler';
 const PaperView = () => {
   const location = useLocation();
   const [paper, setPaper] = useState(location.state?.paper || []);
+  console.log("PaperView Paper:", paper);
   const fetchedOnce = useRef(false);
   const homeStyle = {
     display: "flex",
@@ -90,25 +91,20 @@ const PaperView = () => {
   const [sectionsCheck, setSectionsCheck] = useState([]);
   let [token] = useState(localStorage.getItem("token"));
   const [exsistingInfo, setExsistingInfo] = useState({
-    header: 'THE EDUCATION LINK',
-    ExaminationYear: '2024-25',
+    header: "THE EDUCATION LINK",
+    examination: "PRELIMINARY",
+    subject: "COMPUTER-X (JINNAH)",
+    ExaminationYear: "2024-25",
     sections: 3,
-    duration: '3',
+    duration: "3",
+    time: "6:00PM to 9:00PM",
+    date: "01-12-2024",
     marks: 60,
-    instruction: 'Attempt any 8 questions from this section. All questions carry equal marks.',
-    // header: "FAST NUCES".toUpperCase(),
-    // centerName: [],
-    // class: "Class",
-    // subject: "Subject Name",
-    // ExaminationYear: "2023",
+    instruction: "Attempt any 8 questions from this section. All questions carry equal marks.",
     departmentNames: ["Jinnah", "Iqbal"],
-    // sections: 3,
-    // duration: "4 hours",
-    // marks: 80,
-    // date: new Date().toISOString().split("T")[0],
-    // instruction: "No Instruction just attempt the Paper",
-  });
-  const [loading, setLoading] = useState(true);
+    medium: "English"
+  })
+const [loading, setLoading] = useState(true);
 
   
   useEffect(() => {
@@ -125,10 +121,44 @@ const PaperView = () => {
       };
 }, [isSaved]);
 
+  function convertTo12HourRange(timeStr, durationHours) {
+    let [hour, minute, second] = timeStr.split(":").map(Number);
+    if (hour >= 24) {
+      hour = hour - 24;
+    }
+
+    const start = new Date();
+    start.setHours(hour, minute, 0, 0);
+
+    const end = new Date(start);
+    end.setHours(start.getHours() + Number(durationHours));
+
+    const formatTime = (date) => {
+      const h = date.getHours() % 12 || 12;
+      const m = date.getMinutes().toString().padStart(2, "0");
+      const ampm = date.getHours() >= 12 ? "PM" : "AM";
+      return `${h}:${m} ${ampm}`;
+    };
+
+    return `${formatTime(start)} to ${formatTime(end)}`;
+  }
   useEffect(()=>{
     if (fetchedOnce.current) return; // Prevents second call
     fetchedOnce.current = true;
     setLoading(true);
+    setExsistingInfo((prev) => ({
+      ...prev,
+      subject: paper.subject_name,
+      class: paper.class_name,
+      ExaminationYear: paper.year,
+      examination: paper.type ? paper.type.toUpperCase() : "MONTHLY",
+      duration: paper.duration,
+      marks: paper.marks,
+      date: paper.date,
+      center: paper.center_name,
+      medium: paper.medium,
+      time: convertTo12HourRange(paper.time, paper.duration)
+    }))
 
     // Start the timer (2 seconds)
     const minLoader = new Promise(resolve => setTimeout(resolve, 10000));

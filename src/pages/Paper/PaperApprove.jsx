@@ -495,6 +495,12 @@ useEffect(() => {
             }}
             >
             <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5, justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+              <Paper
+                htmlQuestions={selectedQuestion}
+                htmlMCQ={selectedMCQ}
+                BasicInfo={exsistingInfo}
+                section={sectionLetters}
+                />
               <PDFComponent
                 htmlQuestions={selectedQuestion}
                 htmlMCQ={selectedMCQ}

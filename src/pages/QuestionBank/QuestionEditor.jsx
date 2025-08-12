@@ -106,6 +106,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
 
     // Fetch functions
     const fetchAnswer = () => {
+        console.log("In answer")
         fetch("http://localhost:3000/Examination/reviewAnswer", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -114,6 +115,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
         .then(response => response.json())
         .then((data) => {
             if (data.code === 200) {
+                console.log("In Answer Data:", data);
                 setQuestion({ ...Questions, answer_id: data.data.id, answer: data.data.answer });
                 setAnswerImage(data.data.image);
                 setEditedQuestion({ ...editedQuestion, answer_id: data.data.id, answer: data.data.answer });
@@ -515,7 +517,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                     <FormHelperText>{errors.type.message}</FormHelperText>
                 )}
             </FormControl>
-
+            {console.log("Edited Question:", editedQuestion)}
             <TextField
                 required
                 variant="outlined"
