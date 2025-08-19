@@ -10,6 +10,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Dialog from '@mui/material/Dialog';
+import TextEditor from '../../components/TextEditor/TextEditor.jsx';
 
 function QuestionCreater() {
   const navigate = useNavigate();
@@ -200,6 +201,7 @@ function QuestionCreater() {
       toast.error("Please fill all required fields");
       return;
     }
+    console.log("QUESTIONCheck", Question);
     console.log("IMAGECHECK", image);
 
     const formData = new FormData();
@@ -311,8 +313,17 @@ function QuestionCreater() {
               Create Questions
             </Typography>
           </Box>
-
-          <TextField
+          <div style={{ marginBottom: '20px' }}>
+            <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+              Write your question here *
+            </Typography>
+            <TextEditor 
+              value={Question.name} 
+              onChange={(value) => {setQuestion({...Question, name: value}); console.log("QuestionChecking", Question)}}
+              placeholder="Enter your question text here..."
+            />
+          </div>
+          {/* <TextField
             required
             variant="outlined"
             label="Write your question here"
@@ -343,7 +354,7 @@ function QuestionCreater() {
             InputLabelProps={{ shrink: true }} 
             error={errors.question}
             helperText={errors.question && "This field is required"}
-          />
+          /> */}
 
           <TextField
             required
@@ -432,7 +443,7 @@ function QuestionCreater() {
             {errors.type && <FormHelperText error>This field is required</FormHelperText>}
           </FormControl>
 
-          <TextField
+          {/* <TextField
             required 
             variant="outlined"
             label="Answer"
@@ -463,8 +474,19 @@ function QuestionCreater() {
             }}
             error={errors.answer}
             helperText={errors.answer && "This field is required"}
-          />
+          /> */}
+          
 
+          <div style={{ marginBottom: '20px' }}>
+            <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+              Write your answer here *
+            </Typography>
+            <TextEditor 
+              value={Question.answer} 
+              onChange={(value) => {setQuestion({...Question, answer: value}); console.log("QuestionChecking", Question)}}
+              placeholder="Enter your answer text here..."
+            />
+          </div>
           <Box>
             <DropDown 
               name="Classes" 

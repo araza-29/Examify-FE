@@ -8,6 +8,8 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import TextEditor from '../../components/TextEditor/TextEditor';
+import HtmlDropdown from '../../components/htmlDropDown/HtmlDropDown';
 
 function MCQCreater() {
     const navigate = useNavigate();
@@ -88,6 +90,7 @@ function MCQCreater() {
 
     const handleMCQChange = (field, value) => {
         setMCQ(prev => ({ ...prev, [field]: value }));
+        console.log("MCQChecking", MCQ);
         if (value) {
             setErrors(prev => ({ ...prev, [field]: false }));
         }
@@ -332,36 +335,16 @@ function MCQCreater() {
                     </Box>
 
                     {/* MCQ Question */}
-                    <TextField
-                        required
-                        fullWidth
-                        variant="outlined"
-                        label="Write your MCQ here"
-                        value={MCQ.name}
-                        onChange={(e) => handleMCQChange('name', e.target.value)}
-                        error={errors.name}
-                        InputLabelProps={{ shrink: true }} 
-                        helperText={errors.name ? "This field is required" : ""}
-                        sx={{ 
-                            width: '100%', 
-                            mb: 2,
-                            backgroundColor: 'background.paper', 
-                            borderRadius: 1,
-                            '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                borderColor: '#7451f8', // Hover border color (same as default)
-                                },
-                                '&.Mui-focused fieldset': {
-                                borderColor: '#7451f8', // Focused border color
-                                },
-                            },
-                            '& .MuiInputLabel-root': {
-                                '&.Mui-focused': {
-                                color: '#7451f8', // Focused label color
-                                },
-                            },
-                        }}
-                    />
+                    <div style={{ marginBottom: '20px' }}>
+                        <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+                            Write your question here *
+                        </Typography>
+                        <TextEditor 
+                            value={MCQ.name}
+                            onChange={(html) => {handleMCQChange('name', html);}}
+                            placeholder="Enter your question text here..."
+                        />
+                    </div>
 
                     {/* Marks */}
                     <TextField
@@ -418,35 +401,16 @@ function MCQCreater() {
                     {/* Choices */}
                     {choices.map((box, index) => (
                         <Box key={box.id} sx={{ mb: 2 }}>
-                            <TextField
-                                required
-                                fullWidth
-                                variant="outlined"
-                                label={`Choice ${box.id}`}
-                                value={box.value}
-                                onChange={(e) => handleChange(box.id, e.target.value)}
-                                error={errors.choices[index]}
-                                InputLabelProps={{ shrink: true }} 
-                                 sx={{ 
-                                    width: '100%', 
-                                    mb: 2,
-                                    backgroundColor: 'background.paper', 
-                                    borderRadius: 1,
-                                    '& .MuiOutlinedInput-root': {
-                                        '&:hover fieldset': {
-                                        borderColor: '#7451f8', // Hover border color (same as default)
-                                        },
-                                        '&.Mui-focused fieldset': {
-                                        borderColor: '#7451f8', // Focused border color
-                                        },
-                                    },
-                                    '& .MuiInputLabel-root': {
-                                        '&.Mui-focused': {
-                                        color: '#7451f8', // Focused label color
-                                        },
-                                    },
-                                }}
-                            />
+                            <div style={{ marginBottom: '20px' }}>
+                                <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+                                    Write your question here *
+                                </Typography>
+                                <TextEditor 
+                                    value={box.name}
+                                    onChange={(html) => handleChange(box.id, html)}
+                                    placeholder="Enter your question text here..."
+                                />
+                            </div>
                             {errors.choices[index] && (
                                 <FormHelperText error sx={{ mt: -1 }}>
                                     This field is required
@@ -456,8 +420,8 @@ function MCQCreater() {
                     ))}
 
                     {/* Answer */}
-                    <DropDown 
-                        name="Answer" 
+                    <HtmlDropdown
+                        name="Answer"
                         data={choices} 
                         selectedData={answer} 
                         setSelectedData={handleDropdownChange(setAnswer, 'answer')}

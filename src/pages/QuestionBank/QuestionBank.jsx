@@ -39,6 +39,7 @@ import DropDown from "../../components/DropDown/DropDown";
 import { useNavigate, Link } from "react-router-dom";
 import QuestionCreater from "./QuestionCreater";
 import { Subject } from "@mui/icons-material";
+import DOMPurify from 'dompurify';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -315,6 +316,24 @@ const Home = () => {
       navigate("/Home")
     }
   }
+  const HtmlRenderer = ({ value }) => {
+  const cleanHtml = DOMPurify.sanitize(value || '');
+  console.log("Cleaned Value:", value);
+  console.log("Cleaned HTML:", cleanHtml);
+    return (
+      <div 
+        dangerouslySetInnerHTML={{ __html: cleanHtml }} 
+        style={{ 
+          maxHeight: '100px', 
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          display: '-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: 'vertical'
+        }}
+      />
+    );
+  };
   const questionColumns = [
     { field: "id", headerName: "ID", width: 70 },
     // {
@@ -326,6 +345,9 @@ const Home = () => {
       field: "name",
       headerName: "Question",
       width: 300,
+      renderCell: (params) => (
+        <HtmlRenderer value={params.value} />
+      ),
     },
     {
       field: "marks",

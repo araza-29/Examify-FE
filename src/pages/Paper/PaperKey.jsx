@@ -79,6 +79,12 @@ const styles = StyleSheet.create({
         marginBottom: 2,
         textTransform: 'uppercase'
     },
+    sectionContainer: {
+        marginBottom: 15,
+    },
+    sectionWithFirstQuestion: {
+        wrap: false,
+    },
     sectionHeaderContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -101,11 +107,19 @@ const styles = StyleSheet.create({
     sectionHeaderType: {
         paddingTop: 10,
         fontWeight: 'bold',
-        textDecoration: 'underline',  // Use 'textDecoration' here too
+        textDecoration: 'underline',
         fontSize: 14,
         textDecorationThickness: 20,
         textAlign: 'center',
         textTransform: 'uppercase'
+    },
+    questionContainer: {
+        wrap: false,
+        marginBottom: 10,
+        minPresenceAhead: 100,
+    },
+    regularQuestionContainer: {
+        marginBottom: 10,
     },
     question: {
         marginBottom: 5,
@@ -163,7 +177,6 @@ const styles = StyleSheet.create({
         fontFamily: 'TimesNewRoman',
         marginBottom: 2,
     },
-    // Urdu specific styles
     urduText: {
         fontFamily: 'JameelNooriNastaleeq',
         fontSize: 16,
@@ -283,7 +296,7 @@ const PaperHeader = ({ BasicInfo, styles, isUrdu }) => (
 const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
     const parsedElements = parse(htmlString);
     const parsedChoices = choices.map(q => parse(q));
-    console.log("Parsed Choices:", parsedChoices, answer);
+    
     const getChoiceStyle = (choice) => ({
         fontSize: 15,
         fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
@@ -299,7 +312,7 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
     });
 
     return (
-        <View style={{ marginBottom: 10 }}>
+        <View style={styles.questionContainer}>
             <View style={{ 
                 flexDirection: 'row', 
                 marginBottom: 8,
@@ -371,49 +384,157 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                 {section.map((sec, secIndex) => {
                     let questionCounter = 1;
                     
+                    // Calculate question numbering for current section
                     for (let i = 0; i < secIndex; i++) {
                         const prevSection = section[i];
-                        const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
-                        const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name).length;
+                        const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name);
+                        const prevMCQs = htmlMCQ.filter(q => q.section === prevSection.name);
                         
                         if (prevSection.type.toLowerCase() === 'descriptive questions') {
-                            questionCounter += prevQuestions + prevMCQs;
+                            questionCounter += prevQuestions.length;
                         } else {
-                            questionCounter += prevQuestions + prevMCQs + 1;
+                            questionCounter += 1; // Only count as one question for MCQ/short sections
                         }
                     }
 
-                    return (
-                        <View key={secIndex}>
-                            <View style={styles.sectionHeaderContainer}>
-                                <View style={styles.sectionNameWrapper}>
-                                    <Text style={getUrduTextStyle(styles.sectionHeader)}>{sec.name}</Text>
-                                    <Text style={getUrduTextStyle(styles.sectionHeaderType)}>({sec.type})</Text>
-                                </View>
-                            </View>
-                            <View style={styles.noteContainer}>
-                                {sec.type.toLowerCase() === 'descriptive questions' ? (
-                                    <Text style={getUrduTextStyle(styles.normalNote)}>
-                                        {isUrdu ? 'نوٹ:' : 'NOTE:'} {sec.description}
-                                    </Text>
-                                ) : (
-                                    <Text style={getUrduTextStyle(styles.noteAsQuestion)}>
-                                        {isUrdu ? 'سوال' : 'Q'}{questionCounter}. {sec.description}
-                                    </Text>
-                                )}
-                                <Text style={isUrdu ? [styles.sectionMarks, styles.urduText] : styles.sectionMarks}>
-                                    ({sec.marks} {isUrdu ? 'نمبر' : 'Marks'})
-                                </Text>
-                            </View>
+                    const questionsInSection = htmlQuestions.filter(q => q.section === sec.name);
+                    const mcqsInSection = htmlMCQ.filter(q => q.section === sec.name);
+                    const hasContent = questionsInSection.length > 0 || mcqsInSection.length > 0;
+                    const firstRegularQuestion = questionsInSection[0];
+                    const firstMCQ = mcqsInSection[0];
+                    const hasFirstQuestion = firstRegularQuestion || firstMCQ;
+                    const isDescriptiveSection = sec.type.toLowerCase() === 'descriptive questions';
 
-                            {htmlQuestions
-                                .filter(q => q.section === sec.name)
-                                .map((q, idx) => {
-                                    const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
-                                    const currentQuestionNumber = questionCounter + idx;
+                    return (
+                        <View key={secIndex} style={styles.sectionContainer}>
+                            {hasFirstQuestion ? (
+                                <View style={styles.sectionWithFirstQuestion}>
+                                    <View style={styles.sectionHeaderContainer}>
+                                        <View style={styles.sectionNameWrapper}>
+                                            <Text style={getUrduTextStyle(styles.sectionHeader)}>{sec.name}</Text>
+                                            <Text style={getUrduTextStyle(styles.sectionHeaderType)}>({sec.type})</Text>
+                                        </View>
+                                    </View>
                                     
-                                    return (
-                                        <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
+                                    <View style={styles.noteContainer}>
+                                        {isDescriptiveSection ? (
+                                            <Text style={getUrduTextStyle(styles.normalNote)}>
+                                                {isUrdu ? 'نوٹ:' : 'NOTE:'} {sec.description}
+                                            </Text>
+                                        ) : (
+                                            <Text style={getUrduTextStyle(styles.noteAsQuestion)}>
+                                                {isUrdu ? 'سوال' : 'Q'}{questionCounter}. {sec.description}
+                                            </Text>
+                                        )}
+                                        <Text style={isUrdu ? [styles.sectionMarks, styles.urduText] : styles.sectionMarks}>
+                                            ({sec.marks} {isUrdu ? 'نمبر' : 'Marks'})
+                                        </Text>
+                                    </View>
+
+                                    {firstRegularQuestion && (
+                                        <View style={styles.questionContainer}>
+                                            <View style={isDescriptiveSection ? styles.descriptiveQuestion : styles.question}>
+                                                <View style={{ 
+                                                    flexDirection: 'row', 
+                                                    marginBottom: 5,
+                                                    justifyContent: isUrdu ? 'flex-end' : 'flex-start'
+                                                }}>
+                                                    <Text style={isUrdu ? styles.urduQuestion : { 
+                                                        fontFamily: "TimesNewRoman", 
+                                                        marginRight: 8, 
+                                                        fontSize: 15,
+                                                        minWidth: 20
+                                                    }}>
+                                                        {isDescriptiveSection ? 
+                                                            (isUrdu ? `سوال${questionCounter}.` : `Q${questionCounter}.`) 
+                                                            : 
+                                                            (isUrdu ? `${toUrduRoman(1)}.` : `${toRoman(1)}.`)
+                                                        }
+                                                    </Text>
+                                                    <View style={{ flex: 1 }}>
+                                                        <Text style={isUrdu ? styles.urduQuestion : { 
+                                                            fontSize: 15, 
+                                                            fontFamily: "TimesNewRoman",
+                                                            lineHeight: 1.3
+                                                        }}>
+                                                            {parse(firstRegularQuestion.name)}
+                                                        </Text>
+                                                        {firstRegularQuestion.image && (
+                                                            <Image 
+                                                                src={firstRegularQuestion.image} 
+                                                                style={styles.questionImage}
+                                                            />
+                                                        )}
+                                                    </View>
+                                                </View>
+                                                
+                                                <View style={{ 
+                                                    flexDirection: 'row',
+                                                    justifyContent: isUrdu ? 'flex-end' : 'flex-start',
+                                                    marginTop: 5
+                                                }}>
+                                                    <Text style={isUrdu ? styles.urduQuestion : { 
+                                                        fontSize: 15, 
+                                                        fontFamily: "TimesNewRoman",
+                                                        color: 'green',
+                                                        fontWeight: 'bold'
+                                                    }}>
+                                                        {isUrdu ? 'جواب:' : 'Answer:'} {parse(firstRegularQuestion.original_answer)}
+                                                    </Text>
+                                                </View>
+                                                
+                                                {firstRegularQuestion.answer && (
+                                                    <Image 
+                                                        src={firstRegularQuestion.answer} 
+                                                        style={styles.questionImage}
+                                                    />
+                                                )}
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {!firstRegularQuestion && firstMCQ && (
+                                        <MCQ 
+                                            index={1}
+                                            htmlString={firstMCQ.name} 
+                                            choices={[firstMCQ.choice1, firstMCQ.choice2, firstMCQ.choice3, firstMCQ.choice4]}
+                                            answer={firstMCQ.answer}
+                                            imageUrl={firstMCQ.image}
+                                            isUrdu={isUrdu}
+                                        />
+                                    )}
+                                </View>
+                            ) : (
+                                <>
+                                    <View style={styles.sectionHeaderContainer}>
+                                        <View style={styles.sectionNameWrapper}>
+                                            <Text style={getUrduTextStyle(styles.sectionHeader)}>{sec.name}</Text>
+                                            <Text style={getUrduTextStyle(styles.sectionHeaderType)}>({sec.type})</Text>
+                                        </View>
+                                    </View>
+                                    
+                                    <View style={styles.noteContainer}>
+                                        {isDescriptiveSection ? (
+                                            <Text style={getUrduTextStyle(styles.normalNote)}>
+                                                {isUrdu ? 'نوٹ:' : 'NOTE:'} {sec.description}
+                                            </Text>
+                                        ) : (
+                                            <Text style={getUrduTextStyle(styles.noteAsQuestion)}>
+                                                {isUrdu ? 'سوال' : 'Q'}{questionCounter}. {sec.description}
+                                            </Text>
+                                        )}
+                                        <Text style={isUrdu ? [styles.sectionMarks, styles.urduText] : styles.sectionMarks}>
+                                            ({sec.marks} {isUrdu ? 'نمبر' : 'Marks'})
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+
+                            {questionsInSection.slice(1).map((q, idx) => {
+                                const currentQuestionNumber = isDescriptiveSection ? questionCounter + idx + 1 : questionCounter;
+                                return (
+                                    <View key={idx} style={styles.regularQuestionContainer}>
+                                        <View style={isDescriptiveSection ? styles.descriptiveQuestion : styles.question}>
                                             <View style={{ 
                                                 flexDirection: 'row', 
                                                 marginBottom: 5,
@@ -425,10 +546,10 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                     fontSize: 15,
                                                     minWidth: 20
                                                 }}>
-                                                    {isDescriptive ? 
+                                                    {isDescriptiveSection ? 
                                                         (isUrdu ? `سوال${currentQuestionNumber}.` : `Q${currentQuestionNumber}.`) 
                                                         : 
-                                                        (isUrdu ? `${toUrduRoman(idx + 1)}.` : `${toRoman(idx + 1)}.`)
+                                                        (isUrdu ? `${toUrduRoman(idx + 2)}.` : `${toRoman(idx + 2)}.`)
                                                     }
                                                 </Text>
                                                 <View style={{ flex: 1 }}>
@@ -447,6 +568,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                     )}
                                                 </View>
                                             </View>
+                                            
                                             <View style={{ 
                                                 flexDirection: 'row',
                                                 justifyContent: isUrdu ? 'flex-end' : 'flex-start',
@@ -461,6 +583,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                     {isUrdu ? 'جواب:' : 'Answer:'} {parse(q.original_answer)}
                                                 </Text>
                                             </View>
+                                            
                                             {q.answer && (
                                                 <Image 
                                                     src={q.answer} 
@@ -468,28 +591,25 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                 />
                                             )}
                                         </View>
-                                    );
-                                })}
+                                    </View>
+                                );
+                            })}
 
-                            {htmlMCQ
-                                .filter(q => q.section === sec.name)
-                                .map((q, idx) => {
-                                    const questionsInThisSection = htmlQuestions.filter(quest => quest.section === sec.name).length;
-                                    const currentQuestionNumber = questionCounter + questionsInThisSection + idx;
-                                    console.log("MCQS CHECK", q)
-                                    return (
-                                        <View key={idx}>
-                                            <MCQ 
-                                                index={currentQuestionNumber} 
-                                                htmlString={q.name} 
-                                                choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
-                                                answer={q.answer}
-                                                imageUrl={q.image}
-                                                isUrdu={isUrdu}
-                                            />
-                                        </View>
-                                    );
-                                })}
+                            {mcqsInSection.slice(firstRegularQuestion ? 0 : 1).map((q, idx) => {
+                                const currentQuestionNumber = idx + 2; // Start from ii after i
+                                return (
+                                    <View key={idx} style={styles.regularQuestionContainer}>
+                                        <MCQ 
+                                            index={currentQuestionNumber}
+                                            htmlString={q.name} 
+                                            choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
+                                            answer={q.answer}
+                                            imageUrl={q.image}
+                                            isUrdu={isUrdu}
+                                        />
+                                    </View>
+                                );
+                            })}
                         </View>
                     );
                 })}

@@ -4,6 +4,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import Dialog from '@mui/material/Dialog';
+import TextEditor from '../../components/TextEditor/TextEditor';
 
 function QuestionEditor({ Questions, setFlag, setQuestion }) {
     const [userId] = useState(parseInt(localStorage.getItem("userId"), 10));
@@ -84,9 +85,9 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
     };
 
     // Field change handlers
-    const handleQuestionChange = (e) => {
-        setEditedQuestion({...editedQuestion, name: e.target.value});
-        validateField('question', e.target.value);
+    const handleQuestionChange = (html) => {
+        setEditedQuestion({...editedQuestion, name: html});
+        validateField('question', html);
     };
 
     const handleMarksChange = (e) => {
@@ -99,9 +100,9 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
         validateField('type', e.target.value);
     };
 
-    const handleAnswerChange = (e) => {
-        setEditedQuestion({...editedQuestion, answer: e.target.value});
-        validateField('answer', e.target.value);
+    const handleAnswerChange = (html) => {
+        setEditedQuestion({...editedQuestion, answer: html});
+        validateField('answer', html);
     };
 
     // Fetch functions
@@ -422,7 +423,17 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 Edit Question
             </Typography>
 
-            <TextField
+            <div style={{ marginBottom: '20px' }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+                    Write your question here *
+                </Typography>
+                <TextEditor 
+                    value={editedQuestion.name} 
+                    onChange={handleQuestionChange}
+                    placeholder="Enter your question text here..."
+                />
+            </div>
+            {/* <TextField
                 required
                 variant="outlined"
                 label="Write your question here"
@@ -451,7 +462,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 error={errors.question.status}
                 helperText={errors.question.status && errors.question.message}
                 data-field="question"
-            />
+            /> */}
 
             <TextField
                 required
@@ -548,6 +559,16 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 data-field="answer"
                 InputLabelProps={{ shrink: true }} 
             />
+            <div style={{ marginBottom: '20px' }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
+                    Write your answer here *
+                </Typography>
+                <TextEditor 
+                    value={editedQuestion.answer} 
+                    onChange={handleAnswerChange}
+                    placeholder="Enter your answer text here..."
+                />
+            </div>
 
             <Box>
                 <DropDown

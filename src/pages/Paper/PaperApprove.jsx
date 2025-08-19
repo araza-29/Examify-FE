@@ -377,22 +377,60 @@ useEffect(() => {
   }
 
   const handleDownloadPDF = async () => {
-    const doc = (
+  try {
+    // First document
+    const doc1 = (
+      <Paper
+        htmlQuestions={selectedQuestion}
+        htmlMCQ={selectedMCQ}
+        BasicInfo={exsistingInfo}
+        section={sectionLetters}
+        />
+    );
+    const blob1 = await pdf(doc1).toBlob();
+    const url1 = window.URL.createObjectURL(blob1);
+    
+    // Second document (you can customize this as needed)
+    const doc2 = (
       <PaperPDF
         BasicInfo={exsistingInfo}
         htmlQuestions={selectedQuestion}
         htmlMCQ={selectedMCQ}
         section={sectionLetters}
+        // Add any different props for the second document
       />
     );
-    const blob = await pdf(doc).toBlob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Paper_${paper.id || 'download'}.pdf`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+    const blob2 = await pdf(doc2).toBlob();
+    const url2 = window.URL.createObjectURL(blob2);
+
+    // Download first document
+    const a1 = document.createElement('a');
+    a1.href = url1;
+    a1.download = `Paper_1_${paper.id || 'download'}.pdf`;
+    document.body.appendChild(a1);
+    a1.click();
+    document.body.removeChild(a1);
+
+    // Small delay to ensure first download starts
+
+    // Download second document
+    const a2 = document.createElement('a');
+    a2.href = url2;
+    a2.download = `Paper_2_${paper.id || 'download'}.pdf`;
+    document.body.appendChild(a2);
+    a2.click();
+    document.body.removeChild(a2);
+
+    // Clean up
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url1);
+      window.URL.revokeObjectURL(url2);
+    }, 1000);
+
+  } catch (error) {
+    console.error('Error generating PDFs:', error);
+  }
+};
   
   return (
     <div className="home" style={homeStyle}>
