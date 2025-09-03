@@ -6,6 +6,7 @@ import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 import toast from 'react-hot-toast';
+import DOMPurify from 'dompurify';
 
 export default function SelectQuestions({ SelectQuestion, handleOpen, setSelectedQuestion, id, sections, setIsSaved, subject_id, class_id, setNewQuestion, medium}) {
     console.log("SelectQuestions check in section",sections);
@@ -200,7 +201,9 @@ export default function SelectQuestions({ SelectQuestion, handleOpen, setSelecte
                     onClick={()=>{handleCheckBoxChange(question.id)}}
                     sx={{fontSize: '0.875rem'}} />
             </TableCell>
-            <TableCell sx={{py: 3, pr: 4, width: '50%' }}>{question.name}</TableCell>
+            <TableCell>
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.name || '') }} />
+            </TableCell>
             <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{question.marks}</TableCell>
             {/*<TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{question.duration}</TableCell>*/}
             <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '16%'}}>

@@ -1,19 +1,8 @@
 import React from 'react';
 import { PDFViewer, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-import parse from 'html-react-parser';
-import { Font } from '@react-pdf/renderer';
+import { Html } from 'react-pdf-html';
 import { Loader } from '../../components/sectionHandler/sectionHandler';
-
-// Register fonts
-try {
-  Font.register({
-    family: 'TimesNewRoman',
-    src: '/fonts/jameel-noori-nastaleeq-kasheeda.ttf',
-  });
-  console.log('Urdu font registered successfully');
-} catch (err) {
-  console.error('Failed to register Urdu font:', err);
-}
+import { Font } from '@react-pdf/renderer';
 
 Font.register({
   family: 'TimesNewRoman',
@@ -94,7 +83,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     paddingTop: 10,
     fontWeight: 'bold',
-    textDecoration: 'underline',  // Use 'textDecoration' instead of 'textDecorationLine'
+    textDecoration: 'underline',
     fontSize: 16,
     textDecorationThickness: 10,
     textAlign: 'center',
@@ -103,7 +92,7 @@ const styles = StyleSheet.create({
   sectionHeaderType: {
     paddingTop: 10,
     fontWeight: 'bold',
-    textDecoration: 'underline',  // Use 'textDecoration' here too
+    textDecoration: 'underline',
     fontSize: 14,
     textDecorationThickness: 20,
     textAlign: 'center',
@@ -130,7 +119,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  // Updated styles for Urdu note container
   urduNoteContainer: {
     paddingTop: 10,
     flexDirection: 'row',
@@ -180,7 +168,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     flex: 1,
     direction: 'rtl',
-    textAlign: 'left', // Align to left for marks position
+    textAlign: 'left',
     writingDirection: 'rtl',
   },
   question: {
@@ -225,9 +213,99 @@ const styles = StyleSheet.create({
   }
 });
 
+// Function to transform textEditor HTML to paper-compatible HTML
+const htmlChange = (html) => {
+  if (!html) return '';
+  
+  // Paper-specific styling (different from textEditor)
+  const paperStyles = {
+    fontSize: '14px',
+    lineHeight: '1',
+    marginBottom: '2px', // Different from textEditor's 8px
+    color: '#1f2937',
+    fontFamily: 'TimesNewRoman'
+  };
+
+  let transformedHtml = html;
+
+  // Transform textEditor styles to paper styles
+  transformedHtml = transformedHtml
+    // Convert divs (from textEditor paragraphs) with paper-specific styles
+    .replace(
+      /<div[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
+      `<div style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin: 2 0 ${paperStyles.marginBottom} 0; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
+    )
+    
+    // Update list styles for paper
+    .replace(
+      /<ol[^>]*style="[^"]*margin-top:[^;]*8px[^;]*;[^"]*"[^>]*>/g,
+      `<ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<ul[^>]*style="[^"]*margin-top:[^;]*8px[^;]*;[^"]*"[^>]*>/g,
+      `<ul style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<li[^>]*style="[^"]*margin-bottom:[^;]*3px[^;]*;[^"]*"[^>]*>/g,
+      `<li style="margin-bottom: 2px; line-height: ${paperStyles.lineHeight};">`
+    )
+    
+    // Update heading styles for paper
+    .replace(
+      /<h1[^>]*style="[^"]*font-size:[^;]*27px[^;]*;[^"]*"[^>]*>/g,
+      `<h1 style="font-family: ${paperStyles.fontFamily}; font-size: 22px; font-weight: bold; margin: 0 0 ${paperStyles.marginBottom} 0; line-height: 1.2; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<h2[^>]*style="[^"]*font-size:[^;]*22\.5px[^;]*;[^"]*"[^>]*>/g,
+      `<h2 style="font-family: ${paperStyles.fontFamily}; font-size: 18px; font-weight: bold; margin: 0 0 ${paperStyles.marginBottom} 0; line-height: 1.2; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<h3[^>]*style="[^"]*font-size:[^;]*19\.5px[^;]*;[^"]*"[^>]*>/g,
+      `<h3 style="font-family: ${paperStyles.fontFamily}; font-size: 16px; font-weight: bold; margin: 0 0 ${paperStyles.marginBottom} 0; line-height: 1.2; color: ${paperStyles.color};">`
+    )
+    
+    // Remove quotes from font-family for react-pdf compatibility
+    .replace(/font-family:\s*'TimesNewRoman'/g, 'font-family: TimesNewRoman')
+    .replace(/font-family:\s*"TimesNewRoman"/g, 'font-family: TimesNewRoman')
+    
+    // Fix CSS shorthand for react-pdf
+    .replace(/margin:\s*([^;]+);/g, (match, values) => {
+      const parts = values.trim().split(/\s+/);
+      if (parts.length === 4) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[1]}; margin-bottom: ${parts[2]}; margin-left: ${parts[3]};`;
+      } else if (parts.length === 3) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[1]}; margin-bottom: ${parts[2]}; margin-left: ${parts[1]};`;
+      } else if (parts.length === 2) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[1]}; margin-bottom: ${parts[0]}; margin-left: ${parts[1]};`;
+      } else if (parts.length === 1) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[0]}; margin-bottom: ${parts[0]}; margin-left: ${parts[0]};`;
+      }
+      return match;
+    })
+    .replace(/padding:\s*([^;]+);/g, (match, values) => {
+      const parts = values.trim().split(/\s+/);
+      if (parts.length === 4) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[1]}; padding-bottom: ${parts[2]}; padding-left: ${parts[3]};`;
+      } else if (parts.length === 3) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[1]}; padding-bottom: ${parts[2]}; padding-left: ${parts[1]};`;
+      } else if (parts.length === 2) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[1]}; padding-bottom: ${parts[0]}; padding-left: ${parts[1]};`;
+      } else if (parts.length === 1) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[0]}; padding-bottom: ${parts[0]}; padding-left: ${parts[0]};`;
+      }
+      return match;
+    })
+    
+    // Remove unsupported CSS properties
+    .replace(/text-decoration-thickness:\s*[^;]+;/g, '')
+    .replace(/text-decoration-line:\s*[^;]+;/g, '');
+
+  return transformedHtml;
+};
+
 const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
-  const parsedElements = parse(htmlString);
-  const parsedChoices = choices.map(q => parse(q));
+  const transformedHtml = htmlChange(htmlString);
+  const transformedChoices = choices.map(choice => htmlChange(choice));
 
   return (
     <View style={{ marginBottom: 10, direction: isUrdu ? 'rtl' : 'ltr' }}>
@@ -246,13 +324,9 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
           {`${toRoman(index)}.`}
         </Text>
         <View style={{ flex: 1 }}>
-          <Text style={isUrdu ? styles.urduQuestion : { 
-            fontSize: 15, 
-            fontFamily: "TimesNewRoman", 
-            lineHeight: 1.3 
-          }}>
-            {parsedElements}
-          </Text>
+          <Html>
+            {transformedHtml}
+          </Html>
           {imageUrl && (
             <Image 
               src={imageUrl} 
@@ -269,12 +343,20 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
         paddingRight: isUrdu ? 28 : 0
       }}>
         <View style={{ width: '45%' }}>
-          <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[0]}</Text>
-          <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[1]}</Text>
+          <Html>
+            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[0]}</div>`}
+          </Html>
+          <Html>
+            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[1]}</div>`}
+          </Html>
         </View>
         <View style={{ width: '45%' }}>
-          <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[2]}</Text>
-          <Text style={isUrdu ? styles.urduChoice : styles.choice}>• {parsedChoices[3]}</Text>
+          <Html>
+            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[2]}</div>`}
+          </Html>
+          <Html>
+            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[3]}</div>`}
+          </Html>
         </View>
       </View>
     </View>
@@ -287,7 +369,6 @@ function toRoman(num) {
   if (num <= 20) {
     return romanNumerals[num - 1];
   } else {
-    // For numbers beyond 20, create roman numerals dynamically
     const tens = Math.floor(num / 10);
     const ones = num % 10;
     
@@ -301,26 +382,6 @@ function toRoman(num) {
       return ones === 0 ? "l" : "l" + romanNumerals[ones - 1];
     }
     
-    // Fallback for very large numbers
-    return romanNumerals[num - 1] || `${num}`;
-  }
-}
-
-function toUrduRoman(num) {
-  const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx"];
-  // For numbers beyond 20, continue the pattern
-  if (num <= 20) {
-    return romanNumerals[num - 1];
-  } else {
-    // For larger numbers, create roman numerals dynamically
-    const tens = Math.floor(num / 10);
-    const ones = num % 10;
-    if (tens === 2) {
-      return ones === 0 ? "xx" : "xx" + romanNumerals[ones - 1];
-    } else if (tens === 3) {
-      return ones === 0 ? "xxx" : "xxx" + romanNumerals[ones - 1];
-    }
-    // Add more cases as needed
     return romanNumerals[num - 1] || `${num}`;
   }
 }
@@ -384,7 +445,6 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
         <PaperHeader BasicInfo={BasicInfo} />
         
         {section.map((sec, secIndex) => {
-          // Calculate the starting question number for this section
           let sectionQuestionNumber = 1;
           for (let i = 0; i < secIndex; i++) {
             const prevSection = section[i];
@@ -392,8 +452,6 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
               const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
               sectionQuestionNumber += prevQuestions;
             } else {
-              // For MCQ and Short Answer sections, we only increment by 1
-              // since the internal questions use Roman numerals
               sectionQuestionNumber += 1;
             }
           }
@@ -449,6 +507,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                 .filter(q => q.section === sec.name)
                 .map((q, idx) => {
                   const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
+                  const transformedHtml = htmlChange(q.name);
                   
                   return (
                     <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
@@ -465,19 +524,15 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                           minWidth: 20 
                         }}>
                           {isDescriptive ? 
-                            `Q${sectionQuestionNumber + idx}.` // Continue numbering for descriptive
+                            `Q${sectionQuestionNumber + idx}.`
                             : 
-                            `${toRoman(idx + 1)}.` // Use Roman for others
+                            `${toRoman(idx + 1)}.`
                           }
                         </Text>
                         <View style={{ flex: 1 }}>
-                          <Text style={isUrdu ? styles.urduQuestion : { 
-                            fontSize: 15, 
-                            fontFamily: "TimesNewRoman",
-                            lineHeight: 1.3
-                          }}>
-                            {parse(q.name)}
-                          </Text>
+                          <Html>
+                            {transformedHtml}
+                          </Html>
                           {q.image && (
                             <Image 
                               src={q.image} 
@@ -496,7 +551,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                   return (
                     <View key={idx}>
                       <MCQComponent 
-                        index={idx + 1} // Use Roman numerals starting from i
+                        index={idx + 1}
                         htmlString={q.name} 
                         choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
                         imageUrl={q.image}
@@ -514,7 +569,6 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
 };
 
 const Paper = ({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview }) => {
-  console.log("Paper component rendered with BasicInfo:", BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview);
   if (loading) return <Loader />;
   const isUrdu = BasicInfo.medium === "Urdu";
   
@@ -531,5 +585,5 @@ const Paper = ({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview
   );
 };
 
-export { PaperPDF };
+export { PaperPDF, htmlChange };
 export default Paper;

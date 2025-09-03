@@ -4,18 +4,19 @@ import { useState, useRef, useMemo, useEffect } from "react"
 import ReactQuill, { Quill } from "react-quill"
 import "react-quill/dist/quill.snow.css"
 
+/* ------------------------ Custom Block Blot for Span ------------------------ */
+const Block = Quill.import("blots/block")
+const BlockEmbed = Quill.import("blots/block/embed")
+const Parchment = Quill.import("parchment")
+
+// This allows natural line breaks with Enter key
+
 /* ------------------------ List formats whitelist ------------------------ */
 const List = Quill.import("formats/list")
-List.whitelist = [
-  "ordered",
-  "bullet",
-  "checked",
-  "unchecked",
-]
+List.whitelist = ["ordered", "bullet", "checked", "unchecked"]
 Quill.register(List, true)
 
 /* ------------------------ Custom list style attributor ------------------------ */
-const Parchment = Quill.import("parchment")
 class ListStyleAttributor extends Parchment.Attributor.Attribute {}
 const listStyleAttr = new ListStyleAttributor("listStyle", "data-list-style", {
   scope: Parchment.Scope.BLOCK_BLOT,
@@ -24,8 +25,24 @@ const listStyleAttr = new ListStyleAttributor("listStyle", "data-list-style", {
 Quill.register(listStyleAttr, true)
 
 /* ------------------------ Subscript / Superscript ------------------------ */
-const Script = Quill.import("formats/script")
-Quill.register(Script, true)
+const Inline = Quill.import("blots/inline")
+class SubscriptBlot extends Inline {
+  static create() {
+    return super.create()
+  }
+}
+SubscriptBlot.blotName = "subscript"
+SubscriptBlot.tagName = "sub"
+Quill.register(SubscriptBlot)
+
+class SuperscriptBlot extends Inline {
+  static create() {
+    return super.create()
+  }
+}
+SuperscriptBlot.blotName = "superscript"
+SuperscriptBlot.tagName = "sup"
+Quill.register(SuperscriptBlot)
 
 /* ------------------------ Bold Chemical Line (Arrow) ------------------------ */
 const Embed = Quill.import("blots/embed")
@@ -91,23 +108,321 @@ const symbolCategories = {
     { symbol: "→", action: "chemline", label: "Insert chemical reaction arrow" },
     { symbol: "⇌", action: "chemreversible", label: "Insert reversible reaction double arrow" },
   ],
-  "Greek Letters": ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", "Α", "Β", "Γ", "Δ", "Ε", "Ζ", "Η", "Θ", "Ι", "Κ", "Λ", "Μ", "Ν", "Ξ", "Ο", "Π", "Ρ", "Σ", "Τ", "Υ", "Φ", "Χ", "Ψ", "Ω"],
-  "Mathematical Symbols": ["∞", "∑", "∏", "∫", "∮", "∂", "∇", "√", "∛", "∜", "∝", "∴", "∵", "∀", "∃", "∄", "∅", "∈", "∉", "∋", "∌", "∩", "∪", "⊂", "⊃", "⊄", "⊅", "⊆", "⊇", "⊈", "⊉", "ℕ", "ℤ", "ℚ", "ℝ", "ℂ", "∧", "∨", "¬", "⊕", "⊗", "⊙", "⊘"],
-  "Operators & Relations": ["±", "∓", "×", "÷", "≈", "≠", "≡", "≢", "≤", "≥", "≪", "≫", "≮", "≯", "≰", "≱", "∼", "≃", "≅", "≆", "≇", "≉", "≊", "≋", "≌", "≍", "≎", "≏", "≐", "≑", "≒", "≓", "∣", "∤", "∥", "∦", "∧", "∨", "⊻", "⊼", "⊽", "∴", "∵", "∶", "∷", "∸", "∹", "∺"],
-  Arrows: ["→", "←", "↑", "↓", "↔", "↕", "↖", "↗", "↘", "↙", "↚", "↛", "↜", "↝", "↞", "↟", "↠", "↡", "↢", "↣", "↤", "↥", "↦", "↧", "↨", "↩", "↪", "↫", "↬", "↭", "↮", "↯", "⇒", "⇐", "⇑", "⇓", "⇔", "⇕", "⇖", "⇗", "⇘", "⇙", "⇚", "⇛", "⇜", "⇝", "⇞", "⇟"],
-  "Chemical Symbols": ["₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉", "₊", "₋", "₌", "₍", "₎", "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹", "⁺", "⁻", "⁼", "⁽", "⁾", "→", "⇌", "⇋", "⇄", "⇆"],
+  "Greek Letters": [
+    "α",
+    "β",
+    "γ",
+    "δ",
+    "ε",
+    "ζ",
+    "η",
+    "θ",
+    "ι",
+    "κ",
+    "λ",
+    "μ",
+    "ν",
+    "ξ",
+    "ο",
+    "π",
+    "ρ",
+    "σ",
+    "τ",
+    "υ",
+    "φ",
+    "χ",
+    "ψ",
+    "ω",
+    "Α",
+    "Β",
+    "Γ",
+    "Δ",
+    "Ε",
+    "Ζ",
+    "Η",
+    "Θ",
+    "Ι",
+    "Κ",
+    "Λ",
+    "Μ",
+    "Ν",
+    "Ξ",
+    "Ο",
+    "Π",
+    "Ρ",
+    "Σ",
+    "Τ",
+    "Υ",
+    "Φ",
+    "Χ",
+    "Ψ",
+    "Ω",
+  ],
+  "Mathematical Symbols": [
+    "∞",
+    "∑",
+    "∏",
+    "∫",
+    "∮",
+    "∂",
+    "∇",
+    "√",
+    "∛",
+    "∜",
+    "∝",
+    "∴",
+    "∵",
+    "∀",
+    "∃",
+    "∄",
+    "∅",
+    "∈",
+    "∉",
+    "∋",
+    "∌",
+    "∩",
+    "∪",
+    "⊂",
+    "⊃",
+    "⊄",
+    "⊅",
+    "⊆",
+    "⊇",
+    "⊈",
+    "⊉",
+    "ℕ",
+    "ℤ",
+    "ℚ",
+    "ℝ",
+    "ℂ",
+    "∧",
+    "∨",
+    "¬",
+    "⊕",
+    "⊗",
+    "⊙",
+    "⊘",
+  ],
+  "Operators & Relations": [
+    "±",
+    "∓",
+    "×",
+    "÷",
+    "≈",
+    "≠",
+    "≡",
+    "≢",
+    "≤",
+    "≥",
+    "≪",
+    "≫",
+    "≮",
+    "≯",
+    "≰",
+    "≱",
+    "∼",
+    "≃",
+    "≅",
+    "≆",
+    "≇",
+    "≉",
+    "≊",
+    "≋",
+    "≌",
+    "≍",
+    "≎",
+    "≏",
+    "≐",
+    "≑",
+    "≒",
+    "≓",
+    "∣",
+    "∤",
+    "∥",
+    "∦",
+    "∧",
+    "∨",
+    "⊻",
+    "⊼",
+    "⊽",
+    "∴",
+    "∵",
+    "∶",
+    "∷",
+    "∸",
+    "∹",
+    "∺",
+  ],
+  Arrows: [
+    "→",
+    "←",
+    "↑",
+    "↓",
+    "↔",
+    "↕",
+    "↖",
+    "↗",
+    "↘",
+    "↙",
+    "↚",
+    "↛",
+    "↜",
+    "↝",
+    "↞",
+    "↟",
+    "↠",
+    "↡",
+    "↢",
+    "↣",
+    "↤",
+    "↥",
+    "↦",
+    "↧",
+    "↨",
+    "↩",
+    "↪",
+    "↫",
+    "↬",
+    "↭",
+    "↮",
+    "↯",
+    "⇒",
+    "⇐",
+    "⇑",
+    "⇓",
+    "⇔",
+    "⇕",
+    "⇖",
+    "⇗",
+    "⇘",
+    "⇙",
+    "⇚",
+    "⇛",
+    "⇜",
+    "⇝",
+    "⇞",
+    "⇟",
+  ],
+  "Chemical Symbols": [
+    "₀",
+    "₁",
+    "₂",
+    "₃",
+    "₄",
+    "₅",
+    "₆",
+    "₇",
+    "₈",
+    "₉",
+    "₊",
+    "₋",
+    "₌",
+    "₍",
+    "₎",
+    "⁰",
+    "¹",
+    "²",
+    "³",
+    "⁴",
+    "⁵",
+    "⁶",
+    "⁷",
+    "⁸",
+    "⁹",
+    "⁺",
+    "⁻",
+    "⁼",
+    "⁽",
+    "⁾",
+    "→",
+    "⇌",
+    "⇋",
+    "⇄",
+    "⇆",
+  ],
 }
 
 // Generate unique ID for each editor instance
 let editorCounter = 0
 
+export const cleanupHTMLForPDF = (html, fontSize = 20) => {
+  if (!html) return ""
+
+  try {
+    const cleanedHTML = html
+      .replace(
+        /<p([^>]*)>/g,
+        `<div$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize}px; margin: 0 0 4px 0; line-height: 0.5; color: #1f2937;">`,
+      )
+      .replace(/<\/p>/g, "</div>")
+      .replace(/<strong([^>]*)>/g, '<strong$1 style="font-weight: bold;">')
+      .replace(/<em([^>]*)>/g, '<em$1 style="font-style: italic;">')
+      .replace(/<u([^>]*)>/g, '<u$1 style="text-decoration: underline;">')
+      .replace(
+        /<h1([^>]*)>/g,
+        `<h1$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize * 1.8}px; font-weight: bold; margin: 0 0 8px 0; line-height: 1.2; color: #1f2937;">`,
+      )
+      .replace(
+        /<h2([^>]*)>/g,
+        `<h2$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize * 1.5}px; font-weight: bold; margin: 0 0 8px 0; line-height: 1.2; color: #1f2937;">`,
+      )
+      .replace(
+        /<h3([^>]*)>/g,
+        `<h3$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize * 1.3}px; font-weight: bold; margin: 0 0 8px 0; line-height: 1.2; color: #1f2937;">`,
+      )
+      .replace(/<ol([^>]*)>/g, `<ol$1 style="margin-top: 8px; margin-bottom: 0px; padding-left: 24px; line-height: 0.5;">`)
+      .replace(/<ul([^>]*)>/g, `<ul$1 style="margin-top: 8px; margin-bottom: 0px; padding-left: 24px; line-height: 0.5;">`)
+      .replace(/<li([^>]*)>/g, `<li$1 style="margin-bottom: 8px; line-height: 0.5;">`)
+      .replace(/<br>/g, "<br>")
+      .replace(/(<br>\s*){3,}/g, "<br><br>")
+      .trim()
+
+    if (
+      !cleanedHTML ||
+      cleanedHTML ===
+        `<div style="font-family: 'TimesNewRoman'; font-size: ${fontSize}px; margin: 0 0 8px 0; line-height: 1.4; color: #1f2937;"></div>`
+    ) {
+      return ""
+    }
+
+    return cleanedHTML
+  } catch (error) {
+    console.warn("HTML cleanup failed:", error)
+    return html
+  }
+}
+
+const convertSpansToParagraphs = (html) => {
+  if (!html) return ""
+
+  try {
+    const convertedHTML = html
+      .replace(/<div[^>]*>/g, "<p>")
+      .replace(/<\/div>/g, "</p>")
+      .trim()
+
+    return convertedHTML || ""
+  } catch (error) {
+    console.warn("Span to paragraph conversion failed:", error)
+    return html
+  }
+}
+
 export default function TextEditor(props) {
   const { value = "", onChange, placeholder = "Write your question here..." } = props
-  const [content, setContent] = useState(value)
+  const [content, setContent] = useState(() => convertSpansToParagraphs(value))
   const [showSymbols, setShowSymbols] = useState(false)
   const [symbolSearch, setSymbolSearch] = useState("")
   const [editorId] = useState(() => `editor-${++editorCounter}`)
+  const fontSize = 15
   const quillRef = useRef(null)
+
+  useEffect(() => {
+    const convertedValue = convertSpansToParagraphs(value)
+    if (convertedValue !== content) {
+      setContent(convertedValue)
+    }
+  }, [value])
 
   const filteredSymbols = useMemo(() => {
     return Object.fromEntries(
@@ -139,8 +454,13 @@ export default function TextEditor(props) {
     const li = dom.closest("li")
     const container = li && li.parentElement
     if (container && container.tagName === "OL") {
-      if (value) container.setAttribute("data-list-style", value)
-      else container.removeAttribute("data-list-style")
+      if (value) {
+        container.setAttribute("data-list-style", value)
+        container.style.listStyleType = "none"
+      } else {
+        container.removeAttribute("data-list-style")
+        container.style.listStyleType = ""
+      }
     }
   }
 
@@ -157,11 +477,21 @@ export default function TextEditor(props) {
 
     if (typeof symbol === "object" && symbol.action) {
       if (symbol.action === "subscript") {
-        const currentFormat = editor.getFormat(range.index, range.length).script
-        editor.format("script", currentFormat === "sub" ? false : "sub")
+        const currentFormat = editor.getFormat(range.index, range.length)
+        if (currentFormat.subscript) {
+          editor.format("subscript", false)
+        } else {
+          editor.format("subscript", true)
+          editor.format("superscript", false)
+        }
       } else if (symbol.action === "superscript") {
-        const currentFormat = editor.getFormat(range.index, range.length).script
-        editor.format("script", currentFormat === "super" ? false : "super")
+        const currentFormat = editor.getFormat(range.index, range.length)
+        if (currentFormat.superscript) {
+          editor.format("superscript", false)
+        } else {
+          editor.format("superscript", true)
+          editor.format("subscript", false)
+        }
       } else if (symbol.action === "chemline") {
         const idx = range.index ?? editor.getLength() - 1
         editor.insertEmbed(idx, "chemline", { w: 40, color: "#000000ff" })
@@ -197,7 +527,6 @@ export default function TextEditor(props) {
 
             const current = editor.getFormat(range)
 
-            // Custom styles use ordered list + listStyle attribute
             if (value === "lower-alpha" || value === "lower-roman") {
               const isActive = current.list === "ordered" && current.listStyle === value
               if (isActive) {
@@ -205,18 +534,22 @@ export default function TextEditor(props) {
                 editor.format("list", false)
                 applyListStyleToSelectionContainer(null)
               } else {
-                editor.format("list", "ordered")
-                editor.format("listStyle", value)
-                applyListStyleToSelectionContainer(value)
+                editor.format("list", false)
+                editor.format("listStyle", false)
+                setTimeout(() => {
+                  editor.format("list", "ordered")
+                  editor.format("listStyle", value)
+                  setTimeout(() => applyListStyleToSelectionContainer(value), 10)
+                }, 10)
               }
               return
             }
 
-            // Built-in types; clear custom style when switching
             const isSame = current.list === value
             if (isSame) {
               editor.format("listStyle", false)
               editor.format("list", false)
+              applyListStyleToSelectionContainer(null)
               return
             }
             if (value === "bullet") {
@@ -224,7 +557,6 @@ export default function TextEditor(props) {
               editor.format("list", "bullet")
               applyListStyleToSelectionContainer(null)
             } else if (value === "ordered") {
-              // If previously had custom style, clear it and keep ordered
               editor.format("list", "ordered")
               editor.format("listStyle", false)
               applyListStyleToSelectionContainer(null)
@@ -233,6 +565,19 @@ export default function TextEditor(props) {
               editor.format("list", value)
               applyListStyleToSelectionContainer(null)
             }
+          },
+        },
+      },
+      clipboard: {
+        matchVisual: false,
+      },
+      keyboard: {
+        bindings: {
+          enter: {
+            key: "Enter",
+            handler: (range, context) => {
+              return true
+            },
           },
         },
       },
@@ -250,7 +595,8 @@ export default function TextEditor(props) {
     "bullet",
     "ordered",
     "listStyle",
-    "script",
+    "subscript",
+    "superscript",
     "chemline",
     "chemreversible",
   ]
@@ -258,7 +604,7 @@ export default function TextEditor(props) {
   useEffect(() => {
     const styleId = `quill-custom-styles-${editorId}`
     if (document.getElementById(styleId)) return
-    
+
     const style = document.createElement("style")
     style.id = styleId
     style.textContent = `
@@ -268,7 +614,10 @@ export default function TextEditor(props) {
         background: #ffffff;
         box-shadow: 0 4px 16px rgba(91,33,182,0.07);
         overflow: hidden;
-        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        --editor-font-family: "Times New Roman", Times, serif;
+        --editor-font-size: ${fontSize}px;
+        font-family: var(--editor-font-family);
+        font-size: var(--editor-font-size);
       }
       
       #custom-toolbar-${editorId} {
@@ -282,7 +631,7 @@ export default function TextEditor(props) {
       }
       
       #custom-toolbar-${editorId} .toolbar-select {
-        height: 30px; 
+        height: 32px; 
         padding: 0 8px;
         border: 1px solid #d7c9ff; 
         border-radius: 6px;
@@ -343,21 +692,48 @@ export default function TextEditor(props) {
       }
       
       #custom-toolbar-${editorId} .list-style-label {
-        font-weight: 700;
+        font-weight: 600;
         font-size: 14px;
         color: #4c1d95;
         line-height: 1;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-      
+
+      #custom-toolbar-${editorId} button .list-style-label {
+        color: inherit;
+      }
+
+      #custom-toolbar-${editorId} button.ql-active .list-style-label {
+        color: #fff;
+      }
+
       .text-editor-wrapper-${editorId} .ql-container { border: none !important; }
       .text-editor-wrapper-${editorId} .ql-toolbar { border: none !important; }
       
       .text-editor-wrapper-${editorId} .ql-editor { 
         padding: 16px; 
         min-height: 160px; 
-        font-size: 16px; 
-        line-height: 1.7; 
-        color: #1f2937; 
+        font-size: var(--editor-font-size); 
+        line-height: 1.4; 
+        color: #1f2937;
+        font-family: var(--editor-font-family);
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor p {
+        margin: 0 0 0.5em 0;
+        line-height: 1.4;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor p:last-child {
+        margin-bottom: 0;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor > p:first-child {
+        margin-top: 0;
       }
       
       .text-editor-wrapper-${editorId} .ql-editor.ql-blank::before { 
@@ -375,7 +751,77 @@ export default function TextEditor(props) {
         font-size: 0.75em; 
       }
 
-      /* Reversible Chemical Line (Double Arrow) */
+      .text-editor-wrapper-${editorId} .ql-editor ol,
+      .text-editor-wrapper-${editorId} .ql-editor ul {
+        margin: 0.5em 0;
+        padding-left: 1.5em;
+        line-height: 1.4;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor li {
+        margin-bottom: 0.2em;
+        line-height: 1.4;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor li p {
+        margin: 0;
+        display: inline;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style] {
+        list-style: none;
+        counter-reset: custom-counter;
+        padding-left: 2em !important;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style] li {
+        counter-increment: custom-counter;
+        position: relative;
+        padding-left: 0.5em;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style="lower-alpha"] li::before {
+        content: counter(custom-counter, lower-alpha) ". ";
+        position: absolute;
+        left: -2em;
+        width: 1.5em;
+        text-align: right;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style="lower-roman"] li::before {
+        content: counter(custom-counter, lower-roman) ". ";
+        position: absolute;
+        left: -2em;
+        width: 1.5em;
+        text-align: right;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style] ol[data-list-style] {
+        counter-reset: custom-counter-2;
+        padding-left: 2em !important;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style] ol[data-list-style] li {
+        counter-increment: custom-counter-2;
+        padding-left: 0.5em;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style] ol[data-list-style="lower-alpha"] li::before {
+        content: counter(custom-counter-2, lower-alpha) ". ";
+        position: absolute;
+        left: -2em;
+        width: 1.5em;
+        text-align: right;
+      }
+
+      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style] ol[data-list-style="lower-roman"] li::before {
+        content: counter(custom-counter-2, lower-roman) ". ";
+        position: absolute;
+        left: -2em;
+        width: 1.5em;
+        text-align: right;
+      }
+
       .text-editor-wrapper-${editorId} .ql-chemreversible {
         display: inline-block; 
         position: relative;
@@ -403,20 +849,6 @@ export default function TextEditor(props) {
         border-right: 7px solid var(--chemline-color, #000000ff);
       }
 
-      /* Custom list markers for alpha and roman with parenthesis using separate attribute */
-      /* Ensure we override Quill's default decimal for these items */
-      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style="lower-alpha"] li::before { content: counter(list-0, lower-alpha) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol[data-list-style="lower-roman"] li::before { content: counter(list-0, lower-roman) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol[data-list-style="lower-alpha"] li::before { content: counter(list-1, lower-alpha) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol[data-list-style="lower-roman"] li::before { content: counter(list-1, lower-roman) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol ol[data-list-style="lower-alpha"] li::before { content: counter(list-2, lower-alpha) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol ol[data-list-style="lower-roman"] li::before { content: counter(list-2, lower-roman) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol ol ol[data-list-style="lower-alpha"] li::before { content: counter(list-3, lower-alpha) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol ol ol[data-list-style="lower-roman"] li::before { content: counter(list-3, lower-roman) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol ol ol ol[data-list-style="lower-alpha"] li::before { content: counter(list-4, lower-alpha) ") " !important; }
-      .text-editor-wrapper-${editorId} .ql-editor ol ol ol ol ol[data-list-style="lower-roman"] li::before { content: counter(list-4, lower-roman) ") " !important; }
-
-      /* Chemical Line */
       .text-editor-wrapper-${editorId} .ql-chemline {
         display: inline-block; 
         position: relative;
@@ -436,8 +868,7 @@ export default function TextEditor(props) {
         border-bottom: 5px solid transparent;
         border-left: 7px solid var(--chemline-color, #000000ff);
       }
-
-      /* Symbols panel */
+      
       .text-editor-wrapper-${editorId} .symbols-panel { 
         border-top: 1px solid #e9ddff; 
         background: #faf7ff; 
@@ -490,16 +921,15 @@ export default function TextEditor(props) {
       }
     `
     document.head.appendChild(style)
-    
-    // Load Material Icons
-    if (!document.getElementById('material-icons')) {
-      const link = document.createElement('link')
-      link.id = 'material-icons'
-      link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons'
-      link.rel = 'stylesheet'
+
+    if (!document.getElementById("material-icons")) {
+      const link = document.createElement("link")
+      link.id = "material-icons"
+      link.href = "https://fonts.googleapis.com/icon?family=Material+Icons"
+      link.rel = "stylesheet"
       document.head.appendChild(link)
     }
-    
+
     return () => {
       const existingStyle = document.getElementById(styleId)
       if (existingStyle) {
@@ -508,17 +938,67 @@ export default function TextEditor(props) {
     }
   }, [editorId])
 
+const cleanContent = (html) => {
+  if (!html) return ""
+
+  try {
+    const cleanedHTML = html
+      .replace(
+        /<p([^>]*)>/g,
+        `<div$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize}px; margin: 0 0 8px 0; line-height: 1.4; color: #1f2937;">`,
+      )
+      .replace(/<\/p>/g, "</div>")
+      .replace(/<strong([^>]*)>/g, '<strong$1 style="font-weight: bold;">')
+      .replace(/<em([^>]*)>/g, '<em$1 style="font-style: italic;">')
+      .replace(/<u([^>]*)>/g, '<u$1 style="text-decoration: underline;">')
+      .replace(
+        /<h1([^>]*)>/g,
+        `<h1$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize * 1.8}px; font-weight: bold; margin: 0 0 8px 0; line-height: 1.2; color: #1f2937;">`,
+      )
+      .replace(
+        /<h2([^>]*)>/g,
+        `<h2$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize * 1.5}px; font-weight: bold; margin: 0 0 8px 0; line-height: 1.2; color: #1f2937;">`,
+      )
+      .replace(
+        /<h3([^>]*)>/g,
+        `<h3$1 style="font-family: 'TimesNewRoman'; font-size: ${fontSize * 1.3}px; font-weight: bold; margin: 0 0 8px 0; line-height: 1.2; color: #1f2937;">`,
+      )
+      .replace(
+        /<ol([^>]*)>/g,
+        `<ol$1 style="margin-top: 8px; margin-bottom: 8px; padding-left: 24px; line-height: 1.4; font-family: 'TimesNewRoman'; font-size: ${fontSize}px; color: #1f2937;">`,
+      )
+      .replace(
+        /<ul([^>]*)>/g,
+        `<ul$1 style="margin-top: 8px; margin-bottom: 8px; padding-left: 24px; line-height: 1.4; font-family: 'TimesNewRoman'; font-size: ${fontSize}px; color: #1f2937;">`,
+      )
+      .replace(/<li([^>]*)>/g, `<li$1 style="margin-bottom: 3px; line-height: 1.4;">`)
+      .replace(/<sub([^>]*)>/g, '<sub$1 style="vertical-align: sub; font-size: 12px;">')
+      .replace(/<sup([^>]*)>/g, '<sup$1 style="vertical-align: super; font-size: 12px;">')
+      .replace(/(<br>\s*){3,}/g, "<br><br>")
+      .trim()
+
+    return cleanedHTML || ""
+  } catch (error) {
+    console.warn("Content cleanup failed:", error)
+    return html
+  }
+}
+
+  const handleChange = (html) => {
+    setContent(html)
+    const cleanedHTML = cleanContent(html)
+    onChange?.(cleanedHTML)
+  }
+
   return (
     <div className={`text-editor-wrapper-${editorId}`}>
       <div id={`custom-toolbar-${editorId}`}>
-        {/* Header dropdown */}
         <select className="toolbar-select ql-header" defaultValue="">
           <option value="">Normal</option>
           <option value="1">H1</option>
           <option value="2">H2</option>
         </select>
 
-        {/* Formatting buttons with Material UI icons */}
         <button className="ql-bold" title="Bold">
           <span className="material-icons">format_bold</span>
         </button>
@@ -531,7 +1011,6 @@ export default function TextEditor(props) {
           <span className="material-icons">format_underlined</span>
         </button>
 
-        {/* List buttons */}
         <button className="ql-list" value="ordered" title="Numbered list">
           <span className="material-icons">format_list_numbered</span>
         </button>
@@ -548,11 +1027,10 @@ export default function TextEditor(props) {
           <span className="list-style-label">i)</span>
         </button>
 
-        {/* Symbols button */}
-        <button 
-          type="button" 
-          onClick={() => setShowSymbols((s) => !s)} 
-          className={`symbols-toggle-btn ${showSymbols ? 'active' : ''}`} 
+        <button
+          type="button"
+          onClick={() => setShowSymbols((s) => !s)}
+          className={`symbols-toggle-btn ${showSymbols ? "active" : ""}`}
           title="Symbols"
         >
           <span className="material-icons">functions</span>
@@ -562,10 +1040,7 @@ export default function TextEditor(props) {
       <ReactQuill
         ref={quillRef}
         value={content}
-        onChange={(html) => {
-          setContent(html)
-          onChange?.(html)
-        }}
+        onChange={handleChange}
         modules={modules}
         formats={formats}
         theme="snow"

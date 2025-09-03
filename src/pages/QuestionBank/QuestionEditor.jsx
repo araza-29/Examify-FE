@@ -529,7 +529,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 )}
             </FormControl>
             {console.log("Edited Question:", editedQuestion)}
-            <TextField
+            {/* <TextField
                 required
                 variant="outlined"
                 label="Answer"
@@ -558,7 +558,7 @@ function QuestionEditor({ Questions, setFlag, setQuestion }) {
                 helperText={errors.answer.status && errors.answer.message}
                 data-field="answer"
                 InputLabelProps={{ shrink: true }} 
-            />
+            /> */}
             <div style={{ marginBottom: '20px' }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, color: '#7451f8', fontWeight: 'bold' }}>
                     Write your answer here *

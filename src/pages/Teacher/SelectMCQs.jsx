@@ -6,6 +6,7 @@ import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { useTheme } from '@mui/material/styles';
 import DropDown from '../../components/DropDown/DropDown';
 import toast from 'react-hot-toast';
+import DOMPurify from 'dompurify';
 
 export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id, sections, setIsSaved, subject_id, class_id, setNewMCQ, medium}) {
     const [MCQsFlag, setMCQsFlag] = useState(false);
@@ -185,7 +186,9 @@ export default function SelectMCQs({ SelectMCQs, handleOpen, setSelectedMCQs, id
                     onClick={()=>{handleCheckBoxChange(MCQs.id)}}
                     sx={{fontSize: '0.875rem'}} />
             </TableCell>
-            <TableCell sx={{py: 3, pr: 4, width: '50%' }}>{MCQs.name}</TableCell>
+            <TableCell>
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MCQs.name || '') }} />
+            </TableCell>
             <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{MCQs.marks}</TableCell>
             {/*<TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '8%'}}>{MCQs.duration}</TableCell>*/}
             <TableCell sx={{py: 3, pr: 4, textAlign: 'center', width: '16%'}}>
