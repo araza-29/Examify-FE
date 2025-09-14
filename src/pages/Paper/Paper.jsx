@@ -249,8 +249,8 @@ const htmlChange = (html) => {
   transformedHtml = transformedHtml
     // Convert divs (from textEditor paragraphs) with paper-specific styles
     .replace(
-      /<div[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
-      `<div style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin-top: 2px; margin-bottom: ${paperStyles.marginBottom}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
+      /<span[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
+      `<span style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin-top: 2px; margin-bottom: ${paperStyles.marginBottom}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
     )
     
     // Update list styles for paper

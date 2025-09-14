@@ -1,8 +1,8 @@
 import React from 'react';
 import { PDFViewer, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-import parse from 'html-react-parser';
-import { Font } from '@react-pdf/renderer';
+import { Html } from 'react-pdf-html';
 import { Loader } from '../../components/sectionHandler/sectionHandler';
+import { Font } from '@react-pdf/renderer';
 
 // Register fonts
 Font.register({
@@ -231,6 +231,113 @@ const styles = StyleSheet.create({
     }
 });
 
+// Function to transform textEditor HTML to paper-compatible HTML
+const htmlChange = (html) => {
+  if (!html) return '';
+  
+  // Paper-specific styling (different from textEditor)
+  const paperStyles = {
+    fontSize: '14px',
+    lineHeight: '1',
+    marginBottom: '2px',
+    color: '#1f2937',
+    fontFamily: 'TimesNewRoman'
+  };
+
+  let transformedHtml = html;
+
+  // Convert chemical elements to simple text arrows that will definitely render
+  transformedHtml = transformedHtml
+    // Convert single chemical arrows to Unicode arrow
+    .replace(
+      /<chemical-line[^>]*data-chemical-type="single"[^>]*>.*?<\/chemical-line>/gi,
+      '<span style="font-family: TimesNewRoman; font-size: 14px; margin: 0 4px; display: inline-block;">→</span>'
+    )
+    
+    // Convert reversible chemical arrows to Unicode reversible arrow
+    .replace(
+      /<chemical-reversible[^>]*>.*?<\/chemical-reversible>/gi,
+      '<span style="font-family: TimesNewRoman; font-size: 14px; margin: 0 4px; display: inline-block;">⇌</span>'
+    );
+
+  // Transform textEditor styles to paper styles
+  transformedHtml = transformedHtml
+    // Convert divs (from textEditor paragraphs) with paper-specific styles
+    .replace(
+      /<span[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
+      `<span style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin-top: 2px; margin-bottom: ${paperStyles.marginBottom}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
+    )
+    
+    // Update list styles for paper
+    .replace(
+      /<ol[^>]*style="[^"]*margin-top:[^;]*8px[^;]*;[^"]*"[^>]*>/g,
+      `<ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<ul[^>]*style="[^"]*margin-top:[^;]*8px[^;]*;[^"]*"[^>]*>/g,
+      `<ul style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<li[^>]*style="[^"]*margin-bottom:[^;]*3px[^;]*;[^"]*"[^>]*>/g,
+      `<li style="margin-bottom: 2px; line-height: ${paperStyles.lineHeight};">`
+    )
+    
+    // Update heading styles for paper
+    .replace(
+      /<h1[^>]*style="[^"]*font-size:[^;]*27px[^;]*;[^"]*"[^>]*>/g,
+      `<h1 style="font-family: ${paperStyles.fontFamily}; font-size: 22px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<h2[^>]*style="[^"]*font-size:[^;]*22\.5px[^;]*;[^"]*"[^>]*>/g,
+      `<h2 style="font-family: ${paperStyles.fontFamily}; font-size: 18px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
+    )
+    .replace(
+      /<h3[^>]*style="[^"]*font-size:[^;]*19\.5px[^;]*;[^"]*"[^>]*>/g,
+      `<h3 style="font-family: ${paperStyles.fontFamily}; font-size: 16px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
+    )
+    .replace(/font-family:\s*'TimesNewRoman'/g, 'font-family: TimesNewRoman')
+    .replace(/font-family:\s*"TimesNewRoman"/g, 'font-family: TimesNewRoman')
+    
+    // Fix CSS shorthand for react-pdf
+    .replace(/margin:\s*([^;]+);/g, (match, values) => {
+      const parts = values.trim().split(/\s+/);
+      if (parts.length === 4) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[1]}; margin-bottom: ${parts[2]}; margin-left: ${parts[3]};`;
+      } else if (parts.length === 3) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[1]}; margin-bottom: ${parts[2]}; margin-left: ${parts[1]};`;
+      } else if (parts.length === 2) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[1]}; margin-bottom: ${parts[0]}; margin-left: ${parts[1]};`;
+      } else if (parts.length === 1) {
+        return `margin-top: ${parts[0]}; margin-right: ${parts[0]}; margin-bottom: ${parts[0]}; margin-left: ${parts[0]};`;
+      }
+      return match;
+    })
+    .replace(/padding:\s*([^;]+);/g, (match, values) => {
+      const parts = values.trim().split(/\s+/);
+      if (parts.length === 4) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[1]}; padding-bottom: ${parts[2]}; padding-left: ${parts[3]};`;
+      } else if (parts.length === 3) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[1]}; padding-bottom: ${parts[2]}; padding-left: ${parts[1]};`;
+      } else if (parts.length === 2) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[1]}; padding-bottom: ${parts[0]}; padding-left: ${parts[1]};`;
+      } else if (parts.length === 1) {
+        return `padding-top: ${parts[0]}; padding-right: ${parts[0]}; padding-bottom: ${parts[0]}; padding-left: ${parts[0]};`;
+      }
+      return match;
+    })
+    
+    // Remove unsupported CSS properties
+    .replace(/text-decoration-thickness:\s*[^;]+;/g, '')
+    .replace(/text-decoration-line:\s*[^;]+;/g, '')
+    
+    // Clean up any remaining custom elements or attributes
+    .replace(/data-[^=]*="[^"]*"/g, '')
+    .replace(/contenteditable="[^"]*"/g, '')
+    .replace(/<\/?\s*chemical-[^>]*>/gi, '');
+
+  return transformedHtml;
+}
+
 function formatTimeRange(startTime, durationHours) {
   if (!startTime || !durationHours) return "";
   const parts = startTime.split(":");
@@ -294,23 +401,10 @@ const PaperHeader = ({ BasicInfo, styles, isUrdu }) => (
 );
 
 const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
-    const parsedElements = parse(htmlString);
-    const parsedChoices = choices.map(q => parse(q));
+    const transformedHtml = htmlChange(htmlString);
+    const transformedChoices = choices.map(choice => htmlChange(choice));
+    const transformedAnswer = htmlChange(answer);
     
-    const getChoiceStyle = (choice) => ({
-        fontSize: 15,
-        fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
-        marginBottom: 2,
-        lineHeight: 1.3,
-        color: choice === answer ? 'green' : 'black',
-        textDecorationLine: choice === answer ? 'underline' : 'none',
-        textDecorationColor: choice === answer ? 'green' : 'transparent',
-        textDecorationThickness: choice === answer ? '2px' : '0',
-        fontWeight: choice === answer ? 'bold' : 'normal',
-        textAlign: isUrdu ? 'right' : 'left',
-        direction: isUrdu ? 'rtl' : 'ltr'
-    });
-
     return (
         <View style={styles.questionContainer}>
             <View style={{ 
@@ -327,13 +421,9 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                     {isUrdu ? `${toUrduRoman(index)}.` : `${toRoman(index)}.`}
                 </Text>
                 <View style={{ flex: 1 }}>
-                    <Text style={isUrdu ? styles.urduQuestion : { 
-                        fontSize: 15, 
-                        fontFamily: "TimesNewRoman",
-                        lineHeight: 1.3
-                    }}>
-                        {parsedElements}
-                    </Text>
+                    <Html>
+                        {transformedHtml}
+                    </Html>
                     {imageUrl && (
                         <Image 
                             src={imageUrl} 
@@ -349,23 +439,122 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                 paddingLeft: 28,
             }}>
                 <View style={{ width: isUrdu ? '100%' : '45%' }}>
-                    <Text style={getChoiceStyle(choices[0])}>
-                        • {parsedChoices[0]}
-                    </Text>
-                    <Text style={getChoiceStyle(choices[1])}>
-                        • {parsedChoices[1]}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+                        <Text style={{ 
+                            fontSize: 15,
+                            fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
+                            marginRight: 8,
+                            color: choices[0] === answer ? 'green' : 'black',
+                            textDecorationLine: choices[0] === answer ? 'underline' : 'none',
+                            textDecorationColor: choices[0] === answer ? 'green' : 'transparent',
+                            fontWeight: choices[0] === answer ? 'bold' : 'normal',
+                        }}>•</Text>
+                        <Html style={{ 
+                            fontSize: 15,
+                            fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
+                            color: choices[0] === answer ? 'green' : 'black',
+                            textDecorationLine: choices[0] === answer ? 'underline' : 'none',
+                            textDecorationColor: choices[0] === answer ? 'green' : 'transparent',
+                            fontWeight: choices[0] === answer ? 'bold' : 'normal',
+                        }}>
+                            {transformedChoices[0]}
+                        </Html>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+                        <Text style={{ 
+                            fontSize: 15,
+                            fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
+                            marginRight: 8,
+                            color: choices[1] === answer ? 'green' : 'black',
+                            textDecorationLine: choices[1] === answer ? 'underline' : 'none',
+                            textDecorationColor: choices[1] === answer ? 'green' : 'transparent',
+                            fontWeight: choices[1] === answer ? 'bold' : 'normal',
+                        }}>•</Text>
+                        <Html style={{ 
+                            fontSize: 15,
+                            fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
+                            color: choices[1] === answer ? 'green' : 'black',
+                            textDecorationLine: choices[1] === answer ? 'underline' : 'none',
+                            textDecorationColor: choices[1] === answer ? 'green' : 'transparent',
+                            fontWeight: choices[1] === answer ? 'bold' : 'normal',
+                        }}>
+                            {transformedChoices[1]}
+                        </Html>
+                    </View>
                 </View>
                 {!isUrdu && (
                     <View style={{ width: '45%' }}>
-                        <Text style={getChoiceStyle(choices[2])}>
-                            • {parsedChoices[2]}
-                        </Text>
-                        <Text style={getChoiceStyle(choices[3])}>
-                            • {parsedChoices[3]}
-                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+                            <Text style={{ 
+                                fontSize: 15,
+                                fontFamily: "TimesNewRoman",
+                                marginRight: 8,
+                                color: choices[2] === answer ? 'green' : 'black',
+                                textDecorationLine: choices[2] === answer ? 'underline' : 'none',
+                                textDecorationColor: choices[2] === answer ? 'green' : 'transparent',
+                                fontWeight: choices[2] === answer ? 'bold' : 'normal',
+                            }}>•</Text>
+                            <Html style={{ 
+                                fontSize: 15,
+                                fontFamily: "TimesNewRoman",
+                                color: choices[2] === answer ? 'green' : 'black',
+                                textDecorationLine: choices[2] === answer ? 'underline' : 'none',
+                                textDecorationColor: choices[2] === answer ? 'green' : 'transparent',
+                                fontWeight: choices[2] === answer ? 'bold' : 'normal',
+                            }}>
+                                {transformedChoices[2]}
+                            </Html>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+                            <Text style={{ 
+                                fontSize: 15,
+                                fontFamily: "TimesNewRoman",
+                                marginRight: 8,
+                                color: choices[3] === answer ? 'green' : 'black',
+                                textDecorationLine: choices[3] === answer ? 'underline' : 'none',
+                                textDecorationColor: choices[3] === answer ? 'green' : 'transparent',
+                                fontWeight: choices[3] === answer ? 'bold' : 'normal',
+                            }}>•</Text>
+                            <Html style={{ 
+                                fontSize: 15,
+                                fontFamily: "TimesNewRoman",
+                                color: choices[3] === answer ? 'green' : 'black',
+                                textDecorationLine: choices[3] === answer ? 'underline' : 'none',
+                                textDecorationColor: choices[3] === answer ? 'green' : 'transparent',
+                                fontWeight: choices[3] === answer ? 'bold' : 'normal',
+                            }}>
+                                {transformedChoices[3]}
+                            </Html>
+                        </View>
                     </View>
                 )}
+            </View>
+
+            <View style={{ 
+                flexDirection: 'row',
+                justifyContent: isUrdu ? 'flex-end' : 'flex-start',
+                marginTop: 10,
+                backgroundColor: '#f0f9ff',
+                padding: 8,
+                borderRadius: 4
+            }}>
+                <Text style={isUrdu ? styles.urduQuestion : { 
+                    fontSize: 14, 
+                    fontFamily: "TimesNewRoman",
+                    color: 'green',
+                    fontWeight: 'bold',
+                    marginRight: 8
+                }}>
+                    {isUrdu ? 'جواب:' : 'Answer:'}
+                </Text>
+                <Html style={isUrdu ? styles.urduQuestion : { 
+                    fontSize: 14, 
+                    fontFamily: "TimesNewRoman",
+                    color: 'green',
+                    fontWeight: 'bold'
+                }}>
+                    {transformedAnswer}
+                </Html>
             </View>
         </View>
     );
@@ -373,14 +562,14 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
 
 const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading }) => {
     if (loading) return <Loader />;
-    
+    console.log("Hello from paperPdf of paperKey")
     const getUrduTextStyle = (defaultStyle) => (isUrdu ? [defaultStyle, styles.urduText] : defaultStyle);
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
                 <PaperHeader BasicInfo={BasicInfo} styles={styles} isUrdu={isUrdu} />
-                
+                {console.log("paper is being printed")}
                 {section.map((sec, secIndex) => {
                     let questionCounter = 1;
                     
@@ -452,13 +641,9 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                         }
                                                     </Text>
                                                     <View style={{ flex: 1 }}>
-                                                        <Text style={isUrdu ? styles.urduQuestion : { 
-                                                            fontSize: 15, 
-                                                            fontFamily: "TimesNewRoman",
-                                                            lineHeight: 1.3
-                                                        }}>
-                                                            {parse(firstRegularQuestion.name)}
-                                                        </Text>
+                                                        <Html>
+                                                            {htmlChange(firstRegularQuestion.name)}
+                                                        </Html>
                                                         {firstRegularQuestion.image && (
                                                             <Image 
                                                                 src={firstRegularQuestion.image} 
@@ -471,16 +656,28 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                 <View style={{ 
                                                     flexDirection: 'row',
                                                     justifyContent: isUrdu ? 'flex-end' : 'flex-start',
-                                                    marginTop: 5
+                                                    marginTop: 5,
+                                                    backgroundColor: '#f0f9ff',
+                                                    padding: 8,
+                                                    borderRadius: 4
                                                 }}>
                                                     <Text style={isUrdu ? styles.urduQuestion : { 
-                                                        fontSize: 15, 
+                                                        fontSize: 14, 
+                                                        fontFamily: "TimesNewRoman",
+                                                        color: 'green',
+                                                        fontWeight: 'bold',
+                                                        marginRight: 8
+                                                    }}>
+                                                        {isUrdu ? 'جواب:' : 'Answer:'}
+                                                    </Text>
+                                                    <Html style={isUrdu ? styles.urduQuestion : { 
+                                                        fontSize: 14, 
                                                         fontFamily: "TimesNewRoman",
                                                         color: 'green',
                                                         fontWeight: 'bold'
                                                     }}>
-                                                        {isUrdu ? 'جواب:' : 'Answer:'} {parse(firstRegularQuestion.original_answer)}
-                                                    </Text>
+                                                        {htmlChange(firstRegularQuestion.original_answer)}
+                                                    </Html>
                                                 </View>
                                                 
                                                 {firstRegularQuestion.answer && (
@@ -553,13 +750,9 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                     }
                                                 </Text>
                                                 <View style={{ flex: 1 }}>
-                                                    <Text style={isUrdu ? styles.urduQuestion : { 
-                                                        fontSize: 15, 
-                                                        fontFamily: "TimesNewRoman",
-                                                        lineHeight: 1.3
-                                                    }}>
-                                                        {parse(q.name)}
-                                                    </Text>
+                                                    <Html>
+                                                        {htmlChange(q.name)}
+                                                    </Html>
                                                     {q.image && (
                                                         <Image 
                                                             src={q.image} 
@@ -572,16 +765,28 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                             <View style={{ 
                                                 flexDirection: 'row',
                                                 justifyContent: isUrdu ? 'flex-end' : 'flex-start',
-                                                marginTop: 5
+                                                marginTop: 5,
+                                                backgroundColor: '#f0f9ff',
+                                                padding: 8,
+                                                borderRadius: 4
                                             }}>
                                                 <Text style={isUrdu ? styles.urduQuestion : { 
-                                                    fontSize: 15, 
+                                                    fontSize: 14, 
+                                                    fontFamily: "TimesNewRoman",
+                                                    color: 'green',
+                                                    fontWeight: 'bold',
+                                                    marginRight: 8
+                                                }}>
+                                                    {isUrdu ? 'جواب:' : 'Answer:'}
+                                                </Text>
+                                                <Html style={isUrdu ? styles.urduQuestion : { 
+                                                    fontSize: 14, 
                                                     fontFamily: "TimesNewRoman",
                                                     color: 'green',
                                                     fontWeight: 'bold'
                                                 }}>
-                                                    {isUrdu ? 'جواب:' : 'Answer:'} {parse(q.original_answer)}
-                                                </Text>
+                                                    {htmlChange(q.original_answer)}
+                                                </Html>
                                             </View>
                                             
                                             {q.answer && (
@@ -621,7 +826,8 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
 const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section, loading }) => {
     if (loading) return <Loader />;
     const isUrdu = BasicInfo.medium === "Urdu";
-    
+    console.log("Hello from paperKey")
+    console.log("PaperKey check", htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section, loading)
     return (
         <PDFViewer style={{ width: '100%', height: '100vh', border: 'none' }}>
             <PaperPDF
@@ -636,5 +842,5 @@ const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section,
     );
 };
 
-export { PaperPDF };
+export { PaperPDF, htmlChange };
 export default PDFComponent;
