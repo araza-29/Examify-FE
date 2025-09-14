@@ -13,6 +13,7 @@ import MCQinfo from "./MCQInfo";
 import toast from "react-hot-toast"
 import DropDown from "../../components/DropDown/DropDown"
 import { DataGrid, GridToolbar, getGridSingleSelectOperators } from "@mui/x-data-grid";
+import DOMPurify from 'dompurify';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -77,6 +78,9 @@ const Home = () => {
         {
           field: "name",
           headerName: "MCQs",
+          renderCell: (params) => (
+            <HtmlRenderer value={params.value} />
+          ),
           width: 230,
         },
         {
@@ -219,6 +223,26 @@ const Home = () => {
     }
     console.log("Selected topics", selectedTopic);
   }, [selectedTopic]);
+
+
+  const HtmlRenderer = ({ value }) => {
+    const cleanHtml = DOMPurify.sanitize(value || '');
+    console.log("Cleaned Value:", value);
+    console.log("Cleaned HTML:", cleanHtml);
+      return (
+        <div 
+          dangerouslySetInnerHTML={{ __html: cleanHtml }} 
+          style={{ 
+            maxHeight: '100px', 
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical'
+          }}
+        />
+      );
+    };
 
   const handleNavigate = () => {
     if(flag) {

@@ -214,6 +214,9 @@ const styles = StyleSheet.create({
 });
 
 // Function to transform textEditor HTML to paper-compatible HTML
+// Function to transform textEditor HTML to paper-compatible HTML
+// Function to transform textEditor HTML to paper-compatible HTML
+// Function to transform textEditor HTML to paper-compatible HTML
 const htmlChange = (html) => {
   if (!html) return '';
   
@@ -221,19 +224,33 @@ const htmlChange = (html) => {
   const paperStyles = {
     fontSize: '14px',
     lineHeight: '1',
-    marginBottom: '2px', // Different from textEditor's 8px
+    marginBottom: '2px',
     color: '#1f2937',
     fontFamily: 'TimesNewRoman'
   };
 
   let transformedHtml = html;
 
+  // Convert chemical elements to simple text arrows that will definitely render
+  transformedHtml = transformedHtml
+    // Convert single chemical arrows to Unicode arrow
+    .replace(
+      /<chemical-line[^>]*data-chemical-type="single"[^>]*>.*?<\/chemical-line>/gi,
+      '<span style="font-family: TimesNewRoman; font-size: 14px; margin: 0 4px; display: inline-block;">→</span>'
+    )
+    
+    // Convert reversible chemical arrows to Unicode reversible arrow
+    .replace(
+      /<chemical-reversible[^>]*>.*?<\/chemical-reversible>/gi,
+      '<span style="font-family: TimesNewRoman; font-size: 14px; margin: 0 4px; display: inline-block;">⇌</span>'
+    );
+
   // Transform textEditor styles to paper styles
   transformedHtml = transformedHtml
     // Convert divs (from textEditor paragraphs) with paper-specific styles
     .replace(
       /<div[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
-      `<div style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin: 2 0 ${paperStyles.marginBottom} 0; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
+      `<div style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin-top: 2px; margin-bottom: ${paperStyles.marginBottom}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
     )
     
     // Update list styles for paper
@@ -253,15 +270,15 @@ const htmlChange = (html) => {
     // Update heading styles for paper
     .replace(
       /<h1[^>]*style="[^"]*font-size:[^;]*27px[^;]*;[^"]*"[^>]*>/g,
-      `<h1 style="font-family: ${paperStyles.fontFamily}; font-size: 22px; font-weight: bold; margin: 0 0 ${paperStyles.marginBottom} 0; line-height: 1.2; color: ${paperStyles.color};">`
+      `<h1 style="font-family: ${paperStyles.fontFamily}; font-size: 22px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
     )
     .replace(
       /<h2[^>]*style="[^"]*font-size:[^;]*22\.5px[^;]*;[^"]*"[^>]*>/g,
-      `<h2 style="font-family: ${paperStyles.fontFamily}; font-size: 18px; font-weight: bold; margin: 0 0 ${paperStyles.marginBottom} 0; line-height: 1.2; color: ${paperStyles.color};">`
+      `<h2 style="font-family: ${paperStyles.fontFamily}; font-size: 18px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
     )
     .replace(
       /<h3[^>]*style="[^"]*font-size:[^;]*19\.5px[^;]*;[^"]*"[^>]*>/g,
-      `<h3 style="font-family: ${paperStyles.fontFamily}; font-size: 16px; font-weight: bold; margin: 0 0 ${paperStyles.marginBottom} 0; line-height: 1.2; color: ${paperStyles.color};">`
+      `<h3 style="font-family: ${paperStyles.fontFamily}; font-size: 16px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
     )
     
     // Remove quotes from font-family for react-pdf compatibility
@@ -298,7 +315,12 @@ const htmlChange = (html) => {
     
     // Remove unsupported CSS properties
     .replace(/text-decoration-thickness:\s*[^;]+;/g, '')
-    .replace(/text-decoration-line:\s*[^;]+;/g, '');
+    .replace(/text-decoration-line:\s*[^;]+;/g, '')
+    
+    // Clean up any remaining custom elements or attributes
+    .replace(/data-[^=]*="[^"]*"/g, '')
+    .replace(/contenteditable="[^"]*"/g, '')
+    .replace(/<\/?\s*chemical-[^>]*>/gi, '');
 
   return transformedHtml;
 };
@@ -344,18 +366,18 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
       }}>
         <View style={{ width: '45%' }}>
           <Html>
-            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[0]}</div>`}
+            {`• ${transformedChoices[0]}`}
           </Html>
           <Html>
-            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[1]}</div>`}
+            {`• ${transformedChoices[1]}`}
           </Html>
         </View>
         <View style={{ width: '45%' }}>
           <Html>
-            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[2]}</div>`}
+            {`• ${transformedChoices[2]}`}
           </Html>
           <Html>
-            {`<div style="font-family: TimesNewRoman; font-size: 15px; margin-bottom: 3px;">• ${transformedChoices[3]}</div>`}
+            {`• ${transformedChoices[3]}`}
           </Html>
         </View>
       </View>

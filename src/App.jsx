@@ -26,72 +26,39 @@ function App() {
         maxWidth: '100%',
         overflowX: 'hidden',
         minHeight: '100vh',
-        bgcolor: darkMode ? '#121212' : '#f5f5f5'
+        bgcolor: darkMode ? '#121212' : '#f5f5f5',
+        '& chemical-line[data-chemical-type="single"]': {
+          display: 'inline-block !important',
+          position: 'relative !important',
+          width: '40px !important',
+          height: '0 !important',
+          verticalAlign: 'middle !important',
+          margin: '0 4px !important',
+          borderBottom: '2px solid #000000 !important',
+          background: 'transparent !important',
+        },
+        '& chemical-line[data-chemical-type="single"] span[data-arrow-head="single"]': {
+          position: 'absolute !important',
+          right: '-1px !important',
+          top: '-4px !important',
+          width: '0 !important',
+          height: '0 !important',
+          borderTop: '5px solid transparent !important',
+          borderBottom: '5px solid transparent !important',
+          borderLeft: '7px solid #000000 !important',
+          display: 'block !important',
+        },
+        '& chemical-reversible': {
+          display: 'inline-block !important',
+          position: 'relative !important',
+          width: '40px !important',
+          height: '10px !important',
+          verticalAlign: 'middle !important',
+          margin: '0 4px !important',
+        }
       }}
       className={darkMode ? "app dark" : "app"}
     >
-      <style>
-        {`/* Single Line Arrow */
-          .ql-chemline {
-            display: inline-block;
-            position: relative;
-            width: 40px;
-            height: 0;
-            vertical-align: middle;
-            margin: 0 4px;
-            border-bottom: 2px solid #000000;
-          }
-          .ql-chemline::after {
-            content: "";
-            position: absolute;
-            right: -1px;
-            top: -4px;
-            border-top: 5px solid transparent;
-            border-bottom: 5px solid transparent;
-            border-left: 7px solid #000000;
-          }
-
-          /* Reversible Chemical Line (Double Arrow) */
-          .ql-chemreversible {
-            display: inline-block;
-            position: relative;
-            width: 40px;
-            height: 10px;
-            vertical-align: middle;
-            margin: 0 4px;
-          }
-          .ql-chemreversible .line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            border-bottom: 2px solid #000000;
-          }
-          .ql-chemreversible .line.top {
-            top: 0;
-          }
-          .ql-chemreversible .line.bottom {
-            bottom: 0;
-          }
-          .ql-chemreversible .line.top::after {
-            content: "";
-            position: absolute;
-            right: -1px;
-            top: -4px;
-            border-top: 5px solid transparent;
-            border-bottom: 5px solid transparent;
-            border-left: 7px solid #000000;
-          }
-          .ql-chemreversible .line.bottom::before {
-            content: "";
-            position: absolute;
-            left: -1px;
-            top: -4px;
-            border-top: 5px solid transparent;
-            border-bottom: 5px solid transparent;
-            border-right: 7px solid #000000;
-          }
-        `}
-      </style>
       <SlugProvider>
         <Toaster
           position="top-center"
