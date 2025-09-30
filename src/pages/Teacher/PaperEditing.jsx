@@ -1175,7 +1175,6 @@ const Teacher = () => {
               htmlMCQ={selectedMCQ}
               BasicInfo={exsistingInfo}
               section={sectionLetters}
-              isUrdu={exsistingInfo.medium === "Urdu"}
             />
           </Box>
         </Box>

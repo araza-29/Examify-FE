@@ -115,6 +115,7 @@ const PaperApprove = () => {
     // marks: 80,
     // date: new Date().toISOString().split("T")[0],
     // instruction: "No Instruction just attempt the Paper",
+    medium: "English"
   });
   const [loading, setLoading] = useState(true);
 
@@ -153,7 +154,8 @@ const PaperApprove = () => {
       marks: paper.marks,
       date: paper.date,
       center: paper.center_name,
-      time: paper.time
+      time: paper.time,
+      medium: paper.medium,
     })
     
     Promise.all([

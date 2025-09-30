@@ -284,6 +284,8 @@ const htmlChange = (html) => {
     // Remove quotes from font-family for react-pdf compatibility
     .replace(/font-family:\s*'TimesNewRoman'/g, 'font-family: TimesNewRoman')
     .replace(/font-family:\s*"TimesNewRoman"/g, 'font-family: TimesNewRoman')
+    // Strip unsupported CSS props if they slipped in
+    .replace(/(?:overflow-wrap|word-wrap|word-break)\s*:\s*[^;]+;?/gi, '')
     
     // Fix CSS shorthand for react-pdf
     .replace(/margin:\s*([^;]+);/g, (match, values) => {
@@ -322,7 +324,38 @@ const htmlChange = (html) => {
     .replace(/contenteditable="[^"]*"/g, '')
     .replace(/<\/?\s*chemical-[^>]*>/gi, '');
 
-  return transformedHtml;
+  // Remove empty tags that can produce invalid text runs in react-pdf-html
+  transformedHtml = transformedHtml
+    .replace(/<span[^>]*>\s*(?:&nbsp;)?\s*<\/span>/gi, '')
+    .replace(/<b[^>]*>\s*(?:&nbsp;)?\s*<\/b>/gi, '')
+    .replace(/<i[^>]*>\s*(?:&nbsp;)?\s*<\/i>/gi, '')
+    .replace(/<u[^>]*>\s*(?:&nbsp;)?\s*<\/u>/gi, '')
+    .replace(/<div[^>]*>\s*(?:&nbsp;)?\s*<\/div>/gi, '')
+    .replace(/<p[^>]*>\s*(?:&nbsp;)?\s*<\/p>/gi, '');
+
+  // Ensure we always return a non-empty string to avoid undefined fragments
+  const safe = (transformedHtml || '').trim();
+  return safe.length > 0 ? safe : ' ';
+};
+
+// Avoid feeding empty HTML to react-pdf-html to prevent layout crashes
+const isEmptyHtmlString = (html) => {
+  if (!html) return true;
+  const text = String(html)
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .trim();
+  return text.length === 0;
+};
+
+const RenderHtmlSafe = ({ children, html, style }) => {
+  const content = typeof html === 'string' ? html : (typeof children === 'string' ? children : '');
+  if (isEmptyHtmlString(content)) {
+    return null;
+  }
+  return <Html style={style}>{content}</Html>;
 };
 
 const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
@@ -503,17 +536,22 @@ const PaperHeader = ({ BasicInfo }) => (
 );
 
 const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
+  const safeInfo = BasicInfo || {};
+  const isUrduFlag = (typeof isUrdu === 'boolean') ? isUrdu : (safeInfo?.medium === 'Urdu');
+  const questionsArr = Array.isArray(htmlQuestions) ? htmlQuestions : [];
+  const mcqArr = Array.isArray(htmlMCQ) ? htmlMCQ : [];
+  const sections = Array.isArray(section) ? section : [];
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <PaperHeader BasicInfo={BasicInfo} />
+      <Page size="A4" style={styles.page} wrap>
+        <PaperHeader BasicInfo={safeInfo} />
         
-        {section.map((sec, secIndex) => {
+        {sections.map((sec, secIndex) => {
           let sectionQuestionNumber = 1;
           for (let i = 0; i < secIndex; i++) {
-            const prevSection = section[i];
+            const prevSection = sections[i];
             if (prevSection.type.toLowerCase() === 'descriptive questions') {
-              const prevQuestions = htmlQuestions.filter(q => q.section === prevSection.name).length;
+              const prevQuestions = questionsArr.filter(q => q.section === prevSection.name).length;
               sectionQuestionNumber += prevQuestions;
             } else {
               sectionQuestionNumber += 1;
@@ -521,20 +559,20 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
           }
 
           return (
-            <View key={secIndex} style={{ direction: isUrdu ? 'rtl' : 'ltr' }}>
+            <View key={secIndex} style={{ direction: isUrduFlag ? 'rtl' : 'ltr', breakInside: 'avoid', breakBefore: 'always' }}>
               <View style={styles.sectionHeaderContainer}>
                 <View style={styles.sectionNameWrapper}>
-                  <Text style={isUrdu ? styles.urduSectionHeader : styles.sectionHeader}>
+                  <Text style={isUrduFlag ? styles.urduSectionHeader : styles.sectionHeader}>
                     {sec.name}
                   </Text>
-                  <Text style={isUrdu ? styles.urduSectionHeaderType : styles.sectionHeaderType}>
+                  <Text style={isUrduFlag ? styles.urduSectionHeaderType : styles.sectionHeaderType}>
                     ({sec.displayType})
                   </Text>
                 </View>
               </View>
               
-              <View style={isUrdu ? styles.urduNoteContainer : styles.noteContainer}>
-                {isUrdu ? (
+              <View style={isUrduFlag ? styles.urduNoteContainer : styles.noteContainer}>
+                {isUrduFlag ? (
                   <>
                     <Text style={styles.urduSectionMarks}>
                       {"   کل نشانات : ("+ sec.marks +")"}
@@ -567,7 +605,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                 )}
               </View>
 
-              {htmlQuestions
+              {questionsArr
                 .filter(q => q.section === sec.name)
                 .map((q, idx) => {
                   const isDescriptive = sec.type.toLowerCase() === 'descriptive questions';
@@ -576,15 +614,15 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                   return (
                     <View key={idx} style={isDescriptive ? styles.descriptiveQuestion : styles.question}>
                       <View style={{ 
-                        flexDirection: isUrdu ? 'row-reverse' : 'row', 
+                        flexDirection: isUrduFlag ? 'row-reverse' : 'row', 
                         marginBottom: 5,
-                        justifyContent: isUrdu ? 'flex-end' : 'flex-start',
-                        direction: isUrdu ? 'rtl' : 'ltr'
+                        justifyContent: isUrduFlag ? 'flex-end' : 'flex-start',
+                        direction: isUrduFlag ? 'rtl' : 'ltr'
                       }}>
-                        <Text style={isUrdu ? styles.urduQuestion : { 
+                        <Text style={isUrduFlag ? styles.urduQuestion : { 
                           fontFamily: "TimesNewRoman",
-                          marginRight: isUrdu ? 0 : 8,
-                          marginLeft: isUrdu ? 8 : 0,
+                          marginRight: isUrduFlag ? 0 : 8,
+                          marginLeft: isUrduFlag ? 8 : 0,
                           fontSize: 15, 
                           minWidth: 20 
                         }}>
@@ -594,10 +632,8 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                             `${toRoman(idx + 1)}.`
                           }
                         </Text>
-                        <View style={{ flex: 1, direction: isUrdu ? 'rtl' : 'ltr' }}>
-                          <Html style={{ textAlign: isUrdu ? 'right' : 'left' }}>
-                            {transformedHtml}
-                          </Html>
+                        <View style={{ flex: 1, direction: isUrduFlag ? 'rtl' : 'ltr' }}>
+                          <RenderHtmlSafe style={{ textAlign: isUrduFlag ? 'right' : 'left' }} html={transformedHtml} />
                           {q.image && (
                             <Image 
                               src={q.image} 
@@ -610,17 +646,17 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                   );
                 })}
 
-              {htmlMCQ
+              {mcqArr
                 .filter(q => q.section === sec.name)
                 .map((q, idx) => {
                   return (
                     <View key={idx}>
                       <MCQComponent 
                         index={idx + 1}
-                        htmlString={q.name} 
+                        htmlString={q?.name || ''} 
                         choices={[q.choice1, q.choice2, q.choice3, q.choice4]}
-                        imageUrl={q.image}
-                        isUrdu={isUrdu}
+                        imageUrl={q?.image}
+                        isUrdu={isUrduFlag}
                       />
                     </View>
                   );
@@ -635,15 +671,16 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
 
 const Paper = ({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview }) => {
   if (loading) return <Loader />;
-  const isUrdu = BasicInfo.medium === "Urdu";
-  console.log("BasicInfo", BasicInfo, htmlQuestions, htmlMCQ, section, loading)
+  const info = BasicInfo || {};
+  const isUrdu = info.medium === "Urdu";
+  console.log("BasicInfo", info, htmlQuestions, htmlMCQ, section, loading)
   return (
     <PDFViewer showToolbar={false} style={{ width: '100%', height: '100vh', border: 'none' }}>
       <PaperPDF
-        BasicInfo={BasicInfo}
-        htmlQuestions={htmlQuestions}
-        htmlMCQ={htmlMCQ}
-        section={section}
+        BasicInfo={info}
+        htmlQuestions={Array.isArray(htmlQuestions) ? htmlQuestions : []}
+        htmlMCQ={Array.isArray(htmlMCQ) ? htmlMCQ : []}
+        section={Array.isArray(section) ? section : []}
         isUrdu={isUrdu}
       />
     </PDFViewer>
