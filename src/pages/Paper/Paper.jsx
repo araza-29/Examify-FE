@@ -250,7 +250,7 @@ const htmlChange = (html) => {
     // Convert divs (from textEditor paragraphs) with paper-specific styles
     .replace(
       /<span[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
-      `<span style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin-top: 2px; margin-bottom: ${paperStyles.marginBottom}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
+      `<span style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin-top: 2px; margin-bottom: ${paperStyles.marginBottom}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color}; display: inline-block; width: 100%;">`
     )
     
     // Update list styles for paper
@@ -334,7 +334,8 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
       <View style={{ 
         flexDirection: isUrdu ? 'row-reverse' : 'row', 
         marginBottom: 8,
-        justifyContent: isUrdu ? 'flex-end' : 'flex-start' 
+        justifyContent: isUrdu ? 'flex-end' : 'flex-start',
+        textAlign: isUrdu ? 'right' : 'left'
       }}>
         <Text style={isUrdu ? styles.urduQuestion : { 
           fontFamily: "TimesNewRoman", 
@@ -362,23 +363,64 @@ const MCQComponent = ({ htmlString, choices, index, imageUrl, isUrdu }) => {
         flexDirection: isUrdu ? 'row-reverse' : 'row', 
         justifyContent: isUrdu ? 'flex-end' : 'flex-start', 
         paddingLeft: isUrdu ? 0 : 28,
-        paddingRight: isUrdu ? 28 : 0
+        paddingRight: isUrdu ? 28 : 0,
+        textAlign: isUrdu ? 'right' : 'left'
       }}>
-        <View style={{ width: '45%' }}>
-          <Html>
-            {`• ${transformedChoices[0]}`}
-          </Html>
-          <Html>
-            {`• ${transformedChoices[1]}`}
-          </Html>
+        <View style={{ width: '45%', direction: isUrdu ? 'rtl' : 'ltr' }}>
+          <View style={{ flexDirection: isUrdu ? 'row-reverse' : 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+            <Text style={{ 
+              fontFamily: "TimesNewRoman",
+              fontSize: 15,
+              marginLeft: isUrdu ? 4 : 0,
+              marginRight: isUrdu ? 0 : 4
+            }}>•</Text>
+            <View style={{ flex: 1 }}>
+              <Html>
+                {transformedChoices[0]}
+              </Html>
+            </View>
+          </View>
+          <View style={{ flexDirection: isUrdu ? 'row-reverse' : 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+            <Text style={{ 
+              fontFamily: "TimesNewRoman",
+              fontSize: 15,
+              marginLeft: isUrdu ? 4 : 0,
+              marginRight: isUrdu ? 0 : 4
+            }}>•</Text>
+            <View style={{ flex: 1 }}>
+              <Html>
+                {transformedChoices[1]}
+              </Html>
+            </View>
+          </View>
         </View>
-        <View style={{ width: '45%' }}>
-          <Html>
-            {`• ${transformedChoices[2]}`}
-          </Html>
-          <Html>
-            {`• ${transformedChoices[3]}`}
-          </Html>
+        <View style={{ width: '45%', direction: isUrdu ? 'rtl' : 'ltr' }}>
+          <View style={{ flexDirection: isUrdu ? 'row-reverse' : 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+            <Text style={{ 
+              fontFamily: "TimesNewRoman",
+              fontSize: 15,
+              marginLeft: isUrdu ? 4 : 0,
+              marginRight: isUrdu ? 0 : 4
+            }}>•</Text>
+            <View style={{ flex: 1 }}>
+              <Html>
+                {transformedChoices[2]}
+              </Html>
+            </View>
+          </View>
+          <View style={{ flexDirection: isUrdu ? 'row-reverse' : 'row', alignItems: 'flex-start', marginBottom: 4 }}>
+            <Text style={{ 
+              fontFamily: "TimesNewRoman",
+              fontSize: 15,
+              marginLeft: isUrdu ? 4 : 0,
+              marginRight: isUrdu ? 0 : 4
+            }}>•</Text>
+            <View style={{ flex: 1 }}>
+              <Html>
+                {transformedChoices[3]}
+              </Html>
+            </View>
+          </View>
         </View>
       </View>
     </View>
@@ -536,7 +578,8 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                       <View style={{ 
                         flexDirection: isUrdu ? 'row-reverse' : 'row', 
                         marginBottom: 5,
-                        justifyContent: isUrdu ? 'flex-end' : 'flex-start' 
+                        justifyContent: isUrdu ? 'flex-end' : 'flex-start',
+                        direction: isUrdu ? 'rtl' : 'ltr'
                       }}>
                         <Text style={isUrdu ? styles.urduQuestion : { 
                           fontFamily: "TimesNewRoman",
@@ -551,8 +594,8 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
                             `${toRoman(idx + 1)}.`
                           }
                         </Text>
-                        <View style={{ flex: 1 }}>
-                          <Html>
+                        <View style={{ flex: 1, direction: isUrdu ? 'rtl' : 'ltr' }}>
+                          <Html style={{ textAlign: isUrdu ? 'right' : 'left' }}>
                             {transformedHtml}
                           </Html>
                           {q.image && (
@@ -593,7 +636,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu }) => {
 const Paper = ({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, webPreview }) => {
   if (loading) return <Loader />;
   const isUrdu = BasicInfo.medium === "Urdu";
-  
+  console.log("BasicInfo", BasicInfo, htmlQuestions, htmlMCQ, section, loading)
   return (
     <PDFViewer showToolbar={false} style={{ width: '100%', height: '100vh', border: 'none' }}>
       <PaperPDF

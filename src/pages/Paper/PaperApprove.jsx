@@ -3,7 +3,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
-import Paper from "./Paper";
+import Paper, {PaperPDF} from "./Paper";
 import PaperKey from "./PaperKey";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
@@ -42,7 +42,7 @@ import {
 import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
 import { pdf } from '@react-pdf/renderer';
-import PDFComponent, { PaperPDF } from "./PaperKey";
+import PDFComponent, { PaperKeyPDF } from "./PaperKey";
 import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 
@@ -380,7 +380,7 @@ useEffect(() => {
   try {
     // First document
     const doc1 = (
-      <Paper
+      <PaperPDF
         htmlQuestions={selectedQuestion}
         htmlMCQ={selectedMCQ}
         BasicInfo={exsistingInfo}
@@ -392,7 +392,7 @@ useEffect(() => {
     
     // Second document (you can customize this as needed)
     const doc2 = (
-      <PaperPDF
+      <PaperKeyPDF
         BasicInfo={exsistingInfo}
         htmlQuestions={selectedQuestion}
         htmlMCQ={selectedMCQ}
@@ -406,7 +406,7 @@ useEffect(() => {
     // Download first document
     const a1 = document.createElement('a');
     a1.href = url1;
-    a1.download = `Paper_1_${paper.id || 'download'}.pdf`;
+    a1.download = `Paper_${paper.id || 'download'}.pdf`;
     document.body.appendChild(a1);
     a1.click();
     document.body.removeChild(a1);
@@ -416,7 +416,7 @@ useEffect(() => {
     // Download second document
     const a2 = document.createElement('a');
     a2.href = url2;
-    a2.download = `Paper_2_${paper.id || 'download'}.pdf`;
+    a2.download = `PaperKey_${paper.id || 'download'}.pdf`;
     document.body.appendChild(a2);
     a2.click();
     document.body.removeChild(a2);
@@ -487,7 +487,7 @@ useEffect(() => {
                 <Button
                   variant="contained"
                   color="primary"
-                  sx={{ ml: 2 }}
+                  sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", mr: 10, ml: 5 }}
                   onClick={handleDownloadPDF}
                 >
                   Download PDF

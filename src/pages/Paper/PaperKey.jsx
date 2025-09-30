@@ -232,69 +232,86 @@ const styles = StyleSheet.create({
 });
 
 // Function to transform textEditor HTML to paper-compatible HTML
+// Updated htmlChange function with better text wrapping
 const htmlChange = (html) => {
   if (!html) return '';
   
-  // Paper-specific styling (different from textEditor)
+  // Paper-specific styling with improved text wrapping
   const paperStyles = {
     fontSize: '14px',
-    lineHeight: '1',
+    lineHeight: '1.4',
     marginBottom: '2px',
     color: '#1f2937',
-    fontFamily: 'TimesNewRoman'
+    fontFamily: 'TimesNewRoman',
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word',
+    maxWidth: '100%',
+    width: '100%'
   };
 
   let transformedHtml = html;
 
   // Convert chemical elements to simple text arrows that will definitely render
   transformedHtml = transformedHtml
-    // Convert single chemical arrows to Unicode arrow
     .replace(
       /<chemical-line[^>]*data-chemical-type="single"[^>]*>.*?<\/chemical-line>/gi,
       '<span style="font-family: TimesNewRoman; font-size: 14px; margin: 0 4px; display: inline-block;">→</span>'
     )
-    
-    // Convert reversible chemical arrows to Unicode reversible arrow
     .replace(
       /<chemical-reversible[^>]*>.*?<\/chemical-reversible>/gi,
       '<span style="font-family: TimesNewRoman; font-size: 14px; margin: 0 4px; display: inline-block;">⇌</span>'
     );
 
-  // Transform textEditor styles to paper styles
+  // Transform textEditor styles to paper styles with better wrapping
   transformedHtml = transformedHtml
-    // Convert divs (from textEditor paragraphs) with paper-specific styles
+    // In your htmlChange function, modify the span replacement:
+    // In your htmlChange function, use this corrected span replacement:
     .replace(
-      /<span[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
-      `<span style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; margin-top: 2px; margin-bottom: ${paperStyles.marginBottom}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color};">`
+    /<span[^>]*style="[^"]*font-family:[^;]*TimesNewRoman[^;]*;[^"]*"[^>]*>/g,
+    // FIX: Re-added wrapping properties directly to the span, but without display:inline-block or width.
+    // This explicitly tells the renderer to break long words within this specific span.
+    `<span style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color}; overflow-wrap: break-word; word-wrap: break-word; word-break: break-all;">`
     )
     
-    // Update list styles for paper
+    // Add wrapping to paragraphs and divs
+    .replace(
+      /<p([^>]*)>/g,
+      `<p$1 style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; margin-bottom: 4px;">`
+    )
+    .replace(
+      /<div([^>]*)>/g,
+      `<div$1 style="font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; line-height: ${paperStyles.lineHeight}; color: ${paperStyles.color}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; width: 100%;">`
+    )
+    
+    // Update list styles for paper with better wrapping
     .replace(
       /<ol[^>]*style="[^"]*margin-top:[^;]*8px[^;]*;[^"]*"[^>]*>/g,
-      `<ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color};">`
+      `<ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">`
     )
     .replace(
       /<ul[^>]*style="[^"]*margin-top:[^;]*8px[^;]*;[^"]*"[^>]*>/g,
-      `<ul style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color};">`
+      `<ul style="margin-top: 4px; margin-bottom: 4px; padding-left: 10px; line-height: ${paperStyles.lineHeight}; font-family: ${paperStyles.fontFamily}; font-size: ${paperStyles.fontSize}; color: ${paperStyles.color}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">`
     )
     .replace(
       /<li[^>]*style="[^"]*margin-bottom:[^;]*3px[^;]*;[^"]*"[^>]*>/g,
-      `<li style="margin-bottom: 2px; line-height: ${paperStyles.lineHeight};">`
+      `<li style="margin-bottom: 2px; line-height: ${paperStyles.lineHeight}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">`
     )
     
-    // Update heading styles for paper
+    // Update heading styles for paper with better wrapping
     .replace(
       /<h1[^>]*style="[^"]*font-size:[^;]*27px[^;]*;[^"]*"[^>]*>/g,
-      `<h1 style="font-family: ${paperStyles.fontFamily}; font-size: 22px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
+      `<h1 style="font-family: ${paperStyles.fontFamily}; font-size: 22px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">`
     )
     .replace(
       /<h2[^>]*style="[^"]*font-size:[^;]*22\.5px[^;]*;[^"]*"[^>]*>/g,
-      `<h2 style="font-family: ${paperStyles.fontFamily}; font-size: 18px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
+      `<h2 style="font-family: ${paperStyles.fontFamily}; font-size: 18px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">`
     )
     .replace(
       /<h3[^>]*style="[^"]*font-size:[^;]*19\.5px[^;]*;[^"]*"[^>]*>/g,
-      `<h3 style="font-family: ${paperStyles.fontFamily}; font-size: 16px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color};">`
+      `<h3 style="font-family: ${paperStyles.fontFamily}; font-size: 16px; font-weight: bold; margin-top: 0px; margin-bottom: ${paperStyles.marginBottom}; line-height: 1.2; color: ${paperStyles.color}; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">`
     )
+    
+    // Remove quotes from font-family for react-pdf compatibility
     .replace(/font-family:\s*'TimesNewRoman'/g, 'font-family: TimesNewRoman')
     .replace(/font-family:\s*"TimesNewRoman"/g, 'font-family: TimesNewRoman')
     
@@ -336,7 +353,7 @@ const htmlChange = (html) => {
     .replace(/<\/?\s*chemical-[^>]*>/gi, '');
 
   return transformedHtml;
-}
+};
 
 function formatTimeRange(startTime, durationHours) {
   if (!startTime || !durationHours) return "";
@@ -365,7 +382,7 @@ function toRoman(num) {
 }
 
 function toUrduRoman(num) {
-    const urduRomans = ['١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '١٠', '١١', '١٢', '١٣', '١٤', '١٥', '١٦', '١٧', '١٨', '١٩', '٢٠'];
+    const urduRomans = ['١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '١٠', '١١', '١٢', '١٣', '١٤', '١٤', '١٦', '١٧', '١٨', '١٩', '٢٠'];
     return urduRomans[num - 1] || num;
 }
 
@@ -421,7 +438,10 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                     {isUrdu ? `${toUrduRoman(index)}.` : `${toRoman(index)}.`}
                 </Text>
                 <View style={{ flex: 1 }}>
-                    <Html>
+                    <Html
+                    style ={{
+                        width: '70%'
+                    }}>
                         {transformedHtml}
                     </Html>
                     {imageUrl && (
@@ -446,7 +466,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                             marginRight: 8,
                             color: choices[0] === answer ? 'green' : 'black',
                             textDecorationLine: choices[0] === answer ? 'underline' : 'none',
-                            textDecorationColor: choices[0] === answer ? 'green' : 'transparent',
                             fontWeight: choices[0] === answer ? 'bold' : 'normal',
                         }}>•</Text>
                         <Html style={{ 
@@ -454,7 +473,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                             fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
                             color: choices[0] === answer ? 'green' : 'black',
                             textDecorationLine: choices[0] === answer ? 'underline' : 'none',
-                            textDecorationColor: choices[0] === answer ? 'green' : 'transparent',
                             fontWeight: choices[0] === answer ? 'bold' : 'normal',
                         }}>
                             {transformedChoices[0]}
@@ -467,7 +485,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                             marginRight: 8,
                             color: choices[1] === answer ? 'green' : 'black',
                             textDecorationLine: choices[1] === answer ? 'underline' : 'none',
-                            textDecorationColor: choices[1] === answer ? 'green' : 'transparent',
                             fontWeight: choices[1] === answer ? 'bold' : 'normal',
                         }}>•</Text>
                         <Html style={{ 
@@ -475,7 +492,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                             fontFamily: isUrdu ? "JameelNooriNastaleeq" : "TimesNewRoman",
                             color: choices[1] === answer ? 'green' : 'black',
                             textDecorationLine: choices[1] === answer ? 'underline' : 'none',
-                            textDecorationColor: choices[1] === answer ? 'green' : 'transparent',
                             fontWeight: choices[1] === answer ? 'bold' : 'normal',
                         }}>
                             {transformedChoices[1]}
@@ -491,7 +507,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                                 marginRight: 8,
                                 color: choices[2] === answer ? 'green' : 'black',
                                 textDecorationLine: choices[2] === answer ? 'underline' : 'none',
-                                textDecorationColor: choices[2] === answer ? 'green' : 'transparent',
                                 fontWeight: choices[2] === answer ? 'bold' : 'normal',
                             }}>•</Text>
                             <Html style={{ 
@@ -499,7 +514,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                                 fontFamily: "TimesNewRoman",
                                 color: choices[2] === answer ? 'green' : 'black',
                                 textDecorationLine: choices[2] === answer ? 'underline' : 'none',
-                                textDecorationColor: choices[2] === answer ? 'green' : 'transparent',
                                 fontWeight: choices[2] === answer ? 'bold' : 'normal',
                             }}>
                                 {transformedChoices[2]}
@@ -512,7 +526,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                                 marginRight: 8,
                                 color: choices[3] === answer ? 'green' : 'black',
                                 textDecorationLine: choices[3] === answer ? 'underline' : 'none',
-                                textDecorationColor: choices[3] === answer ? 'green' : 'transparent',
                                 fontWeight: choices[3] === answer ? 'bold' : 'normal',
                             }}>•</Text>
                             <Html style={{ 
@@ -520,7 +533,6 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
                                 fontFamily: "TimesNewRoman",
                                 color: choices[3] === answer ? 'green' : 'black',
                                 textDecorationLine: choices[3] === answer ? 'underline' : 'none',
-                                textDecorationColor: choices[3] === answer ? 'green' : 'transparent',
                                 fontWeight: choices[3] === answer ? 'bold' : 'normal',
                             }}>
                                 {transformedChoices[3]}
@@ -560,16 +572,14 @@ const MCQ = ({ htmlString, choices, index, answer, imageUrl, isUrdu }) => {
     );
 };
 
-const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading }) => {
+const PaperKeyPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading }) => {
     if (loading) return <Loader />;
-    console.log("Hello from paperPdf of paperKey")
     const getUrduTextStyle = (defaultStyle) => (isUrdu ? [defaultStyle, styles.urduText] : defaultStyle);
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
                 <PaperHeader BasicInfo={BasicInfo} styles={styles} isUrdu={isUrdu} />
-                {console.log("paper is being printed")}
                 {section.map((sec, secIndex) => {
                     let questionCounter = 1;
                     
@@ -582,7 +592,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                         if (prevSection.type.toLowerCase() === 'descriptive questions') {
                             questionCounter += prevQuestions.length;
                         } else {
-                            questionCounter += 1; // Only count as one question for MCQ/short sections
+                            questionCounter += 1;
                         }
                     }
 
@@ -641,7 +651,9 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                         }
                                                     </Text>
                                                     <View style={{ flex: 1 }}>
-                                                        <Html>
+                                                        <Html style ={{
+                                                            width: '70%'
+                                                        }}>
                                                             {htmlChange(firstRegularQuestion.name)}
                                                         </Html>
                                                         {firstRegularQuestion.image && (
@@ -674,13 +686,15 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                         fontSize: 14, 
                                                         fontFamily: "TimesNewRoman",
                                                         color: 'green',
-                                                        fontWeight: 'bold'
+                                                        fontWeight: 'bold',
+                                                        maxWidth: '450px',
+                                                        width: '100%'  
                                                     }}>
-                                                        {htmlChange(firstRegularQuestion.original_answer)}
+                                                        {firstRegularQuestion.original_answer}
                                                     </Html>
                                                 </View>
                                                 
-                                                {firstRegularQuestion.answer && (
+                                                {htmlChange(firstRegularQuestion.answer) && (
                                                     <Image 
                                                         src={firstRegularQuestion.answer} 
                                                         style={styles.questionImage}
@@ -783,7 +797,9 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                                                     fontSize: 14, 
                                                     fontFamily: "TimesNewRoman",
                                                     color: 'green',
-                                                    fontWeight: 'bold'
+                                                    fontWeight: 'bold',
+                                                    maxWidth: '450px',
+                                                    width: '100%'  
                                                 }}>
                                                     {htmlChange(q.original_answer)}
                                                 </Html>
@@ -801,7 +817,7 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
                             })}
 
                             {mcqsInSection.slice(firstRegularQuestion ? 0 : 1).map((q, idx) => {
-                                const currentQuestionNumber = idx + 2; // Start from ii after i
+                                const currentQuestionNumber = idx + 2;
                                 return (
                                     <View key={idx} style={styles.regularQuestionContainer}>
                                         <MCQ 
@@ -826,11 +842,10 @@ const PaperPDF = ({ BasicInfo, htmlQuestions, htmlMCQ, section, isUrdu, loading 
 const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section, loading }) => {
     if (loading) return <Loader />;
     const isUrdu = BasicInfo.medium === "Urdu";
-    console.log("Hello from paperKey")
-    console.log("PaperKey check", htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section, loading)
+    
     return (
-        <PDFViewer style={{ width: '100%', height: '100vh', border: 'none' }}>
-            <PaperPDF
+        <PDFViewer showToolbar={false} style={{ width: '100%', height: '100vh', border: 'none' }}>
+            <PaperKeyPDF
                 BasicInfo={BasicInfo}
                 htmlQuestions={htmlQuestions}
                 htmlMCQ={htmlMCQ}
@@ -842,5 +857,5 @@ const PDFComponent = ({ htmlContent, htmlQuestions, htmlMCQ, BasicInfo, section,
     );
 };
 
-export { PaperPDF, htmlChange };
+export { PaperKeyPDF, htmlChange };
 export default PDFComponent;
