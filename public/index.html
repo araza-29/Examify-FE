@@ -14,6 +14,7 @@
   <link rel="preload" href="/fonts/jameel-noori-nastaleeq-kasheeda.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/times.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/timesbd.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/NotoNastaliqUrdu-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
 
   <!-- Load Nunito from Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200..900&display=swap" rel="stylesheet">
@@ -49,6 +50,15 @@
       font-display: swap;
     }
     
+    /* Noto Nastaliq Urdu Variable Font */
+    @font-face {
+      font-family: 'NotoNastaliqUrdu';
+      src: url('/fonts/NotoNastaliqUrdu-VariableFont_wght.ttf') format('truetype');
+      font-weight: 100 900; /* Variable font weight range */
+      font-style: normal;
+      font-display: swap;
+    }
+
     /* Base styles */
     * {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
@@ -68,9 +78,16 @@
     }
     
     .paper-urdu {
-      font-family: 'JameelNooriNastaleeq', 'Noto Nastaliq Urdu', serif !important;
+      font-family: 'JameelNooriNastaleeq', 'NotoNastaliqUrdu', 'Noto Nastaliq Urdu', serif !important;
       direction: rtl;
       text-align: right;
+    }
+    
+    .paper-urdu-noto {
+      font-family: 'NotoNastaliqUrdu', 'JameelNooriNastaleeq', serif !important;
+      direction: rtl;
+      text-align: right;
+      font-feature-settings: "kern" 1;
     }
     
     /* Fallback for when fonts are loading */

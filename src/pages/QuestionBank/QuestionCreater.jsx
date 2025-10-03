@@ -234,7 +234,7 @@ function QuestionCreater() {
         answerData.append('answer', Question.answer);
 
         // Append the image file if it exists
-        if (image) {
+        if (answerImage) {
           answerData.append('image', answerImage);
         }
             fetch("http://localhost:3000/Examination/createAnswer", {

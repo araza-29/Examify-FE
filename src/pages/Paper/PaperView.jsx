@@ -3,7 +3,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
-import Paper, { PaperPDF } from "../Paper/Paper";
+import Paper from "../Paper/Paper";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import DraggableQuestions from "../../components/DraggableQuestions/DraggableQuestions";

@@ -3,7 +3,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
-import Paper, {PaperPDF} from "./Paper";
+import Paper, {downloadPaperPdf} from "./Paper";
 import PaperKey from "./PaperKey";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
@@ -42,7 +42,7 @@ import {
 import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
 import { pdf } from '@react-pdf/renderer';
-import PDFComponent, { PaperKeyPDF } from "./PaperKey";
+import PDFComponent, {downloadPaperKeyPdf} from "./PaperKey";
 import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 
