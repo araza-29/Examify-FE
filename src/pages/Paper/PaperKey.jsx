@@ -4,29 +4,11 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
-// Add CSS styles for chemical symbols
-const chemicalStyles = `
-  .chemical-line::after {
-    content: "→";
-    font-family: "Times New Roman", Times, serif;
-    font-size: 14px;
-    margin: 0 4px;
-    display: inline-block;
-  }
-  .chemical-reversible::after {
-    content: "⇌";
-    font-family: "Times New Roman", Times, serif;
-    font-size: 14px;
-    margin: 0 4px;
-    display: inline-block;
-  }
-`
-
-const A4_WIDTH = 740 // px (96 DPI ~ 8.27in)
-const A4_HEIGHT = 900 // px (96 DPI ~ 11.69in)
+const A4_WIDTH = 700;   // px
+const A4_HEIGHT = 991;  // px (this maintains the ratio)
 const PAGE_PADDING = 30 // px
 const CONTENT_WIDTH = A4_WIDTH - PAGE_PADDING * 2
-export const SECTION_MIN_START_SPACE = 180 // if remaining space < this, push section to next page
+export const SECTION_MIN_START_SPACE = 300 // if remaining space < this, push section to next page
 
 function toRoman(num) {
   const romanNumerals = [
@@ -106,13 +88,16 @@ export function htmlChange(html) {
 
   let transformed = html
 
-  // Keep chemical symbols as HTML/CSS for proper rendering
-  // Remove any problematic attributes but keep the structure
+  // chemistry symbols
   transformed = transformed
-    .replace(/<chemical-line[^>]*>/gi, '<span class="chemical-line">')
-    .replace(/<\/chemical-line>/gi, '</span>')
-    .replace(/<chemical-reversible[^>]*>/gi, '<span class="chemical-reversible">')
-    .replace(/<\/chemical-reversible>/gi, '</span>')
+    .replace(
+      /<chemical-line[^>]*data-chemical-type="single"[^>]*>.*?<\/chemical-line>/gi,
+      '<span style="font-family: Times New Roman, Times, serif; font-size: 14px; margin: 0 4px; display: inline-block;">→</span>',
+    )
+    .replace(
+      /<chemical-reversible[^>]*>.*?<\/chemical-reversible>/gi,
+      '<span style="font-family: Times New Roman, Times, serif; font-size: 14px; margin: 0 4px; display: inline-block;">⇌</span>',
+    )
 
   // normalize text styles
   transformed = transformed
@@ -200,45 +185,31 @@ function PaperHeader({ BasicInfo }) {
   const instituteName = {
     fontSize: 18,
     fontFamily: "Times New Roman, Times, serif",
-    fontWeight: "bold",
+    fontWeight: 700,
     marginBottom: 10,
     textAlign: "center",
     textTransform: "uppercase",
   }
   const row = {
     display: "flex",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 5,
   }
-  const left = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    flex: 1.05,
-  }
-  const center = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    flex: 2,
-  }
-  const right = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    flex: 1,
-  }
+  const left = { display: "flex", flexDirection: "column", alignItems: "flex-start", flex: 1.05 }
+  const center = { display: "flex", flexDirection: "column", alignItems: "center", flex: 2 }
+  const right = { display: "flex", flexDirection: "column", alignItems: "flex-end", flex: 1 }
   const detail = {
     fontSize: 12,
     fontFamily: "Times New Roman, Times, serif",
+    fontWeight: 700,
     marginBottom: 2,
-    fontWeight: "bold",
   }
   const examTitle = {
     fontSize: 12,
     fontFamily: "Times New Roman, Times, serif",
-    fontWeight: "bold",
+    fontWeight: 700,
     textAlign: "center",
     marginBottom: 2,
     textTransform: "uppercase",
@@ -309,55 +280,62 @@ function SectionHeaderBlock({ sec, isUrdu, isDescriptive, sectionQuestionNumber 
     alignItems: "center",
     marginBottom: 5,
   }
-  const nameWrap = {
-    flex: 5,
-    textAlign: "center",
-  }
+  const nameWrap = { flex: 5, textAlign: "center" }
   const noteRow = {
+    paddingTop: 10,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginTop: 5,
-  }
-  const normalNote = {
-    marginBottom: 8,
-    fontSize: 12,
-    fontFamily: "Times New Roman, Times, serif",
-    fontWeight: "bold",
-    textAlign: "left",
-    flex: 5,
+    gap: 8,
   }
   const noteAsQuestion = {
     marginBottom: 8,
     fontSize: 13,
-    fontFamily: "Times New Roman, Times, serif",
-    fontWeight: "bold",
+    fontWeight: 700,
     flex: 5,
+    fontFamily: "Times New Roman, Times, serif",
+    textAlign: "left",
+  }
+  const normalNote = {
+    marginBottom: 8,
+    fontSize: 12,
+    fontWeight: 700,
+    textAlign: "left",
+    flex: 5,
+    fontFamily: "Times New Roman, Times, serif",
   }
   const sectionMarks = {
     marginBottom: 8,
-    fontFamily: "Times New Roman, Times, serif",
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 700,
     flex: 1,
+    fontFamily: "Times New Roman, Times, serif",
   }
+
   const urduNoteAsQuestion = {
-    marginBottom: 8,
-    fontSize: 13,
     fontFamily: '"Noto Nastaliq Urdu", serif',
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: 700,
+    marginBottom: 8,
     flex: 5,
     textAlign: "right",
-    direction: "rtl",
+  }
+  const urduNormalNote = {
+    fontFamily: '"Noto Nastaliq Urdu", serif',
+    fontSize: 16,
+    fontWeight: 400,
+    marginBottom: 8,
+    flex: 5,
+    textAlign: "right",
   }
   const urduSectionMarks = {
-    marginBottom: 8,
     fontFamily: '"Noto Nastaliq Urdu", serif',
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: 400,
+    marginBottom: 8,
+    marginLeft: 10,
     flex: 1,
-    textAlign: "right",
-    direction: "rtl",
+    textAlign: "left",
   }
 
   return (
@@ -372,8 +350,12 @@ function SectionHeaderBlock({ sec, isUrdu, isDescriptive, sectionQuestionNumber 
       <div style={noteRow}>
         {isUrdu ? (
           <>
+            <div style={urduSectionMarks}>{`   کل نشانات : (${sec?.marks})`}</div>
             {isDescriptive ? (
-              <div style={urduNoteAsQuestion}>نوٹ: {sec?.description}</div>
+              <div style={urduNormalNote}>
+                {"نوٹ: "}
+                {sec?.description}
+              </div>
             ) : (
               <div style={urduNoteAsQuestion}>
                 {"سوال نمبر "}
@@ -382,7 +364,6 @@ function SectionHeaderBlock({ sec, isUrdu, isDescriptive, sectionQuestionNumber 
                 {sec?.description}
               </div>
             )}
-            <div style={urduSectionMarks}>کل نشانات : ({sec?.marks})</div>
           </>
         ) : (
           <>
@@ -432,6 +413,10 @@ function DescriptiveQuestionBlock({ q, indexInSection, isUrdu, sectionQuestionNu
   }
 
   const htmlString = htmlChange(q?.name || "")
+  const answerHtml = htmlChange(q?.original_answer || "")
+  const hasAnswerText = !isEmptyHtmlString(answerHtml)
+  const answerImageSrc = q?.answerImage || (isProbablyImageUrl(q?.answer) ? q?.answer : undefined)
+
   return (
     <div data-block-kind="question" style={{ marginBottom: 5 }}>
       <div style={row}>
@@ -441,6 +426,71 @@ function DescriptiveQuestionBlock({ q, indexInSection, isUrdu, sectionQuestionNu
           {q?.image && <img alt="" src={q.image || "/placeholder.svg"} style={imgStyle} crossOrigin="anonymous" />}
         </div>
       </div>
+
+      {/* Answer block (text) */}
+      {hasAnswerText && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: isUrdu ? "row-reverse" : "row",
+            justifyContent: "flex-start",
+            marginTop: 10,
+            backgroundColor: "#f0f9ff",
+            padding: 8,
+            borderRadius: 4,
+            alignItems: "flex-start",
+          }}
+        >
+          <div
+            style={
+              isUrdu
+                ? {
+                    fontSize: 14,
+                    color: "green",
+                    fontWeight: "bold",
+                    marginLeft: 8,
+                    fontFamily: '"Noto Nastaliq Urdu", serif',
+                  }
+                : {
+                    fontSize: 14,
+                    color: "green",
+                    fontWeight: "bold",
+                    marginRight: 8,
+                    fontFamily: "Times New Roman, Times, serif",
+                  }
+            }
+          >
+            {isUrdu ? "جواب:" : "Answer:"}
+          </div>
+          <div
+            style={
+              isUrdu
+                ? {
+                    textAlign: "right",
+                    direction: "rtl",
+                    color: "green",
+                    fontWeight: "bold",
+                    fontFamily: "Times New Roman, Times, serif",
+                    maxWidth: 1000,
+                    width: "100%",
+                  }
+                : {
+                    color: "green",
+                    fontWeight: "bold",
+                    fontFamily: "Times New Roman, Times, serif",
+                    maxWidth: 1000,
+                    width: "100%",
+                  }
+            }
+            dangerouslySetInnerHTML={{ __html: answerHtml }}
+          />
+        </div>
+      )}
+
+      {/* Answer image (if provided) */}
+      {answerImageSrc && (
+        <img alt="" src={answerImageSrc || "/placeholder.svg"} style={imgStyle} crossOrigin="anonymous" />
+      )}
     </div>
   )
 }
@@ -489,11 +539,6 @@ function MCQBlock({ q, idx, isUrdu }) {
     alignItems: "flex-start",
     marginBottom: 4,
   }
-  const choiceContent = {
-    flex: 1,
-    textAlign: isUrdu ? "right" : "left",
-    direction: isUrdu ? "rtl" : "ltr",
-  }
   const gridRow = {
     display: "flex",
     flexDirection: isUrdu ? "row-reverse" : "row",
@@ -502,6 +547,10 @@ function MCQBlock({ q, idx, isUrdu }) {
     paddingLeft: isUrdu ? 0 : 28,
     paddingRight: isUrdu ? 28 : 0,
   }
+
+  const answerHtml = htmlChange(q?.answer || "")
+  const hasAnswerText = !isEmptyHtmlString(answerHtml)
+  const answerImageSrc = q?.answerImage || (isProbablyImageUrl(q?.answer) ? q?.answer : undefined)
 
   return (
     <div data-block-kind="mcq" style={{ marginBottom: 10 }}>
@@ -516,13 +565,17 @@ function MCQBlock({ q, idx, isUrdu }) {
         <div style={col}>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, 
+              textAlign: isUrdu ? "right" : "left",
+              direction: isUrdu ? "rtl" : "ltr",
+              unicodeBidi: isUrdu ? "embed" : "normal",
+              wordBreak: "break-word" }}>
               {!isEmptyHtmlString(choices[0]) && <div dangerouslySetInnerHTML={{ __html: choices[0] }} />}
             </div>
           </div>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, textAlign: isUrdu ? "right" : "left" }}>
               {!isEmptyHtmlString(choices[1]) && <div dangerouslySetInnerHTML={{ __html: choices[1] }} />}
             </div>
           </div>
@@ -530,18 +583,83 @@ function MCQBlock({ q, idx, isUrdu }) {
         <div style={col}>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, textAlign: isUrdu ? "right" : "left" }}>
               {!isEmptyHtmlString(choices[2]) && <div dangerouslySetInnerHTML={{ __html: choices[2] }} />}
             </div>
           </div>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, textAlign: isUrdu ? "right" : "left" }}>
               {!isEmptyHtmlString(choices[3]) && <div dangerouslySetInnerHTML={{ __html: choices[3] }} />}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Answer block (text) */}
+      {hasAnswerText && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: isUrdu ? "row-reverse" : "row",
+            justifyContent: "flex-start",
+            marginTop: 10,
+            backgroundColor: "#f0f9ff",
+            padding: 8,
+            borderRadius: 4,
+            alignItems: "flex-start",
+          }}
+        >
+          <div
+            style={
+              isUrdu
+                ? {
+                    fontSize: 14,
+                    color: "green",
+                    fontWeight: "bold",
+                    marginLeft: 8,
+                    fontFamily: '"Noto Nastaliq Urdu", serif',
+                  }
+                : {
+                    fontSize: 14,
+                    color: "green",
+                    fontWeight: "bold",
+                    marginRight: 8,
+                    fontFamily: "Times New Roman, Times, serif",
+                  }
+            }
+          >
+            {isUrdu ? "جواب:" : "Answer:"}
+          </div>
+          <div
+            style={
+              isUrdu
+                ? {
+                    textAlign: "right",
+                    direction: "rtl",
+                    color: "green",
+                    fontWeight: "bold",
+                    fontFamily: "Times New Roman, Times, serif",
+                    maxWidth: 450,
+                    width: "100%",
+                  }
+                : {
+                    color: "green",
+                    fontWeight: "bold",
+                    fontFamily: "Times New Roman, Times, serif",
+                    maxWidth: 450,
+                    width: "100%",
+                  }
+            }
+            dangerouslySetInnerHTML={{ __html: answerHtml }}
+          />
+        </div>
+      )}
+
+      {/* Optional answer image */}
+      {answerImageSrc && (
+        <img alt="" src={answerImageSrc || "/placeholder.svg"} style={imgStyle} crossOrigin="anonymous" />
+      )}
     </div>
   )
 }
@@ -572,29 +690,37 @@ function buildBlocks({ sections, questionsArr, mcqArr, baseQuestionNumbers }) {
     const sectionQuestionNumber = baseQuestionNumbers[secIndex] || 1
 
     blocks.push({
-      id: `section-${secIndex}`,
       kind: "sectionHeader",
+      id: `sec-${secIndex}-hdr`,
       sec,
+      secIndex,
       isDescriptive,
       sectionQuestionNumber,
     })
 
-    const questionsInSection = questionsArr.filter((q) => q.section === sec?.name)
-    questionsInSection.forEach((q, idx) => {
+    const sectionDescriptive = questionsArr.filter((q) => q.section === sec?.name)
+    sectionDescriptive.forEach((q, idx) => {
       blocks.push({
-        id: `question-${secIndex}-${idx}`,
         kind: "question",
-        q,
-        qIndex: idx + 1,
+        id: `sec-${secIndex}-q-${idx}`,
+        sec,
+        secIndex,
+        isDescriptive: true,
         sectionQuestionNumber,
+        q,
+        qIndex: idx,
       })
     })
 
-    const mcqsInSection = mcqArr.filter((q) => q.section === sec?.name)
-    mcqsInSection.forEach((q, idx) => {
+    const sectionMcqs = mcqArr.filter((q) => q.section === sec?.name)
+    sectionMcqs.forEach((q, idx) => {
       blocks.push({
-        id: `mcq-${secIndex}-${idx}`,
         kind: "mcq",
+        id: `sec-${secIndex}-m-${idx + 1}`,
+        sec,
+        secIndex,
+        isDescriptive: false,
+        sectionQuestionNumber,
         q,
         qIndex: idx + 1, // index for roman numbering
       })
@@ -640,11 +766,13 @@ function PageFrame({ children, BasicInfo }) {
   const pageStyle = {
     width: `${A4_WIDTH}px`,
     height: `${A4_HEIGHT}px`,
-    padding: `${PAGE_PADDING}px`,
-    margin: "0 auto 20px auto",
-    backgroundColor: "white",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
     boxSizing: "border-box",
+    background: "#ffffff", // ensure white page background
+    color: "#000", // ensure black text color
+    padding: `${PAGE_PADDING}px`,
+    margin: "0 auto 12px",
+    boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+    position: "relative",
     overflow: "hidden",
   }
   const contentStyle = {
@@ -658,34 +786,38 @@ function PageFrame({ children, BasicInfo }) {
   )
 }
 
-export async function downloadPaperPdfFromElement(rootEl, filename = "paper.pdf") {
-  if (!rootEl) return
-  const pages = Array.from(rootEl.querySelectorAll("[data-page]"))
-  if (pages.length === 0) return
+export async function downloadPaperKeyPdf(filename) {
+  const rootEl = document.querySelector('[data-paper-type="answer-key"]');
+  if (!rootEl) {
+    console.error('Paper key container not found');
+    return;
+  }
+  
+  const pages = Array.from(rootEl.querySelectorAll("[data-page]"));
+  if (pages.length === 0) return;
 
-  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" })
-  const pageW = pdf.internal.pageSize.getWidth()
-  const pageH = pdf.internal.pageSize.getHeight()
+  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
 
   for (let i = 0; i < pages.length; i++) {
-    const page = pages[i]
+    const page = pages[i];
     const canvas = await html2canvas(page, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#ffffff",
-    })
-    const imgData = canvas.toDataURL("image/png")
-    if (i > 0) pdf.addPage()
-    pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH)
+    });
+    const imgData = canvas.toDataURL("image/png");
+    if (i > 0) pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH);
   }
 
-  pdf.save(filename)
+  pdf.save(filename);
 }
 
-export { downloadPaperPdfFromElement as downloadPaperKeyPdf }
 
-function PaperKey({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSectionStartSpace }) {
+function Paper({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSectionStartSpace }) {
   const containerRef = useRef(null)
   const measureRef = useRef(null)
   const headerMeasureRef = useRef(null)
@@ -735,39 +867,52 @@ function PaperKey({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSect
       used = 0
     }
 
-    for (const block of blocks) {
-      const h = heights.get(block.id) || 0
-      if (used + h > contentHeight && current.length > 0) {
+    const spaceLeft = () => contentHeight - used
+
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i]
+      const h = heights.get(b.id) || 0
+
+      // If this is a new section header, prefer moving the entire section start to next page
+      // unless we have enough space to show at least the header + first block in this section.
+      if (b.kind === "sectionHeader" && used > 0) {
+        // find first content block in this section (question or mcq)
+        let firstNextInSectionHeight = 0
+        const next = blocks[i + 1]
+        if (next && next.secIndex === b.secIndex && next.kind !== "sectionHeader") {
+          firstNextInSectionHeight = heights.get(next.id) || 0
+        }
+
+        // Require enough space either for header + first block, or the configured minimum start space
+        const requiredStart = Math.max(MIN_SECTION_SPACE, h + firstNextInSectionHeight)
+        if (spaceLeft() < requiredStart) {
+          if (current.length > 0) pushPage()
+        }
+      }
+
+      // If this block doesn't fit on the current page, push a new page before placing it.
+      if (used > 0 && h > spaceLeft()) {
         pushPage()
       }
-      current.push(block)
+
+      current.push(b)
       used += h
     }
-    if (current.length > 0) {
-      newPages.push(current)
-    }
+    if (current.length > 0) newPages.push(current)
 
     setPages(newPages)
-  }, [blocks])
+  }, [blocks, sections, questionsArr, mcqArr])
 
+  // Loader (mimic original behavior)
   if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <div
+        style={{ width: "100%", minHeight: "50vh", display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
         <div style={{ fontFamily: "system-ui, sans-serif", fontSize: 14 }}>Loading...</div>
       </div>
     )
   }
-
-  // Inject chemical styles
-  useLayoutEffect(() => {
-    const styleElement = document.createElement('style')
-    styleElement.textContent = chemicalStyles
-    document.head.appendChild(styleElement)
-    
-    return () => {
-      document.head.removeChild(styleElement)
-    }
-  }, [])
 
   return (
     <div ref={containerRef} style={{ width: "100%", overflowX: "hidden" }}>
@@ -793,7 +938,7 @@ function PaperKey({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSect
       </div>
 
       {/* Visible paginated preview */}
-      <div>
+      <div data-paper-root data-paper-type="answer-key">
         {pages.map((pageBlocks, pageIndex) => (
           <PageFrame key={pageIndex} BasicInfo={info}>
             {pageBlocks.map((b) => {
@@ -828,4 +973,20 @@ function PaperKey({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSect
   )
 }
 
-export default PaperKey
+export default Paper
+
+function isProbablyImageUrl(val) {
+  if (!val || typeof val !== "string") return false
+  const v = val.trim().toLowerCase()
+  return (
+    v.startsWith("data:image/") ||
+    v.startsWith("blob:") ||
+    v.endsWith(".png") ||
+    v.endsWith(".jpg") ||
+    v.endsWith(".jpeg") ||
+    v.endsWith(".gif") ||
+    v.endsWith(".webp") ||
+    v.endsWith(".bmp") ||
+    v.includes("/upload/") // common pattern from storage/CDN
+  )
+}

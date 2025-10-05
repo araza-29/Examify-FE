@@ -3,7 +3,9 @@ import Navbar from "../../components/navbar/Navbar";
 import Widget from "../../components/widget/Widget";
 import Featured from "../../components/featured/Featured";
 import Chart from "../../components/chart/Chart";
-import Paper, {downloadPaperPdf} from "./Paper";
+import Paper from "./Paper";
+import { downloadPaperPdf } from './Paper'; // adjust path
+import { downloadPaperKeyPdf } from './PaperKey';
 import PaperKey from "./PaperKey";
 import toast from 'react-hot-toast';
 import { faCheckCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
@@ -42,7 +44,7 @@ import {
 import { QuestionMarkSharp } from "@mui/icons-material";
 import { LucideTwitter } from "lucide-react";
 import { pdf } from '@react-pdf/renderer';
-import PDFComponent, {downloadPaperKeyPdf} from "./PaperKey";
+import PDFComponent from "./PaperKey";
 import { Loader } from '../../components/sectionHandler/sectionHandler';
 
 
@@ -379,181 +381,135 @@ useEffect(() => {
   }
 
   const handleDownloadPDF = async () => {
-  try {
-    // First document
-    const doc1 = (
-      <PaperPDF
-        htmlQuestions={selectedQuestion}
-        htmlMCQ={selectedMCQ}
-        BasicInfo={exsistingInfo}
-        section={sectionLetters}
-        />
-    );
-    const blob1 = await pdf(doc1).toBlob();
-    const url1 = window.URL.createObjectURL(blob1);
-    
-    // Second document (you can customize this as needed)
-    const doc2 = (
-      <PaperKeyPDF
-        BasicInfo={exsistingInfo}
-        htmlQuestions={selectedQuestion}
-        htmlMCQ={selectedMCQ}
-        section={sectionLetters}
-        // Add any different props for the second document
-      />
-    );
-    const blob2 = await pdf(doc2).toBlob();
-    const url2 = window.URL.createObjectURL(blob2);
+    const month = exsistingInfo.date.split("-")[1];
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const englishMonth = monthNames[parseInt(month) - 1];
+    const paperFilename = `Paper-${exsistingInfo.subject}-${exsistingInfo.class}-${exsistingInfo.ExaminationYear}-${englishMonth}.pdf`;
+    await downloadPaperPdf(paperFilename);
+    const keyFilename = `PaperKey-${exsistingInfo.subject}-${exsistingInfo.class}-${exsistingInfo.ExaminationYear}}-${englishMonth}.pdf`;
+    await downloadPaperKeyPdf(keyFilename);
 
-    // Download first document
-    const a1 = document.createElement('a');
-    a1.href = url1;
-    a1.download = `Paper_${paper.id || 'download'}.pdf`;
-    document.body.appendChild(a1);
-    a1.click();
-    document.body.removeChild(a1);
-
-    // Small delay to ensure first download starts
-
-    // Download second document
-    const a2 = document.createElement('a');
-    a2.href = url2;
-    a2.download = `PaperKey_${paper.id || 'download'}.pdf`;
-    document.body.appendChild(a2);
-    a2.click();
-    document.body.removeChild(a2);
-
-    // Clean up
-    setTimeout(() => {
-      window.URL.revokeObjectURL(url1);
-      window.URL.revokeObjectURL(url2);
-    }, 1000);
-
-  } catch (error) {
-    console.error('Error generating PDFs:', error);
-  }
 };
   
   return (
-    <div className="home" style={homeStyle}>
-      <Box sx={{ width: "100%", height: "100vh", overflow: "hidden" }}>
+  <div className="home" style={homeStyle}>
+    <Box sx={{ width: "100%", height: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Header Section */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          p: 2,
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Button
+            variant="text"
+            sx={{
+              display: "flex",
+              px: 2,
+              py: 2,
+              fontSize: "1.25rem",
+              alignItems: "center",
+              color: "#7451f8",
+            }}
+            onClick={() => handleBack()}
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </Button>
+          <Typography
+            variant="h3"
+            sx={{fontSize: "2.5rem", fontWeight: "bold", ml: 2, color: "#7451f8"}}
+          >
+            Paper Approve
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", mr: 10, ml: 5 }}
+            onClick={handleDownloadPDF}
+          >
+            Download PDF
+          </Button>
+        </Box>
+        <Box sx={{gap: 2, display: "flex"}}>
+          <Button
+            variant="contained"
+            onClick={() => handleSubmitButton("reject")}
+            disabled={isDisabled}
+            color="primary"
+            sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8" }}
+          >
+            Reject Paper
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleSubmitButton("approve")}
+            disabled={isDisabled}
+            color="primary"
+            sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8" }}
+          >
+            Approve paper
+          </Button>
+        </Box>
+        <Feedback flag={feedbackFlag} setFlag={setFeedbackFlag} paperID={paper.id} />
+      </Box>
+
+      {/* Paper Viewer Section - Side by Side */}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "hidden",
+          display: "flex",
+          gap: 2,
+          p: 2,
+        }}
+      >
+        {/* Left Paper Preview */}
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            height: "100%",
+            flex: 1,
+            overflow: "auto",
+            border: "1px solid #e0e0e0",
+            borderRadius: 1,
+            backgroundColor: "#f5f5f5",
           }}
         >
-          {/* Sidebar or Left Section */}
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              height: "100%",
-              overflowY: "auto",
-              overflowX: "hidden",
-            }}
-          >
-            {/* Header Section */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                p: 2,
-                justifyContent: "space-between",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Button
-                  variant="text"
-                  sx={{
-                    display: "flex",
-                    px: 2,
-                    py: 2,
-                    fontSize: "1.25rem",
-                    alignItems: "center",
-                    color: "#7451f8",
-                  }}
-                  onClick={() => handleBack()}
-                >
-                  <FontAwesomeIcon icon={faArrowLeft} />
-                </Button>
-                <Typography
-                  variant="h3"
-                  sx={{fontSize: "2.5rem", fontWeight: "bold", ml: 2, color: "#7451f8",}}
-                >
-                  Paper Approve
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", mr: 10, ml: 5 }}
-                  onClick={handleDownloadPDF}
-                >
-                  Download PDF
-                </Button>
-              </Box>
-              <Box sx={{gap: 100}}>
-                <Button
-                    variant="contained"
-                    onClick={() => handleSubmitButton("reject")}
-                    disabled={isDisabled}
-                    color="primary"
-                    sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", mr: 10 }}
-                >
-                    Reject Paper
-                </Button>
-                <Button
-                    variant="contained"
-                    onClick={() => handleSubmitButton("approve")}
-                    disabled={isDisabled}
-                    color="primary"
-                    sx={{ px: 3, py: 1.5, fontSize: "1rem", backgroundColor: "#7451f8", mr: 12 }}
-                >
-                    Approve paper
-                </Button>
-              </Box>
-              <Feedback flag ={feedbackFlag} setFlag={setFeedbackFlag} paperID={paper.id} />
-            </Box>
+          <Paper
+            htmlQuestions={selectedQuestion}
+            htmlMCQ={selectedMCQ}
+            BasicInfo={exsistingInfo}
+            section={sectionLetters}
+          />
+        </Box>
 
-            {/* Content Section */}
-          </Box>
-          
-          {/* Paper Viewer Section */}
-          {console.log(selectedMCQ)}
-          {console.log(selectedQuestion)}
-          <Box
-            sx={{
-                flex: 8,
-                overflowY: "auto",
-                height: "20%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "start", // or "center" if you want vertical center
-            }}
-            >
-            <Box sx={{ width: "80%", display: "flex", flexDirectoon: "row", gap:5, justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-              <Paper
-                htmlQuestions={selectedQuestion}
-                htmlMCQ={selectedMCQ}
-                BasicInfo={exsistingInfo}
-                section={sectionLetters}
-                />
-              <PDFComponent
-                htmlQuestions={selectedQuestion}
-                htmlMCQ={selectedMCQ}
-                BasicInfo={exsistingInfo}
-                section={sectionLetters}
-                loading={loading}
-              />
-            </Box>
-          </Box>
+        {/* Right Paper Key Preview */}
+        <Box
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            border: "1px solid #e0e0e0",
+            borderRadius: 1,
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <PDFComponent
+            htmlQuestions={selectedQuestion}
+            htmlMCQ={selectedMCQ}
+            BasicInfo={exsistingInfo}
+            section={sectionLetters}
+            loading={loading}
+          />
         </Box>
       </Box>
-    </div>
-  );
+    </Box>
+  </div>
+);
 };
 
 export default PaperApprove;

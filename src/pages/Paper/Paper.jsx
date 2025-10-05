@@ -4,29 +4,11 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
-// Add CSS styles for chemical symbols
-const chemicalStyles = `
-  .chemical-line::after {
-    content: "→";
-    font-family: "Times New Roman", Times, serif;
-    font-size: 14px;
-    margin: 0 4px;
-    display: inline-block;
-  }
-  .chemical-reversible::after {
-    content: "⇌";
-    font-family: "Times New Roman", Times, serif;
-    font-size: 14px;
-    margin: 0 4px;
-    display: inline-block;
-  }
-`
-
-const A4_WIDTH = 740 // px (96 DPI ~ 8.27in)
-const A4_HEIGHT = 900 // px (96 DPI ~ 11.69in)
+const A4_WIDTH = 700;   // px
+const A4_HEIGHT = 991;  // px (this maintains the ratio)
 const PAGE_PADDING = 30 // px
 const CONTENT_WIDTH = A4_WIDTH - PAGE_PADDING * 2
-export const SECTION_MIN_START_SPACE = 180 // if remaining space < this, push section to next page
+export const SECTION_MIN_START_SPACE = 500 // if remaining space < this, push section to next page
 
 function toRoman(num) {
   const romanNumerals = [
@@ -106,13 +88,16 @@ export function htmlChange(html) {
 
   let transformed = html
 
-  // Keep chemical symbols as HTML/CSS for proper rendering
-  // Remove any problematic attributes but keep the structure
+  // chemistry symbols
   transformed = transformed
-    .replace(/<chemical-line[^>]*>/gi, '<span class="chemical-line">')
-    .replace(/<\/chemical-line>/gi, '</span>')
-    .replace(/<chemical-reversible[^>]*>/gi, '<span class="chemical-reversible">')
-    .replace(/<\/chemical-reversible>/gi, '</span>')
+    .replace(
+      /<chemical-line[^>]*data-chemical-type="single"[^>]*>.*?<\/chemical-line>/gi,
+      '<span style="font-family: Times New Roman, Times, serif; font-size: 14px; margin: 0 4px; display: inline-block;">→</span>',
+    )
+    .replace(
+      /<chemical-reversible[^>]*>.*?<\/chemical-reversible>/gi,
+      '<span style="font-family: Times New Roman, Times, serif; font-size: 14px; margin: 0 4px; display: inline-block;">⇌</span>',
+    )
 
   // normalize text styles
   transformed = transformed
@@ -485,11 +470,6 @@ function MCQBlock({ q, idx, isUrdu }) {
     alignItems: "flex-start",
     marginBottom: 4,
   }
-  const choiceContent = {
-    flex: 1,
-    textAlign: isUrdu ? "right" : "left",
-    direction: isUrdu ? "rtl" : "ltr",
-  }
   const gridRow = {
     display: "flex",
     flexDirection: isUrdu ? "row-reverse" : "row",
@@ -512,13 +492,13 @@ function MCQBlock({ q, idx, isUrdu }) {
         <div style={col}>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, textAlign: isUrdu ? "right" : "left", }}>
               {!isEmptyHtmlString(choices[0]) && <div dangerouslySetInnerHTML={{ __html: choices[0] }} />}
             </div>
           </div>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, textAlign: isUrdu ? "right" : "left", }}>
               {!isEmptyHtmlString(choices[1]) && <div dangerouslySetInnerHTML={{ __html: choices[1] }} />}
             </div>
           </div>
@@ -526,13 +506,13 @@ function MCQBlock({ q, idx, isUrdu }) {
         <div style={col}>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, textAlign: isUrdu ? "right" : "left", }}>
               {!isEmptyHtmlString(choices[2]) && <div dangerouslySetInnerHTML={{ __html: choices[2] }} />}
             </div>
           </div>
           <div style={choiceRow}>
             <div style={bulletStyle}>•</div>
-            <div style={choiceContent}>
+            <div style={{ flex: 1, textAlign: isUrdu ? "right" : "left", }}>
               {!isEmptyHtmlString(choices[3]) && <div dangerouslySetInnerHTML={{ __html: choices[3] }} />}
             </div>
           </div>
@@ -664,32 +644,36 @@ function PageFrame({ children, BasicInfo }) {
   )
 }
 
-export async function downloadPaperPdfFromElement(rootEl, filename = "paper.pdf") {
-  if (!rootEl) return
-  const pages = Array.from(rootEl.querySelectorAll("[data-page]"))
-  if (pages.length === 0) return
+export async function downloadPaperPdf(filename) {
+  const rootEl = document.querySelector('[data-paper-type="normal-paper"]');
+  if (!rootEl) {
+    console.error('Paper container not found');
+    return;
+  }
+  
+  const pages = Array.from(rootEl.querySelectorAll("[data-page]"));
+  if (pages.length === 0) return;
 
-  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" })
-  const pageW = pdf.internal.pageSize.getWidth()
-  const pageH = pdf.internal.pageSize.getHeight()
+  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
 
   for (let i = 0; i < pages.length; i++) {
-    const page = pages[i]
+    const page = pages[i];
     const canvas = await html2canvas(page, {
       scale: 2,
       useCORS: true,
+      allowTaint: true,
       backgroundColor: "#ffffff",
-      logging: false,
-      allowTaint: false,
-    })
-    const imgData = canvas.toDataURL("image/png")
-    if (i > 0) pdf.addPage()
-    pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH)
+    });
+    const imgData = canvas.toDataURL("image/png");
+    if (i > 0) pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH);
   }
-  pdf.save(filename)
+
+  pdf.save(filename);
 }
 
-export { downloadPaperPdfFromElement as downloadPaperPdf }
 
 function Paper({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSectionStartSpace }) {
   const containerRef = useRef(null)
@@ -788,17 +772,6 @@ function Paper({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSection
     )
   }
 
-  // Inject chemical styles
-  useLayoutEffect(() => {
-    const styleElement = document.createElement('style')
-    styleElement.textContent = chemicalStyles
-    document.head.appendChild(styleElement)
-    
-    return () => {
-      document.head.removeChild(styleElement)
-    }
-  }, [])
-
   return (
     <div ref={containerRef} style={{ width: "100%", overflowX: "hidden" }}>
       {/* Hidden measuring stage */}
@@ -823,7 +796,7 @@ function Paper({ BasicInfo, htmlQuestions, htmlMCQ, section, loading, minSection
       </div>
 
       {/* Visible paginated preview */}
-      <div>
+      <div data-paper-root data-paper-type="normal-paper">
         {pages.map((pageBlocks, pageIndex) => (
           <PageFrame key={pageIndex} BasicInfo={info}>
             {pageBlocks.map((b) => {
